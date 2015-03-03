@@ -1,5 +1,5 @@
 
-# infer time and sales from event data.
+# infer trades from event data.
 # (event contains maker/taker)
 
 # determine t&s with maker/taker match.
@@ -9,9 +9,9 @@
 # direction = buy or sell (side of the aggressor/taker
 # maker event id
 # taker event id
-time.and.sales <- function(events) {
+match.trades <- function(events) {
 
-  print(paste("inferring time and sales from", nrow(events), "events..."))
+  print(paste("inferring trades from", nrow(events), "events..."))
 
   # trades with matching maker/taker.
   # align them by event id.
@@ -47,34 +47,4 @@ time.and.sales <- function(events) {
   combined[order(timestamp), ]
 
 }
-
-# group trades by taker id.
-group.trades <- function(trades, events, fields="id") cbind(trades, taker=events[match(trades$taker.event.id, events$event.id), fields])
-
-# order id, start.price, end.price, vwap.price, lifted.orders, lifted.volume, type, start.time, end.time
-trade.impacts <- function(trades, events, direction) {
-  grouped <- group.trades(trades[trades$direction == direction, ], events, c("id", "type"))
-  grouped <- grouped[order(grouped$taker.id, grouped$timestamp), ]
-
-  taker.ids <- grouped$taker.id
-
-  by.group <- by(grouped, taker.ids, function(g) {
-    list(timestamp=max(g$timestamp), from=min(g$timestamp), max=max(g$price), min=min(g$price), vwap=vwap(g$price, g$volume), hits=nrow(g), vol=sum(g$volume))
-  })
-
-  df <- data.frame(t(data.frame(lapply(by.group, unlist)))) # convert grouped (class of by) to data frame.
-  df$timestamp <- as.POSIXct(df$timestamp, tz="UTC", origin="1970-01-01")
-  df$from <- as.POSIXct(df$from, tz="UTC", origin="1970-01-01")
-
-  df <- cbind(id=unique(taker.ids[!is.na(taker.ids)]), df, vol=df$vol, type=factor(tapply(grouped$taker.type, taker.ids, function(g) head(as.character(g), 1))))
-  rownames(df) <- NULL
-
-  if(direction == "buy")
-    df <- df[, c(1:3, 5, 4, 6:10)]
-
-  colnames(df)[4:5] <- c("from.price", "to.price") 
-
-  df
-}
-
 

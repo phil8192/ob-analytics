@@ -2,14 +2,13 @@ options(digits.secs=3)
 options(scipen=999)
 
 load.data <- function(bin.file) {
-  #load(file=bin.file, envir=parent.frame(), verbose=T)
   load(file=bin.file, verbose=T)
   ob.data
 }
 
 process.data <- function(csv.file) {
   events <- load.event.data(csv.file)
-  trades <- time.and.sales(events)
+  trades <- match.trades(events)
   events <- set.order.types(events, trades)
   zombie.ids <- get.zombie.ids(events, trades)
   zombies <- events[events$id %in% zombie.ids, ]
@@ -28,7 +27,6 @@ process.data <- function(csv.file) {
   depth.summary <- depth.metrics(depth)
   print("calculating order aggressiveness...")
   events <- order.aggressiveness(events, depth.summary)
-
   list(
     events=events, 
     trades=trades, 

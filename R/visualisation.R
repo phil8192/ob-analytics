@@ -1,13 +1,9 @@
 library(txtplot)
 library(ggplot2)
-library(animation)
 library(ggthemes)
 library(grid) # required for ggplot theme
 library(zoo)
 
-#source("auxiliary.r")
-#source("depth.r")
-#source("order-book-reconstruction.r")
 
 default.start.time <- as.POSIXct("1970-01-01 00:00:00.000", tz="UTC")
 default.end.time <- as.POSIXct("2070-12-12 23:59:59.999", tz="UTC")
@@ -15,21 +11,14 @@ default.end.time <- as.POSIXct("2070-12-12 23:59:59.999", tz="UTC")
 theme.black <- function() {
   p <- theme_bw()
   p <- p + theme(panel.background=element_rect(fill="#000000"),
-                 #panel.background=element_rect(fill="#151515"),
                  panel.border=element_rect(size=0),
-                 #panel.grid.minor=element_line("gray28", size=0.1),
-                 #panel.grid.major=element_line("gray48", size=0.1),
 		 panel.grid.major=element_blank(),
     		 panel.grid.minor=element_blank(),
                  axis.ticks=element_line("gray48", size=0.5),
-                 #plot.background=element_rect(fill="#151515", size=0),
 	 	 plot.background=element_rect(fill="#000000", size=0),
                  text=element_text(colour="#888888"),
-                 #strip.background=element_rect(fill="#151515", size=0),
 		 strip.background=element_rect(fill="#000000", size=0),
-                 #legend.key=element_rect(fill="#151515", size=0),
 	         legend.key=element_rect(fill="#000000", size=0),
-                 #legend.background=element_rect(fill="#151515", size=0))
 		 legend.background=element_rect(fill="#000000", size=0))
   p
 }
@@ -62,10 +51,8 @@ plot.time.and.sales <- function(ts, depth.summary, start.time=min(ts$timestamp),
     title=paste("trades between", start.time, "and", end.time)) {
   ts <- ts[ts$timestamp >= start.time & ts$timestamp <= end.time, ]
   p <- ggplot(data=ts, aes(x=timestamp, y=price))
-  #p <- p + scale_x_datetime(limits=c(start.time, end.time), labels=function(x) format(x, "%H:%M:%S", tz="UTC"))
   p <- p + scale_y_continuous(breaks=seq(round(min(ts$price)), round(max(ts$price)), by=1), name="limit price")
   p <- p + geom_step(data=ts, colour="grey")
-  #p <- p + ggtitle(title)
   p <- p + xlab("time")
   p <- p + theme.black()
 }
@@ -77,7 +64,6 @@ plot.price.level.depth <- function(ts, price.level.volume,
   max.price  <- max(ts$price)+1
   price.level.volume <- depth.levels(price.level.volume[price.level.volume$price >= min.price
       & price.level.volume$price <= max.price
-      #& price.level.volume$timestamp >= start.time
       & price.level.volume$timestamp <= end.time, ], from=start.time)
   plot.price.level.depth.preprocessed(ts, price.level.volume)
 }
@@ -198,28 +184,15 @@ plot.created.volume.map <- function(events, start.time=default.start.time, end.t
 }
 
 plot.volume.map <- function(events, action, start.time=default.start.time, end.time=default.end.time) {
-  #trade.range <- trades[trades$timestamp >= start.time & trades$timestamp <= end.time, ]
-  #filtered <- events[events$action == action
-  #                 & events$timestamp >= start.time & events$timestamp <= end.time
-  #                 & events$price >= min(trade.range$price)-5 & events$price <= max(trade.range$price)+5
-  #                 & events$type == "flashed-limit", ]
   filtered <- events[events$action == action 
                    & events$type == "flashed-limit"
                    & events$timestamp >= start.time & events$timestamp <= end.time, ]
-
-  #min.volume <- 0
-  #max.volume <- Inf #quantile(filtered$volume, probs=0.999)
-  #filtered <- filtered[filtered$volume > min.volume & filtered$volume < max.volume, ]
-
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
   p <- ggplot(data=filtered, mapping=aes(x=timestamp, y=volume))
   p <- p + geom_point(mapping=aes(colour=direction), size=1, shape=15)
-  #p <- p + scale_colour_manual(values=col.pal, guide="none")
   p <- p + scale_colour_manual(values=col.pal, name="direction     \n")
-  #p <- p + scale_x_datetime(limits=c(start.time, end.time), labels=function(x) format(x, "%H:%M:%S", tz="UTC"))
   p <- p + scale_y_continuous(name="cancelled volume", labels=function(y) sprintf("%5s", y))
-  #p <- p + ggtitle(paste(action, "flashed volume between", start.time, "and", end.time))
   p <- p + xlab("time")
   p + theme.black()
 }
@@ -247,15 +220,9 @@ plot.combined.quote.map <- function(events, trades, start.time=default.start.tim
 
   p <- ggplot(data=quotes.data, mapping=aes(x=timestamp, y=price, shape=action))
   p <- p + facet_grid(panel~., scale="free")
-  #p <- p + aes(shape=action)
-  #p <- p + scale_shape_manual(values=c(1,19))
   p <- p + geom_point(aes(size=volume), colour="#555555", alpha=0.5)
- 
-  #p <- p + geom_point(aes(colour=direction), size=0.1)
   p <- p + geom_point(aes(colour=direction), size=0.5)
   p <- p + scale_colour_manual(values=col.pal)
-
-  # cancellation part
   p <- p + geom_point(data=cancelled.data, aes(x=timestamp, y=volume, colour=direction), size=1, shape=15)
 
   p <- p + theme.black()
@@ -283,20 +250,6 @@ plot.current.depth <- function(order.book, ascii=F) {
     p <- p + theme.black()
     p
   }
-}
-
-# animation of order book depth cumulative volume
-create.depth.animation <- function(events, start.time=default.start.time, 
-    end.time=default.end.time, file="/tmp/depth.gif") {
-  saveGIF({
-    for(ob.time in seq(start.time, end.time, by="1 sec")) {
-      ob <- order.book(events, ob.time, max.price.levels=200)
-      print(plot.depth(ob))
-      #dev.flush()
-      #Sys.sleep(1)
-    }
-  }, movie.name=file, interval=0.1, ani.width=800, ani.width=600, nmax=frames,
-      autobrowse=F)
 }
 
 plot.trade.spread <- function(trades) {
@@ -425,23 +378,10 @@ plot.volume.histogram <- function(events,
     bw=5
 
   p <- ggplot(data=events, mapping=aes(x=volume, fill=direction, colour=direction))
-  #p <- p + geom_bar(binwidth=0.1, origin=0, position="dodge")
   p <- p + geom_bar(binwidth=bw, position="dodge")
-  #p <- p + coord_trans(x="sqrt")
-  #p <- p + scale_x_log10() 
-  #p <- p + geom_bar(binwidth=0.1, position="dodge")
-  #p <- p + scale_x_sqrt()
   p <- p + scale_colour_manual(values=c("#0000ff", "#ff0000"))
   p <- p + scale_fill_manual(values=c("#0000ff", "#ff0000"))
   p <- p + ggtitle("events volume distribution")
   p + theme.black()
-}
-
-# test| depth
-lala <- function() {
-  bid.depth<-cumsum(unlist(tail(depth.summary[, paste0("bid.vol", seq(from=25, to=500, by=25), "bps")],1)))
-  ask.depth<-cumsum(unlist(tail(depth.summary[, paste0("ask.vol", seq(from=25, to=500, by=25), "bps")],1)))
-  plot(ask.depth/(sum(ask.depth)+sum(bid.depth)), type="s", col="red")
-  lines(bid.depth/(sum(ask.depth)+sum(bid.depth)), type="s", col="blue")
 }
 

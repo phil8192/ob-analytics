@@ -1,4 +1,3 @@
-#source("auxiliary.r")
 
 is.pacman <- function(quotes) {
   tapply(quotes$price, quotes$id, function(prices) {
@@ -46,11 +45,6 @@ set.order.types <- function(events, trades) {
   ml.ids <- ml.ids[!ml.ids %in% pacman.ids]
   print(paste("found", length(ml.ids), "market-limit orders"))
   events[events$id %in% ml.ids, ]$type <- "market-limit"
-
-  # market orders (100% taking) (last update is a taking event)
-  #mo.ids <- events[events$type != "pacman" & events$fill > 0 & events$action == "deleted" & events$event.id %in% trades$taker.event.id, "id"]
-  #print(paste("found", length(mo.ids), "market orders"))
-  #events[events$id %in% mo.ids, ]$type <- "market"
 
   # market orders: at least 1 taking event, no identified making events.
   mo.ids <- taker.ids[!taker.ids %in% unique(events[events$event.id %in% trades$maker.event.id, ]$id)]

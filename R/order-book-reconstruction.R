@@ -69,11 +69,3 @@ order.book <- function(events, ts, max.price.levels=NULL, pct.range=0) {
   current.order.book(cur, max.price.levels, pct.range, ts)
 }
 
-# market impact on order book for volume.
-# -volume = buy, +volume = sell.
-impact <- function(ob, volume) {
-  ifelse(volume > 0,
-    ob$bids$price[tail(which(volume - ob$bids$liquidity > 0), 1)],
-    ob$asks$price[tail(which(volume + ob$asks$liquidity > 0), 1)])
-}
-

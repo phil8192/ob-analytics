@@ -1,10 +1,4 @@
 
-is.pacman <- function(quotes) {
-  tapply(quotes$price, quotes$id, function(prices) {
-    any(vector.diff(prices) != 0)
-  })
-}
-
 # for some reason, stream sometimes contains duplicate delete events.
 # most of time order deleted, but then filled. sometimes duplicates (exactly the same).
 remove.duplicates <- function(events) {
@@ -87,19 +81,4 @@ order.aggressiveness <- function(events, depth.summary) {
   events[match(ask.diff.bps$event.id, events$event.id), ]$aggressiveness.bps <- ask.diff.bps$diff.bps
   events
 }
-
-# pre-process all events data (^ added later)
-if(F){
-  for(day in seq(as.Date("2014-07-03"), as.Date("2014-10-10"), by="day")) {
-    day <- as.Date(day)
-    if(file.exists(paste0("data/bin/", day, ".bin"))) {
-      print(paste("pre-processing order aggressiveness for", day))
-      load(file=paste0("data/bin/", day, ".bin"), verbose=F)        
-      events <- order.aggressiveness(events, depth.summary)
-      save(file=paste0("data/bin/", day, ".bin"), list=c("events", "trades", "depth", "zombies", "depth.summary"))
-    }
-  }
-}
-
-
 

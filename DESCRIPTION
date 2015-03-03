@@ -8,10 +8,8 @@ Author: Phil
 License: GPL 
 Imports:
   zoo,
-  xts,
   txtplot,
   ggplot2,
-  animation,
   ggthemes,
   grid,
   reshape2
