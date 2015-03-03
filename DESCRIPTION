@@ -1,0 +1,18 @@
+Package: microstructure2
+Version: 0.1
+LazyData: true
+Title: microstructure 
+Description: microstructure 
+Maintainer: Phil <phil@parasec.net>
+Author: Phil
+License: GPL 
+Imports:
+  zoo,
+  xts,
+  txtplot,
+  ggplot2,
+  animation,
+  ggthemes,
+  grid,
+  reshape2
+ 
