@@ -8,9 +8,6 @@ Author: Phil
 License: GPL 
 Imports:
   zoo,
-  txtplot,
   ggplot2,
-  ggthemes,
-  grid,
   reshape2
  

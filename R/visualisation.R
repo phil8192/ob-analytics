@@ -1,9 +1,5 @@
-library(txtplot)
 library(ggplot2)
-library(ggthemes)
-library(grid) # required for ggplot theme
 library(zoo)
-
 
 default.start.time <- as.POSIXct("1970-01-01 00:00:00.000", tz="UTC")
 default.end.time <- as.POSIXct("2070-12-12 23:59:59.999", tz="UTC")
@@ -23,18 +19,40 @@ theme.black <- function() {
   p
 }
 
-# general
-plot.time.series <- function(ts, start.time=min(ts$timestamp), end.time=max(ts$timestamp), title="time series") {
-  print(paste("plot time series between", start.time, "and", end.time))
-  ts <- ts[ts$timestamp >= start.time & ts$timestamp <= end.time, ]
-  p <- ggplot(data=ts, aes(x=timestamp, y=val))
-  ### ggplot ignores timezone, even though explicitly set. work around is
-  ### to specify a format function. http://stackoverflow.com/questions/10999249/how-to-adjust-x-axis-in-ggplots-density-plot
-  p <- p + scale_x_datetime(limits=c(start.time, end.time), labels=function(x) format(x, "%H:%M:%S", tz="UTC"))
-  p <- p + scale_y_continuous(labels=function(y) sprintf("%3s", sprintf("%.3s", y)))
+#' General time series plot. 
+#'
+#' For general time series plotting.
+#' 
+#' @param timestamp POSIXct timestamps.
+#' @param series The time series.
+#' @param start.time, end.time, Inclusive start and end time of plot.
+#' @param title, y.label Title and Y axis label of the plot.
+#' @export
+#' @examples
+#' \donotrun{
+#' plot.time.series(timestamp=x$trades$timestamp, series=x$trades$price)
+#'
+#' timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"), 
+#'                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
+#' series <- rep(1:10, 6)
+#' plot.time.series(timestamp, series)
+#' }
+plot.time.series <- function(timestamp, series, start.time=min(timestamp),
+    end.time=max(timestamp), title="time series", y.label="series") {
+  stopifnot(length(timestamp) == length(series))
+  logger(paste("plot time series between", start.time, "and", end.time))
+  df <- data.frame(ts=timestamp, val=series)
+  df <- df[df$ts >= start.time & df$ts <= end.time, ]
+  p <- ggplot(data=df, aes(x=ts, y=val))
+  ### ggplot ignores timezone, even though explicitly set. work around is:
+  p <- p + scale_x_datetime(limits=c(start.time, end.time), labels=function(x) 
+      format(x, "%H:%M:%S", tz="UTC"))
+  p <- p + scale_y_continuous(labels=function(y) sprintf("%3s", 
+      sprintf("%.3s", y)))
   p <- p + ggtitle(title)
   p <- p + geom_line(colour="grey")
   p <- p + xlab("time")
+  p <- p + ylab(y.label)
   p + theme.black()
 }
 
@@ -235,21 +253,16 @@ plot.current.depth <- function(order.book, ascii=F) {
   asks <- reverse.matrix(order.book$asks)
   x <- c(bids$price, tail(bids$price, 1), head(asks$price, 1), asks$price)
   y <- c(bids$liquidity, 0, 0, asks$liquidity)
-  if(ascii)
-    txtplot(y, x=x, width=80)
-  else {
-    col.pal <- c("#ff0000", "#0000ff")
-    side <- c(rep("bid", nrow(bids)+1), rep("ask", nrow(asks)+1))
-    depth <- data.frame(price=x, liquidity=y, side=side)
-    p <- ggplot(depth, aes(x=price, y=liquidity, group=side, colour=side))
-    p <- p + scale_x_continuous(breaks=seq(round(min(bids$price)), round(max(asks$price)), by=1))
-    p <- p + scale_colour_manual(values=col.pal)  
-    p <- p + geom_step()
-    p <- p + ggtitle(as.POSIXct(order.book$timestamp, origin="1970-01-01", tz="UTC"))
-    #p <- p + scale_x_reverse()
-    p <- p + theme.black()
-    p
-  }
+  col.pal <- c("#ff0000", "#0000ff")
+  side <- c(rep("bid", nrow(bids)+1), rep("ask", nrow(asks)+1))
+  depth <- data.frame(price=x, liquidity=y, side=side)
+  p <- ggplot(depth, aes(x=price, y=liquidity, group=side, colour=side))
+  p <- p + scale_x_continuous(breaks=seq(round(min(bids$price)), round(max(asks$price)), by=1))
+  p <- p + scale_colour_manual(values=col.pal)  
+  p <- p + geom_step()
+  p <- p + ggtitle(as.POSIXct(order.book$timestamp, origin="1970-01-01", tz="UTC"))
+  p <- p + theme.black()
+  p
 }
 
 plot.trade.spread <- function(trades) {

@@ -27,3 +27,10 @@ flatten.matrix <- function(m)
              val=unlist(m[, -1], 
              use.names=F))
 
+# logs to console in form of:
+#     calling function => msg
+logger <- function(msg) {
+  caller <- head(sys.call(-1), 1)
+  cat(paste0("    ", caller, " => ", msg, "\n"))
+}
+

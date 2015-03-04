@@ -1,8 +1,5 @@
 exportPattern(".")
 import(zoo)
-import(txtplot)
 import(ggplot2)
-import(ggthemes)
-import(grid)
 import(reshape2)
 
