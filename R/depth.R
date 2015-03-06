@@ -79,6 +79,7 @@ depth.levels <- function(price.level.events, from=as.POSIXct("1970-01-01 00:00:0
   }
 }
 
+# <ref: plot.price.levels.faster
 # depth level changes between a range.
 # timestamp of last depth level change < begining of range shifted forward to edge of begining.
 filter.depth <- function(depth, from, to) {

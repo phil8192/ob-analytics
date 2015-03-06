@@ -30,12 +30,14 @@ theme.black <- function() {
 #' @export
 #' @examples
 #' \donotrun{
-#' plot.time.series(timestamp=x$trades$timestamp, series=x$trades$price)
+#' p <- plot.time.series(timestamp=x$trades$timestamp, series=x$trades$price)
+#' p
 #'
 #' timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"), 
 #'                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
 #' series <- rep(1:10, 6)
-#' plot.time.series(timestamp, series)
+#' p <- plot.time.series(timestamp, series)
+#' p
 #' }
 plot.time.series <- function(timestamp, series, start.time=min(timestamp),
     end.time=max(timestamp), title="time series", y.label="series") {
@@ -53,54 +55,32 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
   p <- p + geom_line(colour="grey")
   p <- p + xlab("time")
   p <- p + ylab(y.label)
-  p + theme.black()
-}
-
-# multiple time series
-matplot.time.series <- function(ts, start.time=min(ts$timestamp), end.time=max(ts$timestamp), title="time series") {
-  ts <- ts[ts$timestamp >= start.time & ts$timestamp <= end.time, ]
-  ts <- flatten.matrix(ts)
-  p <- ggplot(data=ts, aes(x=timestamp, y=val, group=label, colour=label))
-  p <- p + geom_step()
-  p + theme.black()
-}
-
-plot.time.and.sales <- function(ts, depth.summary, start.time=min(ts$timestamp), end.time=max(ts$timestamp), 
-    title=paste("trades between", start.time, "and", end.time)) {
-  ts <- ts[ts$timestamp >= start.time & ts$timestamp <= end.time, ]
-  p <- ggplot(data=ts, aes(x=timestamp, y=price))
-  p <- p + scale_y_continuous(breaks=seq(round(min(ts$price)), round(max(ts$price)), by=1), name="limit price")
-  p <- p + geom_step(data=ts, colour="grey")
-  p <- p + xlab("time")
   p <- p + theme.black()
 }
 
-plot.price.level.depth <- function(ts, price.level.volume, 
-    start.time=default.start.time, end.time=default.end.time) {
-  ts <- ts[ts$timestamp >= start.time & ts$timestamp <= end.time, ]
-  min.price  <- min(ts$price)-1
-  max.price  <- max(ts$price)+1
-  price.level.volume <- depth.levels(price.level.volume[price.level.volume$price >= min.price
-      & price.level.volume$price <= max.price
-      & price.level.volume$timestamp <= end.time, ], from=start.time)
-  plot.price.level.depth.preprocessed(ts, price.level.volume)
-}
-
-plot.price.level.depth.preprocessed <- function(ts, price.level.volume) {
-  col.pal <- colorRampPalette(c("#f92b20", "#fe701b", "#facd1f", "#d6fd1c",
-      "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"),
-      bias=0.05)(length(unique(price.level.volume$volume)))
-  col.pal <- rev(col.pal)
-  p <- ggplot(price.level.volume, aes(x=timestamp, y=price, fill=volume))
-  p <- p + scale_y_continuous(breaks=seq(min(price.level.volume$price),
-      max(price.level.volume$price), by=1))
-  p <- p + geom_tile()
-  p <- p + scale_fill_gradientn(colours = col.pal)
-  p <- p + geom_step(data=ts, aes(x=timestamp, y=price), col="black")
-  p <- p + geom_point(data=ts, aes(x=timestamp, y=price, size=6+log10(volume)), colour="white")
-  p <- p + geom_point(data=ts, aes(x=timestamp, y=price, colour=direction, size=4+log10(volume)))  
-  p <- p + scale_colour_manual(name="direction", values=c("#0000ff", "#ff0000"))
-  p
+#' Plot trades. 
+#'
+#' Plots executed prices in trades data.frame, where data.frame contains 
+#' timestamp and price columns.
+#' 
+#' @param timestamp POSIXct timestamps.
+#' @param start.time, end.time, Inclusive start and end time of plot.
+#' @export
+#' @examples
+#' \donotrun{
+#' x <- load.data("order.book.data.Rda")
+#' p <- plot.trades(x$trades)
+#' p
+#' }
+plot.trades <- function(trades, start.time=min(trades$timestamp),
+    end.time=max(trades$timestamp)) {
+  ts <- trades[trades$timestamp >= start.time & trades$timestamp <= end.time, ]
+  p <- ggplot(data=ts, aes(x=timestamp, y=price))
+  p <- p + scale_y_continuous(breaks=seq(round(min(ts$price)), 
+      round(max(ts$price)), by=1), name="limit price")
+  p <- p + geom_step(data=ts, colour="grey")
+  p <- p + xlab("time")
+  p <- p + theme.black()
 }
 
 # poor mans heatmap
@@ -109,13 +89,23 @@ plot.price.level.depth.preprocessed <- function(ts, price.level.volume) {
 #depth.filtered <- depth[depth$price >= min(trades$price)-5
 #                      & depth$price <= max(trades$price)+5, ]
 
+plot.price.levels <- function() {
+          
+}
 
-plot.price.levels.faster <- function(trades, depth, spread, start.time=head(spread$timestamp, 1), end.time=tail(spread$timestamp, 1), 
-    show.trades=T, show.spread=T, show.mp=F, show.all.depth=T, col.bias=0.1) { 
+
+#plot.price.levels.faster <- function(trades, depth, spread, start.time=head(spread$timestamp, 1), end.time=tail(spread$timestamp, 1), 
+#    show.trades=T, show.spread=T, show.mp=F, show.all.depth=T, col.bias=0.1) { 
+# 
+plot.price.levels.faster <- function(depth, spread, trades, show.mp=F, 
+    show.all.depth=T, col.bias=0.1) {
+
   trade.range <- trades
   buys <- trade.range[trade.range$direction == "buy", ]
   sells <- trade.range[trade.range$direction == "sell", ]
+
   filtered <- filter.depth(depth, start.time, end.time)
+
   # remove price levels with no update during time window.
   if(!show.all.depth) {
     unchanged <- tapply(filtered$timestamp, filtered$price, function(v) {
@@ -127,6 +117,7 @@ plot.price.levels.faster <- function(trades, depth, spread, start.time=head(spre
     print(paste("removed", length(unchanged.prices), "unchanged depth levels"))
   }
   filtered[filtered$volume==0, ]$volume<-NA
+
   log.10 <- F
   if(col.bias <= 0) {
     col.bias <- 1
@@ -139,7 +130,7 @@ plot.price.levels.faster <- function(trades, depth, spread, start.time=head(spre
   print("price level quantiles:")
   print(quantiles)
   p <- ggplot()
-  if(show.mp) {
+  if(show.mp & !is.null(spread)) {
     p <- p + geom_line(data=spread, aes(x=timestamp, y=(best.bid.price+best.ask.price)/2), col="#ffffff", size=1.1)
   }
   # set alpha to 0 for na, 0.1 for volume <1, 1 otherwise.
@@ -151,12 +142,12 @@ plot.price.levels.faster <- function(trades, depth, spread, start.time=head(spre
     p <- p + scale_colour_gradientn(colours=col.pal, na.value="black", name="volume        \n", breaks=as.vector(quantiles), labels=sprintf("%7s", sprintf("%.7s", quantiles)))
   p <- p + scale_alpha_continuous(range=c(0, 1), guide="none") #remove alpha legend.
 
-  if(show.spread) {
+  if(!is.null(spread)) {
     p <- p + geom_step(data=spread, aes(x=timestamp, y=best.ask.price), col="#ff0000", size=1.5) #, linetype="dashed")
     p <- p + geom_step(data=spread, aes(x=timestamp, y=best.bid.price), col="#00ff00", size=1.5) # alpha=0.5)#, linetype="longdash")
   }
 
-  if(show.trades) {
+  if(!is.null(trades)) {
     p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ffffff", size=6, shape=1)
     p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ff0000", size=5, shape=1)
     p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ffffff", size=4, shape=1)
