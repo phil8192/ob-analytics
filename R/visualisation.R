@@ -47,8 +47,8 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
   df <- df[df$ts >= start.time & df$ts <= end.time, ]
   p <- ggplot(data=df, aes(x=ts, y=val))
   ### ggplot ignores timezone, even though explicitly set. work around is:
-  p <- p + scale_x_datetime(limits=c(start.time, end.time), labels=function(x) 
-      format(x, "%H:%M:%S", tz="UTC"))
+  p <- p + scale_x_datetime(limits=c(start.time, end.time), 
+      labels=function(x) format(x, "%H:%M:%S", tz="UTC"))
   p <- p + scale_y_continuous(labels=function(y) sprintf("%3s", 
       sprintf("%.3s", y)))
   p <- p + ggtitle(title)
@@ -89,8 +89,15 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 #depth.filtered <- depth[depth$price >= min(trades$price)-5
 #                      & depth$price <= max(trades$price)+5, ]
 
-plot.price.levels <- function() {
-          
+plot.price.levels <- function(depth, spread, trades,
+    start.time=head(depth$timestamp, 1),  end,time=tail(depth$timestamp, 1), 
+    show.mp=F, show.all.depth=T, col.bias=0.1) {
+
+
+
+  plot.price.levels.faster(depth, spread, trades, show.mp, show.all.depth, 
+      col.bias)
+ 
 }
 
 
