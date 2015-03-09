@@ -89,34 +89,58 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 #depth.filtered <- depth[depth$price >= min(trades$price)-5
 #                      & depth$price <= max(trades$price)+5, ]
 
-plot.price.levels <- function() {
-          
-}
+plot.price.levels <- function(depth, depth.summary, trades, show.mp=F, 
+    show.all.depth=T, col.bias=0.1, start.time=head(depth$timestamp, 1), 
+    end.time=tail(depth$timestamp, 1), price.from=NULL, price.to=NULL, 
+    volume.from=NULL, volume.to=NULL) {
 
+  trades.filtered <- trades[trades$timestamp >= from.time 
+                          & trades$timestamp <= end.time, ]
+  spread.filtered <- depth.summary[depth.summary$timestamp >= from.time 
+                                 & depth.summary$timestamp <= end.time, 
+      c("timestamp", "best.bid.price", "best.ask.price")]
 
-#plot.price.levels.faster <- function(trades, depth, spread, start.time=head(spread$timestamp, 1), end.time=tail(spread$timestamp, 1), 
-#    show.trades=T, show.spread=T, show.mp=F, show.all.depth=T, col.bias=0.1) { 
-# 
-plot.price.levels.faster <- function(depth, spread, trades, show.mp=F, 
-    show.all.depth=T, col.bias=0.1) {
+  if(!(is.null(price.from) || is.null(price.to) 
+      || is.null(volume.from) || is.null(volume.to))) {
+    trades.filtered <- trades.filtered[trades.filtered$price  >= price.from
+                                     & trades.filtered$price  <= price.to 
+                                     & trades.filtered$volume >= volume.from
+                                     & trades.fitlered$volume <= volume.to, ]
+    depth.filtered <- depth[depth$price  >= price.from
+                         &  depth$price  <= price.to
+                         & (depth$volume >= volume.from | depth$volume == 0)
+                         &  depth$volume <= volume.to, ]
+  } else {
+    depth.filtered <- depth[depth$price >= min(trades$price)*0.99
+                          & depth$price <= max(trades$price)*1.01, ]   
+  }
 
-  trade.range <- trades
-  buys <- trade.range[trade.range$direction == "buy", ]
-  sells <- trade.range[trade.range$direction == "sell", ]
-
-  filtered <- filter.depth(depth, start.time, end.time)
+  depth.filtered <- filter.depth(depth.filtered, start.time, end.time)
 
   # remove price levels with no update during time window.
   if(!show.all.depth) {
-    unchanged <- tapply(filtered$timestamp, filtered$price, function(v) {
+    unchanged <- tapply(depth.filtered$timestamp, depth.filtered$price, 
+        function(v) {
       length(v) == 2 & v[1] == start.time & v[2] == end.time
     })
-    unchanged.prices <- unique(filtered$price)
-    unchanged.prices <- unchanged.prices[unchanged]
-    filtered <- filtered[!filtered$price %in% unchanged.prices, ]
-    print(paste("removed", length(unchanged.prices), "unchanged depth levels"))
+    unchanged.prices <- unique(depth.filtered$price)
+    unchanged.price <- unchanged.prices[unchanged]
+    depth.filtered <- depth.filtered[!depth.filtered$price 
+        %in% unchanged.prices, ]
+    logger(paste("removed", length(unchanged.prices), "unchanged depths"))
   }
-  filtered[filtered$volume==0, ]$volume<-NA
+
+  depth.filtered[depth.filtered$volume==0, ]$volume <- NA
+  
+  plot.price.levels.faster(depth.filtered, spread.filtered, trades.filtered, 
+      show.mp, col.bias) 
+}
+
+plot.price.levels.faster <- function(depth, spread, trades, show.mp=F, 
+    col.bias=0.1) {
+
+  buys <- trades[trades$direction == "buy", ]
+  sells <- trades[trades$direction == "sell", ]
 
   log.10 <- F
   if(col.bias <= 0) {
@@ -124,36 +148,53 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=F,
     log.10 <- T
   }
   col.pal <- colorRampPalette(c("#f92b20", "#fe701b", "#facd1f", "#d6fd1c",
-      "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"), bias=col.bias)(length(unique(filtered$volume)))
+      "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"), 
+      bias=col.bias)(length(unique(depth$volume)))
   col.pal <- rev(col.pal)
-  quantiles <- quantile(filtered$volume, probs=seq(0.5, 1, 0.5), na.rm=T)
-  print("price level quantiles:")
-  print(quantiles)
+  quantiles <- quantile(depth$volume, probs=seq(0.5, 1, 0.5), na.rm=T)
+  logger("price level quantiles:")
+  logger(quantiles)
   p <- ggplot()
   if(show.mp & !is.null(spread)) {
-    p <- p + geom_line(data=spread, aes(x=timestamp, y=(best.bid.price+best.ask.price)/2), col="#ffffff", size=1.1)
+    p <- p + geom_line(data=spread, aes(x=timestamp, 
+        y=(best.bid.price+best.ask.price)/2), col="#ffffff", size=1.1)
   }
   # set alpha to 0 for na, 0.1 for volume <1, 1 otherwise.
-  p <- p + geom_line(data=filtered, mapping=aes(colour=volume, x=timestamp, y=price, group=price, alpha=ifelse(is.na(volume), 0, ifelse(volume < 1, 0.1, 1)))) #size=1
-  p <- p + scale_y_continuous(breaks=seq(round(min(filtered$price)), round(max(filtered$price)), by=0.5), name="limit price")
+  p <- p + geom_line(data=depth, mapping=aes(colour=volume, x=timestamp, 
+      y=price, group=price, alpha=ifelse(is.na(volume), 0, 
+      ifelse(volume < 1, 0.1, 1)))) #size=1
+  p <- p + scale_y_continuous(breaks=seq(round(min(depth$price)), 
+      round(max(depth$price)), by=0.5), name="limit price")
   if(log.10)
-    p <- p + scale_colour_gradientn(colours=col.pal, trans="log10", na.value="black")
+    p <- p + scale_colour_gradientn(colours=col.pal, trans="log10", 
+      na.value="black")
   else
-    p <- p + scale_colour_gradientn(colours=col.pal, na.value="black", name="volume        \n", breaks=as.vector(quantiles), labels=sprintf("%7s", sprintf("%.7s", quantiles)))
-  p <- p + scale_alpha_continuous(range=c(0, 1), guide="none") #remove alpha legend.
+    p <- p + scale_colour_gradientn(colours=col.pal, na.value="black", 
+        name="volume        \n", breaks=as.vector(quantiles), 
+        labels=sprintf("%7s", sprintf("%.7s", quantiles)))
+  #remove alpha legend.
+  p <- p + scale_alpha_continuous(range=c(0, 1), guide="none")
 
   if(!is.null(spread)) {
-    p <- p + geom_step(data=spread, aes(x=timestamp, y=best.ask.price), col="#ff0000", size=1.5) #, linetype="dashed")
-    p <- p + geom_step(data=spread, aes(x=timestamp, y=best.bid.price), col="#00ff00", size=1.5) # alpha=0.5)#, linetype="longdash")
+    p <- p + geom_step(data=spread, aes(x=timestamp, y=best.ask.price), 
+        col="#ff0000", size=1.5)
+    p <- p + geom_step(data=spread, aes(x=timestamp, y=best.bid.price), 
+        col="#00ff00", size=1.5)
   }
 
   if(!is.null(trades)) {
-    p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ffffff", size=6, shape=1)
-    p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ff0000", size=5, shape=1)
-    p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ffffff", size=4, shape=1)
-    p <- p + geom_point(data=buys, aes(x=timestamp, y=price), colour="#ffffff", size=6, shape=1)
-    p <- p + geom_point(data=buys, aes(x=timestamp, y=price), colour="#00ff00", size=5, shape=1)
-    p <- p + geom_point(data=buys, aes(x=timestamp, y=price), colour="#00ff00", size=5, shape=1)
+    p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ffffff", 
+        size=6, shape=1)
+    p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ff0000", 
+        size=5, shape=1)
+    p <- p + geom_point(data=sells, aes(x=timestamp, y=price), colour="#ffffff", 
+        size=4, shape=1)
+    p <- p + geom_point(data=buys, aes(x=timestamp, y=price), colour="#ffffff", 
+        size=6, shape=1)
+    p <- p + geom_point(data=buys, aes(x=timestamp, y=price), colour="#00ff00", 
+        size=5, shape=1)
+    p <- p + geom_point(data=buys, aes(x=timestamp, y=price), colour="#00ff00", 
+        size=5, shape=1)
   }
   p <- p + theme.black()
   p <- p + theme(legend.title=element_text(hjust=3, vjust=20))
