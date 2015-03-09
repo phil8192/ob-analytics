@@ -47,8 +47,8 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
   df <- df[df$ts >= start.time & df$ts <= end.time, ]
   p <- ggplot(data=df, aes(x=ts, y=val))
   ### ggplot ignores timezone, even though explicitly set. work around is:
-  p <- p + scale_x_datetime(limits=c(start.time, end.time), labels=function(x) 
-      format(x, "%H:%M:%S", tz="UTC"))
+  p <- p + scale_x_datetime(limits=c(start.time, end.time), 
+      labels=function(x) format(x, "%H:%M:%S", tz="UTC"))
   p <- p + scale_y_continuous(labels=function(y) sprintf("%3s", 
       sprintf("%.3s", y)))
   p <- p + ggtitle(title)
