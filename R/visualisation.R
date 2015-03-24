@@ -1,12 +1,8 @@
 library(ggplot2)
 library(zoo)
 
-default.start.time <- as.POSIXct("1970-01-01 00:00:00.000", tz="UTC")
-default.end.time <- as.POSIXct("2070-12-12 23:59:59.999", tz="UTC")
-
 theme.black <- function() {
-  p <- theme_bw()
-  p <- p + theme(panel.background=element_rect(fill="#000000"),
+  theme_bw() + theme(panel.background=element_rect(fill="#000000"),
                  panel.border=element_rect(size=0),
 		 panel.grid.major=element_blank(),
     		 panel.grid.minor=element_blank(),
@@ -16,7 +12,6 @@ theme.black <- function() {
 		 strip.background=element_rect(fill="#000000", size=0),
 	         legend.key=element_rect(fill="#000000", size=0),
 		 legend.background=element_rect(fill="#000000", size=0))
-  p
 }
 
 #' General time series plot. 
@@ -55,7 +50,7 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
   p <- p + geom_line(colour="grey")
   p <- p + xlab("time")
   p <- p + ylab(y.label)
-  p <- p + theme.black()
+  p + theme.black()
 }
 
 #' Plot trades. 
@@ -80,7 +75,7 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
       round(max(ts$price)), by=1), name="limit price")
   p <- p + geom_step(data=ts, colour="grey")
   p <- p + xlab("time")
-  p <- p + theme.black()
+  p + theme.black()
 }
 
 # poor mans heatmap
@@ -198,85 +193,50 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=F,
   }
   p <- p + theme.black()
   p <- p + theme(legend.title=element_text(hjust=3, vjust=20))
-  p <- p + xlab("time")
-  p
+  p + xlab("time")
 }
 
 # quote map (shows point in time where an order was added or deleted)
 # good for seeing algo patterns and quote stuffers.
-plot.quote.map <- function(events, start.time=default.start.time, end.time=default.end.time) {
+plot.quote.map <- function(events, start.time=head(events$timestamp, 1), 
+    end.time=tail(events$timestamp, 1)) {
   events <- events[events$timestamp >= start.time & events$timestamp <= end.time
-                 & (events$type == "flashed-limit" | events$type == "flashed-limit"), ]
+      & (events$type == "flashed-limit" | events$type == "flashed-limit"), ]
   created <- events[events$action == "created", ]
   deleted <- events[events$action == "deleted", ]
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
   p <- ggplot(data=events, mapping=aes(x=timestamp, y=price))
-  p <- p + scale_y_continuous(breaks=seq(round(min(events$price)), round(max(events$price)), by=0.5), name="limit price")
-  p <- p + geom_point(data=created, mapping=aes(size=volume), colour="#333333", shape=19)
-  p <- p + geom_point(data=deleted, mapping=aes(size=volume), colour="#333333", shape=1)
-  p <- p + scale_size_continuous(name="volume        \n") #, labels=function(y) sprintf("%8s", y))
+  p <- p + scale_y_continuous(breaks=seq(round(min(events$price)), 
+      round(max(events$price)), by=0.5), name="limit price")
+  p <- p + geom_point(data=created, mapping=aes(size=volume), colour="#333333", 
+      shape=19)
+  p <- p + geom_point(data=deleted, mapping=aes(size=volume), colour="#333333", 
+      shape=1)
+  p <- p + scale_size_continuous(name="volume        \n") 
   p <- p + geom_point(data=events, mapping=aes(colour=direction), size=0.1)
   p <- p + scale_colour_manual(values=col.pal, guide="none")
   p <- p + theme.black()
-  p <- p + xlab("time")
-  p
+  p + xlab("time")
 }
 
 # cancellation map (by volume)
 # good for showing quote stuffing and for algo identification.
-plot.cancellation.volume.map <- function(events, start.time=default.start.time, end.time=default.end.time) {
-  plot.volume.map(events, "deleted", start.time, end.time)
-}
-
-plot.created.volume.map <- function(events, start.time=default.start.time, end.time=default.end.time) {
-  plot.volume.map(events, "created", start.time, end.time)
-}
-
-plot.volume.map <- function(events, action, start.time=default.start.time, end.time=default.end.time) {
+# action = deleted | created
+plot.volume.map <- function(events, action, 
+    start.time=head(events$timestamp, 1), end.time=tail(events$timestamp, 1)) {
   filtered <- events[events$action == action 
-                   & events$type == "flashed-limit"
-                   & events$timestamp >= start.time & events$timestamp <= end.time, ]
+      & events$type == "flashed-limit"
+      & events$timestamp >= start.time & events$timestamp <= end.time, ]
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
   p <- ggplot(data=filtered, mapping=aes(x=timestamp, y=volume))
   p <- p + geom_point(mapping=aes(colour=direction), size=1, shape=15)
   p <- p + scale_colour_manual(values=col.pal, name="direction     \n")
-  p <- p + scale_y_continuous(name="cancelled volume", labels=function(y) sprintf("%5s", y))
+  p <- p + scale_y_continuous(name="cancelled volume", labels=function(y) 
+      sprintf("%5s", y))
   p <- p + xlab("time")
   p + theme.black()
-}
-
-# combined quote and cancellation map (x axis ligned up.
-plot.combined.quote.map <- function(events, trades, start.time=default.start.time, end.time=default.end.time) {
-  trade.range <- trades[trades$timestamp >= start.time & trades$timestamp <= end.time, ]
-  filtered <- events[events$timestamp >= start.time & events$timestamp <= end.time
-                   & events$price >= min(trade.range$price)-5 & events$price <= max(trade.range$price)+5 , ]
-  col.pal <- c("#0000ff", "#ff0000")
-  names(col.pal) <- c("bid", "ask")
-
-  ###
-  #
-  # here, we need to trick ggplot so that we can align x-axis of 2 plots...
-  #
-  ###
-
-  # quotes dataframe for first panel.
-  quotes.data <- cbind(filtered, panel=rep("quotes", nrow(filtered)))
-
-  # cancelled volume dataframe for second panel.
-  cancelled.data <- filtered[filtered$action == "deleted" , ]
-  cancelled.data <- cbind(cancelled.data, panel=rep("cancelled", nrow(cancelled.data)))
-
-  p <- ggplot(data=quotes.data, mapping=aes(x=timestamp, y=price, shape=action))
-  p <- p + facet_grid(panel~., scale="free")
-  p <- p + geom_point(aes(size=volume), colour="#555555", alpha=0.5)
-  p <- p + geom_point(aes(colour=direction), size=0.5)
-  p <- p + scale_colour_manual(values=col.pal)
-  p <- p + geom_point(data=cancelled.data, aes(x=timestamp, y=volume, colour=direction), size=1, shape=15)
-
-  p <- p + theme.black()
-  p 
 }
 
 # order book cumulative volume at given point in time
@@ -289,104 +249,107 @@ plot.current.depth <- function(order.book, ascii=F) {
   side <- c(rep("bid", nrow(bids)+1), rep("ask", nrow(asks)+1))
   depth <- data.frame(price=x, liquidity=y, side=side)
   p <- ggplot(depth, aes(x=price, y=liquidity, group=side, colour=side))
-  p <- p + scale_x_continuous(breaks=seq(round(min(bids$price)), round(max(asks$price)), by=1))
+  p <- p + scale_x_continuous(breaks=seq(round(min(bids$price)), 
+      round(max(asks$price)), by=1))
   p <- p + scale_colour_manual(values=col.pal)  
   p <- p + geom_step()
   p <- p + ggtitle(as.POSIXct(order.book$timestamp, origin="1970-01-01", tz="UTC"))
-  p <- p + theme.black()
-  p
+  p + theme.black()
 }
 
-plot.trade.spread <- function(trades) {
-  plot(na.locf(ifelse(trades$direction=="sell",trades$price,NA),na.rm=F), type="s", col="blue")
-  lines(na.locf(ifelse(trades$direction=="buy",trades$price,NA),na.rm=F), type="s", col="red")
-}
-
-plot.test.ob.metrics <- function() {
-  plot(tail(best.bids, -1000), type="l", col="blue")
-  lines(tail(best.asks, -1000), col="red")
-  matplot(t(apply(bid.percentiles, 1, cumsum)), type="l")
-  plot(norml(tail(ask.percentiles[,20], -1000)), type="s", col="red")
-  lines(norml(tail(bid.percentiles[,20], -1000)), col="blue")
-  lines(norml(tail(best.bids, -1000)), col="black")
-  plot(sign((bid.percentiles[,20]-ask.percentiles[,20])/(bid.percentiles[,20]+ask.percentiles[,20])), type="s")
-}
-
-# volume percentile map
-plot.depth.percentiles <- function(depth.summary, start.time=default.start.time, end.time=default.end.time) {
-  plot.percentiles("vol", depth.summary, start.time, end.time)
-}
-
-# gap percentile map
-plot.gap.percentiles <- function(depth.summary, start.time, end.time) {
-  plot.percentiles("gap", depth.summary, start.time, end.time)
-}
-
+# pct.type = vol | gap
 plot.percentiles <- function(pct.type, depth.summary, 
-    start.time=default.start.time,
-    end.time=default.end.time, 
+    start.time=head(depth.summary$timestamp, 1),
+    end.time=tail(depth.summary$timestamp, 1), 
     transform=function(x) x) {
-  print(paste("plot depth percentiles between", start.time, "and", end.time))
+  logger(paste("plot depth percentiles between", start.time, "and", end.time))
   library(reshape2)
   bid.names <- paste0("bid.", pct.type, seq(from=25, to=500, by=25), "bps")
   ask.names <- paste0("ask.", pct.type, seq(from=25, to=500, by=25), "bps")
 
   td <- difftime(end.time, start.time, units="secs")
-  print(td)
+  logger(td)
   td <- round(as.numeric(td))
 
-#  if(td > 60) { # <= 1 minute = ticks.
-    frequency <- ifelse(td > 900, "mins", "secs")
-    ob.percentiles <- depth.summary[depth.summary$timestamp >= start.time-ifelse(frequency == "mins", 60, 1) & depth.summary$timestamp <= end.time, c("timestamp", bid.names, ask.names)]
-    print(paste("aggregating to", frequency, "intervals"))
-    ob.percentiles <- ob.percentiles[!duplicated(ob.percentiles$timestamp, fromLast=T), ] # remove duplicates (take last entry) (for zoo to work)
-    zoo.obj <- to.zoo(ob.percentiles) # convert to zoo object
-    intervals <- as.POSIXct(trunc(time(zoo.obj), frequency)) # intervals truncated to frequency
-    print(paste("aggregation:", min(intervals), ":", max(intervals), "by =", frequency)) 
-    aggregated <- aggregate(zoo.obj, intervals, mean) # aggregate by intervals
-    ob.percentiles <- data.frame(timestamp=unique(intervals)+ifelse(frequency == "mins", 60, 1), aggregated, row.names=NULL)
-#  } else {
-#    ob.percentiles <- depth.summary[depth.summary$timestamp >= start.time & depth.summary$timestamp <= end.time, c("timestamp", bid.names, ask.names)]
-#  }
+  # if(td > 15 minutes, minute ticks, else seconds. 
+  frequency <- ifelse(td > 900, "mins", "secs")
+  ob.percentiles <- depth.summary[depth.summary$timestamp 
+      >= start.time-ifelse(frequency == "mins", 60, 1) & depth.summary$timestamp 
+      <= end.time, c("timestamp", bid.names, ask.names)]
+  logger(paste("aggregating to", frequency, "intervals"))
 
-  bid.names <- paste0("bid.", pct.type, sprintf("%03d", seq(from=25, to=500, by=25)), "bps")
-  ask.names <- paste0("ask.", pct.type, sprintf("%03d", seq(from=25, to=500, by=25)), "bps")
+  # remove duplicates (take last entry) (for zoo to work)
+  ob.percentiles <- ob.percentiles[!duplicated(ob.percentiles$timestamp, 
+      fromLast=T), ] 
+
+  # convert to zoo object
+  zoo.obj <- to.zoo(ob.percentiles)
+
+  # intervals truncated to frequency
+  intervals <- as.POSIXct(trunc(time(zoo.obj), frequency))
+  logger(paste("aggregation:", min(intervals), ":", max(intervals), "by =", 
+      frequency))
+
+  # aggregate by intervals
+  aggregated <- aggregate(zoo.obj, intervals, mean)
+  ob.percentiles <- data.frame(timestamp=unique(intervals)+ifelse(frequency == 
+      "mins", 60, 1), aggregated, row.names=NULL)
+
+  bid.names <- paste0("bid.", pct.type, sprintf("%03d", seq(from=25, to=500, 
+      by=25)), "bps")
+  ask.names <- paste0("ask.", pct.type, sprintf("%03d", seq(from=25, to=500, 
+      by=25)), "bps")
   colnames(ob.percentiles) <- c("timestamp", bid.names, ask.names) 
   max.ask <- max(rowSums(ob.percentiles[, 22:41]))
   max.bid <- max(rowSums(ob.percentiles[, 2:21]))
+
+  # centre
   y.range <- transform(max(max.ask, max.bid)) # centre
-  melted.asks <- melt(ob.percentiles, id.vars="timestamp", measure.vars=ask.names, variable.name="percentile", value.name="liquidity")
+
+  melted.asks <- melt(ob.percentiles, id.vars="timestamp", 
+      measure.vars=ask.names, variable.name="percentile", 
+      value.name="liquidity")
   melted.asks$percentile <- factor(melted.asks$percentile, rev(ask.names))
   melted.asks$liquidity <- transform(melted.asks$liquidity)
-  melted.bids <- melt(ob.percentiles, id.vars="timestamp", measure.vars=bid.names, variable.name="percentile", value.name="liquidity")
+  melted.bids <- melt(ob.percentiles, id.vars="timestamp", 
+      measure.vars=bid.names, variable.name="percentile", 
+      value.name="liquidity")
   melted.bids$percentile <- factor(melted.bids$percentile, bid.names)
   melted.bids$liquidity <- transform(melted.bids$liquidity)
-  col.pal <- colorRampPalette(c("#f92b20", "#fe701b", "#facd1f", "#d6fd1c", "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"))(20)
+  col.pal <- colorRampPalette(c("#f92b20", "#fe701b", "#facd1f", "#d6fd1c", 
+      "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"))(20)
   col.pal <- c(col.pal, col.pal)
-  breaks <- c(rev(paste0("ask.", pct.type, sprintf("%03d", seq(from=50, to=500, by=50)), "bps")),
-              paste0("bid.", pct.type, sprintf("%03d", seq(from=50, to=500, by=50)), "bps"))
-  legend.names <- c(rev(paste0("+", sprintf("%03d", seq(from=50, to=500, by=50)), "bps")),
-                    paste0("-", sprintf("%03d", seq(from=50, to=500, by=50)), "bps"))
-  print("creating plot..")                  
-  p <- ggplot(data=melted.asks, mapping=aes(x=timestamp, y=liquidity, fill=percentile))
+  breaks <- c(rev(paste0("ask.", pct.type, sprintf("%03d", seq(from=50, to=500, 
+      by=50)), "bps")), paste0("bid.", pct.type, sprintf("%03d", seq(from=50, 
+      to=500, by=50)), "bps"))
+  legend.names <- c(rev(paste0("+", sprintf("%03d", seq(from=50, to=500, 
+      by=50)), "bps")), paste0("-", sprintf("%03d", seq(from=50, to=500, 
+      by=50)), "bps"))
+  logger("creating plot..")                  
+  p <- ggplot(data=melted.asks, mapping=aes(x=timestamp, y=liquidity, 
+      fill=percentile))
   p <- p + geom_area(position="stack")
-  p <- p + geom_line(mapping=aes(ymax=0), position="stack", col="black", size=0.25)
-  p <- p + geom_area(data=melted.bids, aes(x=timestamp, y=-liquidity, fill=percentile), position="stack")
-  p <- p + geom_line(data=melted.bids, aes(x=timestamp, y=-liquidity, ymax=0), position="stack", col="black", size=0.25)
-  p <- p + scale_fill_manual(values=col.pal, breaks=breaks, labels=legend.names, name="depth         \n")
+  p <- p + geom_line(mapping=aes(ymax=0), position="stack", col="black", 
+      size=0.25)
+  p <- p + geom_area(data=melted.bids, aes(x=timestamp, y=-liquidity, 
+      fill=percentile), position="stack")
+  p <- p + geom_line(data=melted.bids, aes(x=timestamp, y=-liquidity, ymax=0), 
+      position="stack", col="black", size=0.25)
+  p <- p + scale_fill_manual(values=col.pal, breaks=breaks, labels=legend.names, 
+      name="depth         \n")
   p <- p + ylim(-y.range, y.range)
   p <- p + xlab("time")
-  p <- p + theme.black()
-  p
+  p + theme.black()
 }
 
 # x=price vs volume histogram. volume could be traded volume, cancelled volume, cancellations, addded volume, volume by order type etc.
 # here it is just the count of order events at each price level to give an idea of activity.
-plot.price.histogram <- function(events,
-    start.time=default.start.time,
-    end.time=default.end.time) {
-  events <- events[events$timestamp >= start.time & events$timestamp <= end.time, ] 
-  #if(nrow(events) == 0) return(ggplot(data=data.frame(x=0, y=0), mapping=aes(x=x, y=y)) + geom_blank() + theme.black())
+plot.price.histogram <- function(events, 
+    start.time=head(events$timestamp, 1),
+    end.time=tail(events$timestamp, 1)) {
+
+  events <- events[events$timestamp >= start.time & events$timestamp 
+      <= end.time, ] 
 
   td <- difftime(end.time, start.time, units="secs")
   td <- round(as.numeric(td))
@@ -396,33 +359,61 @@ plot.price.histogram <- function(events,
   if(td > 10800)
     bw=10
 
-  p <- ggplot(data=events, mapping=aes(x=price, fill=direction, colour=direction))
+  p <- ggplot(data=events, mapping=aes(x=price, fill=direction, 
+      colour=direction))
   p <- p + geom_bar(position="dodge", binwidth=bw)
-  #p <- ggplot(data=pv, mapping=aes(x=price, y=volume, fill=direction, colour=direction))
-  #p <- p + geom_bar(position="dodge", stat="identity")
   p <- p + scale_colour_manual(values=c("#ff0000", "#0000ff"))
   p <- p + scale_fill_manual(values=c("#ff0000", "#0000ff"))
-  p <- p + ggtitle(paste("events price distribution"))  
+  p <- p + ggtitle("events price distribution")  
+  p + theme.black()
+}
+
+
+
+############ <<<<
+# val = volume | price
+plot.histogram <- function(events, val="volume",
+    start.time=head(events$timestamp, 1),
+    end.time=tail(events$timestamp, 1)) {
+  events <- events[events$timestamp >= start.time 
+                 & events$timestamp <= end.time, ] 
+  td <- difftime(end.time, start.time, units="secs")
+  td <- round(as.numeric(td)) 
+  if(val=="volume") {
+    if(td > 10800) bw <- 10
+    else bw <- 1
+  }
+  if(val=="price") {
+    if(td > 10800) bw <- 5
+    else bw <- 0.25
+  }
+
+  p <- ggplot(data=events, mapping=aes(x=val, fill=direction,
+      colour=direction))
+  p <- p + geom_bar(binwidth=bw, position="dodge")
+  p <- p + scale_colour_manual(values=c("#0000ff", "#ff0000"))
+  p <- p + scale_fill_manual(values=c("#0000ff", "#ff0000"))
+  p <- p + ggtitle(paste("events", val, "distribution"))
   p + theme.black()
 }
 
 # x=volume vs event count. 
 plot.volume.histogram <- function(events,
-    start.time=default.start.time,
-    end.time=default.end.time) {
-  events <- events[events$timestamp >= start.time & events$timestamp <= end.time, ]
-  #if(nrow(trades) == 0) return(ggplot(data=data.frame(x=0, y=0), mapping=aes(x=x, y=y)) + geom_blank() + theme.black())
+    start.time=head(events$timestamp, 1),
+    end.time=tail(events$timestamp, 1)) {
+  events <- events[events$timestamp >= start.time & events$timestamp 
+      <= end.time, ]
 
   td <- difftime(end.time, start.time, units="secs")
   td <- round(as.numeric(td))
-
 
   bw=0.25
 
   if(td > 10800)
     bw=5
 
-  p <- ggplot(data=events, mapping=aes(x=volume, fill=direction, colour=direction))
+  p <- ggplot(data=events, mapping=aes(x=volume, fill=direction, 
+      colour=direction))
   p <- p + geom_bar(binwidth=bw, position="dodge")
   p <- p + scale_colour_manual(values=c("#0000ff", "#ff0000"))
   p <- p + scale_fill_manual(values=c("#0000ff", "#ff0000"))
