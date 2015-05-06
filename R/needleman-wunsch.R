@@ -18,7 +18,8 @@ f.matrix <- function(s.matrix, gap=-1) {
   f[1, ] <- (0:q.len)*gap
   for(i in 2:(s.len+1)) {
     for(j in 2:(q.len+1)) {
-      f[i, j] <- max(f[i-1, j-1]+s.matrix[i-1, j-1], f[i-1, j]+gap, f[i, j-1]+gap)
+      f[i, j] <- max(f[i-1, j-1]+s.matrix[i-1, j-1], f[i-1, j]+gap, 
+          f[i, j-1]+gap)
     }
   }
   f   
@@ -29,7 +30,8 @@ backtrace <- function(f.matrix, s.matrix, gap=-1) {
   i <- nrow(s.matrix)+1
   j <- ncol(s.matrix)+1
   while(i>1 || j>1) {
-    if(i>1 && j>1 && f.matrix[i, j] == f.matrix[i-1, j-1] + s.matrix[i-1, j-1]) {
+    if(i>1 && j>1 && f.matrix[i, j] == f.matrix[i-1, j-1] + 
+        s.matrix[i-1, j-1]) {
       i <- i-1
       j <- j-1
       res <- rbind(c(i, j), res)         
