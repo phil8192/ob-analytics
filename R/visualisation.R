@@ -191,9 +191,9 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=F,
     p <- p + geom_point(data=buys, aes(x=timestamp, y=price), colour="#00ff00", 
         size=5, shape=1)
   }
-  p <- p + theme.black()
   p <- p + theme(legend.title=element_text(hjust=3, vjust=20))
-  p + xlab("time")
+  p <- p + xlab("time")
+  p + theme.black()
 }
 
 # quote map (shows point in time where an order was added or deleted)
@@ -216,8 +216,8 @@ plot.quote.map <- function(events, start.time=head(events$timestamp, 1),
   p <- p + scale_size_continuous(name="volume        \n") 
   p <- p + geom_point(data=events, mapping=aes(colour=direction), size=0.1)
   p <- p + scale_colour_manual(values=col.pal, guide="none")
-  p <- p + theme.black()
-  p + xlab("time")
+  p <- p + xlab("time")
+  p + theme.black()
 }
 
 # cancellation map (by volume)
@@ -387,7 +387,6 @@ plot.histogram <- function(events, val="volume",
     if(td > 10800) bw <- 5
     else bw <- 0.25
   }
-
   p <- ggplot(data=events, mapping=aes(x=val, fill=direction,
       colour=direction))
   p <- p + geom_bar(binwidth=bw, position="dodge")
