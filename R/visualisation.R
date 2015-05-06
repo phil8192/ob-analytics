@@ -342,39 +342,11 @@ plot.percentiles <- function(pct.type, depth.summary,
   p + theme.black()
 }
 
-# x=price vs volume histogram. volume could be traded volume, cancelled volume, cancellations, addded volume, volume by order type etc.
-# here it is just the count of order events at each price level to give an idea of activity.
-plot.price.histogram <- function(events, 
-    start.time=head(events$timestamp, 1),
-    end.time=tail(events$timestamp, 1)) {
-
-  events <- events[events$timestamp >= start.time & events$timestamp 
-      <= end.time, ] 
-
-  td <- difftime(end.time, start.time, units="secs")
-  td <- round(as.numeric(td))
-
-  bw=1
- 
-  if(td > 10800)
-    bw=10
-
-  p <- ggplot(data=events, mapping=aes(x=price, fill=direction, 
-      colour=direction))
-  p <- p + geom_bar(position="dodge", binwidth=bw)
-  p <- p + scale_colour_manual(values=c("#ff0000", "#0000ff"))
-  p <- p + scale_fill_manual(values=c("#ff0000", "#0000ff"))
-  p <- p + ggtitle("events price distribution")  
-  p + theme.black()
-}
-
-
-
-############ <<<<
 # val = volume | price
-plot.histogram <- function(events, val="volume",
+plot.histogram <- function(events,
     start.time=head(events$timestamp, 1),
-    end.time=tail(events$timestamp, 1)) {
+    end.time=tail(events$timestamp, 1),
+    val="") {
   events <- events[events$timestamp >= start.time 
                  & events$timestamp <= end.time, ] 
   td <- difftime(end.time, start.time, units="secs")
@@ -397,26 +369,6 @@ plot.histogram <- function(events, val="volume",
 }
 
 # x=volume vs event count. 
-plot.volume.histogram <- function(events,
-    start.time=head(events$timestamp, 1),
-    end.time=tail(events$timestamp, 1)) {
-  events <- events[events$timestamp >= start.time & events$timestamp 
-      <= end.time, ]
-
-  td <- difftime(end.time, start.time, units="secs")
-  td <- round(as.numeric(td))
-
-  bw=0.25
-
-  if(td > 10800)
-    bw=5
-
-  p <- ggplot(data=events, mapping=aes(x=volume, fill=direction, 
-      colour=direction))
-  p <- p + geom_bar(binwidth=bw, position="dodge")
-  p <- p + scale_colour_manual(values=c("#0000ff", "#ff0000"))
-  p <- p + scale_fill_manual(values=c("#0000ff", "#ff0000"))
-  p <- p + ggtitle("events volume distribution")
-  p + theme.black()
-}
+plot.volume.histogram <- function(...) plot.histogram(..., val="volume")
+plot.price.histogram  <- function(...) plot.histogram(..., val="price")
 
