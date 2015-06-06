@@ -23,8 +23,9 @@ match.trades <- function(events) {
 
   # makers/takers.
   # maker = exchange.timestamp < counterpart exchangetime.stamp
-  stopifnot(all(matching.bids$exchange.timestamp != matching.asks$exchange.timestamp)) # based on this assertion.
-  bid.maker <- matching.bids$exchange.timestamp < matching.asks$exchange.timestamp # bid side is the maker
+  if(all(matching.bids$exchange.timestamp != matching.asks$exchange.timestamp))
+    warning("some bid timestamps == ask timestamps.")
+  bid.maker <- matching.bids$exchange.timestamp <= matching.asks$exchange.timestamp
 
   # t&s timestamp is the first observation in the 2 matching trades.   
   timestamp <- as.POSIXct(ifelse(matching.bids$timestamp < matching.asks$timestamp, matching.bids$timestamp, matching.asks$timestamp), origin="1970-01-01", tz="UTC")
