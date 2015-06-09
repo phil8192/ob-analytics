@@ -45,7 +45,13 @@ match.trades <- function(events) {
 
   # return timestamp ordered series.
   combined <- data.frame(timestamp, price, volume, direction, maker.event.id, taker.event.id)
-  combined[order(timestamp), ]
+  trades <- combined[order(timestamp), ]
+
+  jumps <- length(which(abs(diff(trades$price))>5))
+  if(jumps>0)
+    warning(paste(format(head(events$timestamp,1),"%D"),":",jumps,"jumps >$5"))
+
+  trades
 
 }
 
