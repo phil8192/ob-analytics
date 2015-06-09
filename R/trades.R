@@ -6,7 +6,7 @@
 # timestamp = min(maker timestamp, taker timestamp) (first time we learned of this trade)
 # price = maker price (taker limit price can cross the book.)
 # volume = traded volume
-# direction = buy or sell (side of the aggressor/taker
+# direction = buy or sell (side of the aggressor/taker)
 # maker event id
 # taker event id
 match.trades <- function(events) {
@@ -21,16 +21,16 @@ match.trades <- function(events) {
   matching.asks <- matching.asks[order(matching.asks$matching.event), ]
   stopifnot(all(matching.bids$event.id - matching.asks$matching.event == 0))
 
-  # makers/takers.
-  # maker = exchange.timestamp < counterpart exchangetime.stamp
-  if(all(matching.bids$exchange.timestamp != matching.asks$exchange.timestamp))
-    warning("some bid timestamps == ask timestamps.")
-  bid.maker <- matching.bids$exchange.timestamp <= matching.asks$exchange.timestamp
+  # makers/takers. (bid is maker if it comes first.
+  # coming first is determined by exchange timestamp and if == then falls back
+  # to order id.
+  bid.maker <- matching.bids$exchange.timestamp < matching.asks$exchange.timestamp | 
+    ((matching.bids$exchange.timestamp == matching.asks$exchange.timestamp)) & (matching.bids$id < matching.asks$id)
 
   # t&s timestamp is the first observation in the 2 matching trades.   
   timestamp <- as.POSIXct(ifelse(matching.bids$timestamp < matching.asks$timestamp, matching.bids$timestamp, matching.asks$timestamp), origin="1970-01-01", tz="UTC")
 
-  # the price at which the trade occurred is the maker price.
+  # the price at which the earlier timestamp. 
   price <- ifelse(bid.maker, matching.bids$price, matching.asks$price)
 
   # volume is either side of trade
