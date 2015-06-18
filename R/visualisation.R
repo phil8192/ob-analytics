@@ -84,6 +84,7 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 #depth.filtered <- depth[depth$price >= min(trades$price)-5
 #                      & depth$price <= max(trades$price)+5, ]
 
+#' @export
 plot.price.levels <- function(depth, depth.summary, trades, show.mp=F, 
     show.all.depth=T, col.bias=0.1, start.time=head(depth$timestamp, 1), 
     end.time=tail(depth$timestamp, 1), price.from=NULL, price.to=NULL, 
@@ -198,6 +199,8 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=F,
 
 # quote map (shows point in time where an order was added or deleted)
 # good for seeing algo patterns and quote stuffers.
+
+#' @export
 plot.quote.map <- function(events, start.time=head(events$timestamp, 1), 
     end.time=tail(events$timestamp, 1)) {
   events <- events[events$timestamp >= start.time & events$timestamp <= end.time
@@ -223,6 +226,8 @@ plot.quote.map <- function(events, start.time=head(events$timestamp, 1),
 # cancellation map (by volume)
 # good for showing quote stuffing and for algo identification.
 # action = deleted | created
+
+#' @export
 plot.volume.map <- function(events, action, 
     start.time=head(events$timestamp, 1), end.time=tail(events$timestamp, 1)) {
   filtered <- events[events$action == action 
@@ -240,6 +245,8 @@ plot.volume.map <- function(events, action,
 }
 
 # order book cumulative volume at given point in time
+
+#' @export
 plot.current.depth <- function(order.book, ascii=F) {
   bids <- reverse.matrix(order.book$bids)
   asks <- reverse.matrix(order.book$asks)
@@ -258,6 +265,8 @@ plot.current.depth <- function(order.book, ascii=F) {
 }
 
 # pct.type = vol | gap
+
+#' @export
 plot.percentiles <- function(pct.type, depth.summary, 
     start.time=head(depth.summary$timestamp, 1),
     end.time=tail(depth.summary$timestamp, 1), 
@@ -343,6 +352,8 @@ plot.percentiles <- function(pct.type, depth.summary,
 }
 
 # val = volume | price
+
+#' @export
 plot.histogram <- function(events,
     start.time=head(events$timestamp, 1),
     end.time=tail(events$timestamp, 1),
@@ -369,6 +380,10 @@ plot.histogram <- function(events,
 }
 
 # x=volume vs event count. 
+
+#' @export
 plot.volume.histogram <- function(...) plot.histogram(..., val="volume")
+
+#' @export
 plot.price.histogram  <- function(...) plot.histogram(..., val="price")
 

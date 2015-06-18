@@ -1,11 +1,13 @@
 options(digits.secs=3)
 options(scipen=999)
 
+#' @export
 load.data <- function(bin.file) {
   load(file=bin.file, verbose=T)
   ob.data
 }
 
+#' @export
 process.data <- function(csv.file) {
   events <- load.event.data(csv.file)
   trades <- match.trades(events)
@@ -34,6 +36,7 @@ process.data <- function(csv.file) {
   )
 }
 
+#' @export
 save.data <- function(ob.data, bin.file) {
   logger("saving binary")
   save(file=bin.file, ob.data, compress="bzip2")

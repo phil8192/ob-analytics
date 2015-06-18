@@ -76,6 +76,7 @@ current.order.book <- function(active.orders, max.price.levels=NULL,
   list(timestamp=ts, asks=asks, bids=bids)
 }
 
+#' @export
 order.book <- function(events, ts, max.price.levels=NULL, pct.range=0) {
   cur <- active.order.state(events, ts)
   current.order.book(cur, max.price.levels, pct.range, ts)
