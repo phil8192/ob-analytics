@@ -22,7 +22,7 @@ theme.black <- function() {
 #' @param series The time series.
 #' @param start.time, end.time, Inclusive start and end time of plot.
 #' @param title, y.label Title and Y axis label of the plot.
-#' @export
+#' @export plot.time.series
 #' @examples
 #' \donotrun{
 #' p <- plot.time.series(timestamp=x$trades$timestamp, series=x$trades$price)
@@ -60,7 +60,7 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
 #' 
 #' @param timestamp POSIXct timestamps.
 #' @param start.time, end.time, Inclusive start and end time of plot.
-#' @export
+#' @export plot.trades
 #' @examples
 #' \donotrun{
 #' x <- load.data("order.book.data.Rda")
@@ -84,7 +84,7 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 #depth.filtered <- depth[depth$price >= min(trades$price)-5
 #                      & depth$price <= max(trades$price)+5, ]
 
-#' @export
+#' @export plot.price.levels
 plot.price.levels <- function(depth, depth.summary, trades, show.mp=F, 
     show.all.depth=T, col.bias=0.1, start.time=head(depth$timestamp, 1), 
     end.time=tail(depth$timestamp, 1), price.from=NULL, price.to=NULL, 
@@ -200,7 +200,7 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=F,
 # quote map (shows point in time where an order was added or deleted)
 # good for seeing algo patterns and quote stuffers.
 
-#' @export
+#' @export plot.quote.map
 plot.quote.map <- function(events, start.time=head(events$timestamp, 1), 
     end.time=tail(events$timestamp, 1)) {
   events <- events[events$timestamp >= start.time & events$timestamp <= end.time
@@ -227,7 +227,7 @@ plot.quote.map <- function(events, start.time=head(events$timestamp, 1),
 # good for showing quote stuffing and for algo identification.
 # action = deleted | created
 
-#' @export
+#' @export plot.volume.map
 plot.volume.map <- function(events, action, 
     start.time=head(events$timestamp, 1), end.time=tail(events$timestamp, 1)) {
   filtered <- events[events$action == action 
@@ -246,7 +246,7 @@ plot.volume.map <- function(events, action,
 
 # order book cumulative volume at given point in time
 
-#' @export
+#' @export plot.current.depth
 plot.current.depth <- function(order.book, ascii=F) {
   bids <- reverse.matrix(order.book$bids)
   asks <- reverse.matrix(order.book$asks)
@@ -266,7 +266,7 @@ plot.current.depth <- function(order.book, ascii=F) {
 
 # pct.type = vol | gap
 
-#' @export
+#' @export plot.percentiles
 plot.percentiles <- function(pct.type, depth.summary, 
     start.time=head(depth.summary$timestamp, 1),
     end.time=tail(depth.summary$timestamp, 1), 
@@ -353,7 +353,7 @@ plot.percentiles <- function(pct.type, depth.summary,
 
 # val = volume | price
 
-#' @export
+#' @export plot.histogram
 plot.histogram <- function(events,
     start.time=head(events$timestamp, 1),
     end.time=tail(events$timestamp, 1),
@@ -381,9 +381,9 @@ plot.histogram <- function(events,
 
 # x=volume vs event count. 
 
-#' @export
+#' @export plot.volume.histogram
 plot.volume.histogram <- function(...) plot.histogram(..., val="volume")
 
-#' @export
+#' @export plot.price.histogram
 plot.price.histogram  <- function(...) plot.histogram(..., val="price")
 
