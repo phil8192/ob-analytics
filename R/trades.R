@@ -1,4 +1,3 @@
-
 # infer trades from event data.
 # (event contains maker/taker)
 
@@ -11,24 +10,29 @@
 # taker event id
 match.trades <- function(events) {
 
-  print(paste("inferring trades from", nrow(events), "events..."))
+  logger(paste("inferring trades from", nrow(events), "events..."))
 
   # trades with matching maker/taker.
   # align them by event id.
-  matching.bids <- events[events$direction == "bid" & !is.na(events$matching.event), ]
+  matching.bids <- events[events$direction == "bid" & 
+      !is.na(events$matching.event), ]
   matching.bids <- matching.bids[order(matching.bids$event.id), ]
-  matching.asks <- events[events$direction == "ask" & !is.na(events$matching.event), ]
+  matching.asks <- events[events$direction == "ask" & 
+      !is.na(events$matching.event), ]
   matching.asks <- matching.asks[order(matching.asks$matching.event), ]
   stopifnot(all(matching.bids$event.id - matching.asks$matching.event == 0))
 
   # makers/takers. (bid is maker if it comes first.
   # coming first is determined by exchange timestamp and if == then falls back
   # to order id.
-  bid.maker <- matching.bids$exchange.timestamp < matching.asks$exchange.timestamp | 
-    ((matching.bids$exchange.timestamp == matching.asks$exchange.timestamp)) & (matching.bids$id < matching.asks$id)
+  bid.ts <- matching.bids$exchange.timestamp
+  ask.ts <- matching.asks$exchange.timestamp
+  bid.maker <- bid.ts < ask.ts | 
+      ((bid.ts == ask.ts)) & (matching.bids$id < matching.asks$id)
 
   # t&s timestamp is the first observation in the 2 matching trades.   
-  timestamp <- as.POSIXct(ifelse(matching.bids$timestamp < matching.asks$timestamp, matching.bids$timestamp, matching.asks$timestamp), origin="1970-01-01", tz="UTC")
+  timestamp <- as.POSIXct(ifelse(bid.ts < ask.ts, bid.ts, ask.ts), 
+      origin="1970-01-01", tz="UTC")
 
   # the price at which the earlier timestamp. 
   price <- ifelse(bid.maker, matching.bids$price, matching.asks$price)
@@ -40,11 +44,14 @@ match.trades <- function(events) {
   direction <- factor(ifelse(bid.maker, "sell", "buy"))
 
   # finally, maker+taker id.
-  maker.event.id <- ifelse(bid.maker, matching.bids$event.id, matching.asks$event.id)
-  taker.event.id <- ifelse(bid.maker, matching.asks$event.id, matching.bids$event.id)
+  maker.event.id <- ifelse(bid.maker, matching.bids$event.id, 
+      matching.asks$event.id)
+  taker.event.id <- ifelse(bid.maker, matching.asks$event.id, 
+      matching.bids$event.id)
 
   # return timestamp ordered series.
-  combined <- data.frame(timestamp, price, volume, direction, maker.event.id, taker.event.id)
+  combined <- data.frame(timestamp, price, volume, direction, maker.event.id, 
+      taker.event.id)
   trades <- combined[order(timestamp), ]
 
   jumps <- length(which(abs(diff(trades$price))>5))

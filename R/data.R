@@ -23,7 +23,7 @@ process.data <- function(csv.file) {
   depth <- price.level.volume(events)
   logger("calculating depth metrics (may take some time...)")
   depth.summary <- depth.metrics(depth)
-  print("calculating order aggressiveness...")
+  logger("calculating order aggressiveness...")
   events <- order.aggressiveness(events, depth.summary)
   list(
     events=events, 
@@ -35,7 +35,7 @@ process.data <- function(csv.file) {
 }
 
 save.data <- function(ob.data, bin.file) {
-  print("saving binary")
+  logger("saving binary")
   save(file=bin.file, ob.data, compress="bzip2")
 }
 
