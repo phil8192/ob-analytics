@@ -1,0 +1,1 @@
+linters: with_defaults(trailing_whitespace_linter=NULL, line_length_linter(80), object_usage_linter=NULL)
