@@ -49,42 +49,6 @@ directional.price.level.volume <- function(events) {
       side=volume.deltas$direction)
 }
 
-# given price level volume events, (output of price.level.volume function), 
-# truncate to seconds, fill in gaps between volume events (like a run length 
-# encoding). very very slow. 
-depth.levels <- function(price.level.events, 
-    from=as.POSIXct("1970-01-01 00:00:00.000", tz="UTC"), 
-    progress=function(i) logger(paste("processing", i))) {
-
-  # align volume events to ticks
-  price.series <- function(price.events, x.ticks) {
-    price.events.zoo <- zoo(price.events[, c("price", "volume")], 
-        price.events$timestamp)
-    filled <- na.locf(price.events.zoo, xout=x.ticks)
-    filled <- filled[index(filled) >= first(price.events$timestamp)]
-    # optional....
-    filled <- filled[filled$volume > 0, ]
-    data.frame(timestamp=index(filled), filled, row.names=NULL)
-  }
-
-  if(!is.null(price.level.events) && nrow(price.level.events) > 0) {
-    y.level <- sort(unique(price.level.events$price))
-    x.range <- trunc(range(price.level.events$timestamp), "secs")
-    x.ticks <- seq(x.range[1], x.range[2], by="1 sec")
-
-    price.level.events$timestamp <- trunc(price.level.events$timestamp, "secs")
-    price.level.events <- price.level.events[!duplicated(price.level.events[, 
-        c("timestamp", "price")], fromLast=T), ]
-
-    do.call(rbind, lapply(y.level, function(pl) {
-      progress(pl)
-      ps <- price.level.events[price.level.events$price == pl, ]
-      ps <- price.series(ps, x.ticks)
-      ps[ps$timestamp >= from, ]
-    }))
-  }
-}
-
 # <ref: plot.price.levels.faster
 # depth level changes between a range.
 # timestamp of last depth level change < begining of range shifted forward to 
