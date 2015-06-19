@@ -19,14 +19,6 @@ interval.price.level.gaps <-
   function(volume, breaks) interval.sum.breaks(ifelse(volume == 0, 1, 0), 
       breaks)
 
-flatten.matrix <- function(m) 
-  data.frame(timestamp=rep(m[, 1], 
-             times=ncol(m)-1), 
-             label=rep(names(m[, -1]), 
-             each=nrow(m)), 
-             val=unlist(m[, -1], 
-             use.names=F))
-
 # logs to console in form of:
 #     calling function => msg
 logger <- function(msg) {
