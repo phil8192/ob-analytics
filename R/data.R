@@ -1,6 +1,3 @@
-options(digits.secs=3)
-options(scipen=999)
-
 #' @export
 load.data <- function(bin.file) {
   load(file=bin.file, verbose=T)
