@@ -1,6 +1,9 @@
 vector.diff <- function(v) c(0, tail(v, -1) - head(v, -1))
+
 reverse.matrix <- function(m) m[rev(1:nrow(m)), ]
+
 norml <- function(v, minv=min(v), maxv=max(v)) (v-minv)/(maxv-minv)
+
 to.zoo <- function(v) zoo(v[, -which(colnames(v) == "timestamp")], v$timestamp)
 
 interval.sum.breaks <- function(v, breaks) {

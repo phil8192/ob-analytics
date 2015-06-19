@@ -1,6 +1,3 @@
-library(ggplot2)
-library(zoo)
-
 theme.black <- function() {
   theme_bw() + theme(panel.background=element_rect(fill="#000000"),
                  panel.border=element_rect(size=0),
@@ -272,7 +269,7 @@ plot.percentiles <- function(pct.type, depth.summary,
     end.time=tail(depth.summary$timestamp, 1), 
     transform=function(x) x) {
   logger(paste("plot depth percentiles between", start.time, "and", end.time))
-  library(reshape2)
+
   bid.names <- paste0("bid.", pct.type, seq(from=25, to=500, by=25), "bps")
   ask.names <- paste0("ask.", pct.type, seq(from=25, to=500, by=25), "bps")
 
