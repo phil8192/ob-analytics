@@ -4,7 +4,19 @@ load.data <- function(bin.file) {
   ob.data
 }
 
-#' @export
+##' Import CSV file containing limit order events.
+##'
+##' Imports and performs pre-processing of limit order data contained in a CSV.
+##'
+##' @param csv.file Location of CSV file to import
+##' @return A list of order book events, trades, order book depth and summary
+##' @author phil
+##' @export process.data
+##' @examples
+##' \donotrun{
+##' csv.file <- system.file("extdata", "2015-05-01.csv", package="microstructure2") 
+##' lob.data <- process.data(csv.file)
+##' }
 process.data <- function(csv.file) {
   events <- load.event.data(csv.file)
   trades <- match.trades(events)

@@ -21,17 +21,21 @@ match.trades <- function(events) {
       !is.na(events$matching.event), ]
   matching.asks <- matching.asks[order(matching.asks$matching.event), ]
   stopifnot(all(matching.bids$event.id - matching.asks$matching.event == 0))
-
+    
   # makers/takers. (bid is maker if it comes first.
   # coming first is determined by exchange timestamp and if == then falls back
   # to order id.
-  bid.ts <- matching.bids$exchange.timestamp
-  ask.ts <- matching.asks$exchange.timestamp
-  bid.maker <- bid.ts < ask.ts | 
-      ((bid.ts == ask.ts)) & (matching.bids$id < matching.asks$id)
+  bid.exchange.ts <- matching.bids$exchange.timestamp
+  ask.exchange.ts <- matching.asks$exchange.timestamp
+  bid.maker <- bid.exchange.ts < ask.exchange.ts | 
+      ((bid.exchange.ts == ask.exchange.ts)) &
+      (matching.bids$id < matching.asks$id)
 
+  bid.local.ts <- matching.bids$timestamp
+  ask.local.ts <- matching.asks$timestamp
   # t&s timestamp is the first observation in the 2 matching trades.   
-  timestamp <- as.POSIXct(ifelse(bid.ts < ask.ts, bid.ts, ask.ts), 
+  timestamp <- as.POSIXct(ifelse(bid.local.ts <= ask.local.ts,
+                                 bid.local.ts, ask.local.ts), 
       origin="1970-01-01", tz="UTC")
 
   # the price at which the earlier timestamp. 

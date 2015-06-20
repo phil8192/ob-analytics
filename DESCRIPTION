@@ -11,5 +11,4 @@ Imports:
   ggplot2,
   reshape2
 Suggests: 
-  testthat,
-  lintr
+  testthat

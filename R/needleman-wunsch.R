@@ -17,7 +17,7 @@ f.matrix <- function(s.matrix, gap=-1) {
   f[, 1] <- (0:s.len)*gap
   f[1, ] <- (0:q.len)*gap
   for(i in 2:(s.len+1)) {
-    for(j in 2:(q.len+1)) {
+    for (j in 2:(q.len+1)) {
       f[i, j] <- max(f[i-1, j-1]+s.matrix[i-1, j-1], f[i-1, j]+gap, 
           f[i, j-1]+gap)
     }

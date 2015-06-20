@@ -39,6 +39,9 @@ load.event.data <- function(file) {
   events <- cbind(event.id=1:nrow(events), events)
   events <- remove.duplicates(events)
 
+  events$volume <- round(events$volume*100000000) # todo
+
+    
   fill.deltas <- unlist(tapply(events$volume, events$id, vector.diff), 
       use.names=F)
   # for pacman orders, do not log volume for price update events.

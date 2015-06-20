@@ -25,7 +25,7 @@ event.match <- function(events, cut.off.ms) {
   # identifiable bid and ask fills.
   id.bid.fills <- bid.fills[bid.fills$fill %in% ask.fills$fill, ]
   id.bid.fill.order <- order(-id.bid.fills$fill, id.bid.fills$timestamp)
-  id.bid.fills <- bid.fills[id.bid.fill.order, ]
+  id.bid.fills <- id.bid.fills[id.bid.fill.order, ]
 
   id.ask.fills <- ask.fills[ask.fills$fill %in% bid.fills$fill, ]
   id.ask.fill.order <- order(-id.ask.fills$fill, id.ask.fills$timestamp)
