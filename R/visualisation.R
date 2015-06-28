@@ -22,8 +22,8 @@ theme.black <- function() {
 #' @export plot.time.series
 #' @examples
 #' \donotrun{
-#' p <- plot.time.series(timestamp=x$trades$timestamp, series=x$trades$price)
-#' p
+#' trades <- lob.data$trades
+#' with(trades, plot.time.series(timestamp, price))
 #'
 #' timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"), 
 #'                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
