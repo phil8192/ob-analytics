@@ -1,0 +1,8 @@
+# some development notes
+using devtools to work on the package:
+library(devtools)
+load_all()
+
+or using ess in emacs:
+C-c C-t l (ess-developer-load-package)
+
