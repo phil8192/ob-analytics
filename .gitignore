@@ -1,7 +1,6 @@
 *.swp
 .Rhistory
 R/.Rhistory
-inst/
 man/
 notes.txt
 
