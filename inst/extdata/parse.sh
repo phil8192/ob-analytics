@@ -8,26 +8,28 @@
 #  1430524799111 order_deleted {"price": "230.37", "amount": "5.18983490", "datetime": "1430524780", "id": 65714193, "order_type": 0}
 #  1430524799389 order_created {"price": "230.36", "amount": "5.19006019", "datetime": "1430524799", "id": 65714206, "order_type": 0}
 # example output:
-#  1430524794466,0,23100,30659220434,1430524794000,65714203,0
-#  1430524794467,0,23100,0,1430524009000,65712957,1
-#  1430524794518,0,23300,684493851,1430524794000,65714204,1
-#  1430524797386,0,23102,95228327,1430524797000,65714205,0
-#  1430524799111,0,23037,518983490,1430524780000,65714193,0
-#  1430524799389,0,23036,519006018,1430524799000,65714206,0
+#  65714203,1430524794466,1430524794000,231.00,30659220434,0,0
+#  65712957,1430524794467,1430524009000,231.00,0,0,1
+#  65714204,1430524794518,1430524794000,233.00,684493851,0,1
+#  65714205,1430524797386,1430524797000,231.02,95228327,0,0
+#  65714193,1430524799111,1430524780000,230.37,518983490,0,0
+#  65714206,1430524799389,1430524799000,230.36,519006018,0,0
+#
 # the format for bids (asks) .csv is:
 #
-# local_timestamp, event_type, price, volume, exchange_timestamp, order_id, side
-#     where local_timestamp    = time (in milliseconds) when event first received (locally)
-#           event_type         = 0: created, 1: modified, 2: deleted
-#           price              = price level of order event (in lowest denomination) e.g., $321.55 = 32155 cents.
+# id, local.ts, exchange.ts, price, volume, type, side
+#     where id                 = limit order unique identifier.
+#           local.ts           = time (in milliseconds) when event first received (locally).
+#           exchange.ts        = time (in milliseconds) when order first received at exchange.
+#           price              = price level of order event.
 #           volume             = remaining volume of order (in lowest denomination) e.g., 0.05 Bitcoin = 5000000 Satoshi.
-#           exchange_timestamp = time (in milliseconds) when order first received at exchange.
-#           order_id           = limit order unique identifier.
+#           type               = 0: created, 1: modified, 2: deleted.
 #           side               = 0: bid, 1: ask.
+echo "id,local.ts,exchange.ts,price,volume,type,side" >orders.csv
 bzcat 2015-05-01.log.bz2 \
   |grep -v order_book \
   |grep -v trade \
   |sed 's/,//g; s/\"//g; s/{//g; s/}//g' \
-  |awk '{printf "%d,%d,%d,%d,%d000,%d,%d\n", $1, $2, ($4*10^2), ($6*10^8), $8, $10, $12}' \
-  |sed 's/ //g' |sed 's/order_created/0/; s/order_changed/1/; s/order_deleted/2/' >orders.csv
+  |awk '{printf "%d,%d,%d000,%s,%d,%s,%d\n", $10, $1, $8, $4, ($6*10^8), $2, $12}' \
+  |sed 's/ //g; s/order_created/0/; s/order_changed/1/; s/order_deleted/2/' >>orders.csv
 
