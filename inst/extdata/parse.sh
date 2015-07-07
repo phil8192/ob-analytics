@@ -17,15 +17,15 @@
 #
 # the format for bids (asks) .csv is:
 #
-# id, local.ts, exchange.ts, price, volume, type, side
+# id, timestamp, exchange. timestamp, price, volume, action, direction 
 #     where id                 = limit order unique identifier.
-#           local.ts           = time (in milliseconds) when event first received (locally).
-#           exchange.ts        = time (in milliseconds) when order first received at exchange.
+#           timestamp          = time (in milliseconds) when event first received (locally).
+#           exchange.timestamp = time (in milliseconds) when order first received at exchange.
 #           price              = price level of order event.
 #           volume             = remaining volume of order (in lowest denomination) e.g., 0.05 Bitcoin = 5000000 Satoshi.
-#           type               = 0: created, 1: modified, 2: deleted.
-#           side               = 0: bid, 1: ask.
-echo "id,local.ts,exchange.ts,price,volume,type,side" >orders.csv
+#           action             = 0: created, 1: modified, 2: deleted.
+#           direction          = 0: bid, 1: ask.
+echo "id,timestamp,exchange.timestamp,price,volume,action,direction" >orders.csv
 bzcat 2015-05-01.log.bz2 \
   |grep -v order_book \
   |grep -v trade \
