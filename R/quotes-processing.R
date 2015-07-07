@@ -22,11 +22,11 @@ load.event.data <- function(file) {
   events <- read.csv(file, header=T, sep=",")
   events$timestamp <- as.POSIXct(events$timestamp/1000, origin="1970-01-01", 
       tz="UTC")
-  events$exchange.timestamp <- as.POSIXct(events$exchange.timestamp, 
+  events$exchange.timestamp <- as.POSIXct(events$exchange.timestamp/1000, 
       origin="1970-01-01", tz="UTC")
   # an order can be in 1 of these 3 ordered states.
   events$action <- factor(events$action, c("created", "changed", "deleted"))
-  events$direction <- ifelse(events$direction == 0, "bid", "ask")
+  events$direction <- factor(events$direction, c("bid", "ask"))
 
   # order quote data by id, then by volume (decreasing), then finally, by order 
   # of action: created,changed,deleted.
@@ -39,9 +39,6 @@ load.event.data <- function(file) {
   events <- cbind(event.id=1:nrow(events), events)
   events <- remove.duplicates(events)
 
-  events$volume <- round(events$volume*100000000) # todo
-
-    
   fill.deltas <- unlist(tapply(events$volume, events$id, vector.diff), 
       use.names=F)
   # for pacman orders, do not log volume for price update events.
