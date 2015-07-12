@@ -4,7 +4,7 @@
 \alias{event.match}
 \title{Match Market Orders (takers) to Limit Orders (makers).}
 \usage{
-event.match(events, cut.off.ms)
+event.match(events, cut.off.ms = 5000)
 }
 \arguments{
 \item{events}{data frame of order book events.}
