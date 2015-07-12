@@ -87,6 +87,44 @@ plot.price.levels <- function(depth, depth.summary, trades, show.mp=F,
     end.time=tail(depth$timestamp, 1), price.from=NULL, price.to=NULL, 
     volume.from=NULL, volume.to=NULL) {
 
+  # depth level changes between a range.
+  # timestamp of last depth level change < begining of range shifted forward to 
+  # edge of begining.
+  filter.depth <- function(d, from, to) {
+    logger(paste("filter depth between", from, "and", to))
+    pre <- d[d$timestamp <= from, ]
+    logger(paste("got", nrow(pre), "previous deltas"))
+    pre <- pre[order(pre$price, pre$timestamp), ]
+    logger(paste("ordered", nrow(pre), "previous deltas"))
+    # last update for each price level <= from. this becomes the starting point 
+    # for all updates within the range.
+    pre <- pre[!duplicated(pre$price, fromLast=T) & pre$volume > 0, ] 
+    logger(paste("extracted", nrow(pre), "previously updated deltas"))
+    # clamp range
+    if(nrow(pre) > 0) {
+      pre$timestamp <- as.POSIXct(sapply(pre$timestamp, function(r) {
+        max(from, r)
+      }), origin="1970-01-01", tz="UTC") 
+      logger("clamped range.")
+    }
+    mid <- d[d$timestamp > from & d$timestamp < to, ]
+    logger(paste("got", nrow(mid), "in range deltas"))
+    range <- rbind(pre, mid)
+    logger(paste("appended range now contains", nrow(range), "deltas"))
+    # close off loose ends.
+    price.levels <- unique(range$price)
+    # last side of each price level:
+    range <- range[order(range$price, range$timestamp), ]
+    last.sides <- range[!duplicated(range$price, fromLast=T), "side"]
+    range <- rbind(range, data.frame(timestamp=to, price=price.levels, volume=0, 
+        side=last.sides))
+    # ensure it is in order
+    range <- range[order(range$price, range$timestamp), ]
+    logger(paste("closed range. depth filtering resulted in", 
+        length(unique(range$price)), "price levels."))
+    range
+  }
+    
   trades.filtered <- trades[trades$timestamp >= from.time 
                           & trades$timestamp <= end.time, ]
   spread.filtered <- depth.summary[depth.summary$timestamp >= from.time 

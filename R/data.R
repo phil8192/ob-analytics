@@ -1,9 +1,3 @@
-#' @export
-load.data <- function(bin.file) {
-  load(file=bin.file, verbose=T)
-  ob.data
-}
-
 ##' Import CSV file containing limit order events.
 ##'
 ##' Imports and performs pre-processing of limit order data contained in a CSV.
@@ -14,11 +8,32 @@ load.data <- function(bin.file) {
 ##' @export process.data
 ##' @examples
 ##' \donotrun{
-##' csv.file <- system.file("extdata", "2015-05-01.csv", package="microstructure2") 
+##' csv.file <- system.file("extdata", "orders.csv", package="microstructure2") 
 ##' lob.data <- process.data(csv.file)
 ##' }
 process.data <- function(csv.file) {
+  get.zombie.ids <- function(events, trades) {
+    cancelled <- events[events$action == "deleted", ]$id
+    zombies <- events[!events$id %in% cancelled, ]
+    bid.zombies <- zombies[zombies$direction == "bid", ]
+    ask.zombies <- zombies[zombies$direction == "ask", ]
+    bid.zombie.ids <- unique(bid.zombies[unlist(lapply(bid.zombies$id, 
+        function(id) {
+      zombie <- tail(bid.zombies[bid.zombies$id == id, ], 1)
+      any(trades$direction == "sell" & trades$timestamp >= zombie$timestamp 
+          & trades$price < zombie$price)
+    })), "id"])
+    ask.zombie.ids <- unique(ask.zombies[unlist(lapply(ask.zombies$id, 
+        function(id) {
+      zombie <- tail(ask.zombies[ask.zombies$id == id, ], 1)
+      any(trades$direction == "buy" & trades$timestamp >= zombie$timestamp 
+          & trades$price > zombie$price)
+    })), "id"])
+    c(bid.zombie.ids, ask.zombie.ids)
+  }
+
   events <- load.event.data(csv.file)
+  events <- event.match(events)
   trades <- match.trades(events)
   events <- set.order.types(events, trades)
   zombie.ids <- get.zombie.ids(events, trades)
@@ -40,34 +55,30 @@ process.data <- function(csv.file) {
     events=events, 
     trades=trades, 
     depth=depth, 
-    zombies=zombies, 
     depth.summary=depth.summary
   )
 }
 
-#' @export
-save.data <- function(ob.data, bin.file) {
-  logger("saving binary")
-  save(file=bin.file, ob.data, compress="bzip2")
+##' Load pre-processed data. 
+##'
+##' Loads previously saved pre-processed data.
+##' @param bin.file File location.
+##' @return Limit order, trade and depth data structure.
+##' @author phil
+##' @export load.data
+load.data <- function(bin.file) {
+  logger(paste("loading binary from", bin.file))
+  load(file=bin.file, verbose=F)
+  lob.data
 }
 
-get.zombie.ids <- function(events, trades) {
-  cancelled <- events[events$action == "deleted", ]$id
-  zombies <- events[!events$id %in% cancelled, ]
-  bid.zombies <- zombies[zombies$direction == "bid", ]
-  ask.zombies <- zombies[zombies$direction == "ask", ]
-  bid.zombie.ids <- unique(bid.zombies[unlist(lapply(bid.zombies$id, 
-      function(id) {
-    zombie <- tail(bid.zombies[bid.zombies$id == id, ], 1)
-    any(trades$direction == "sell" & trades$timestamp >= zombie$timestamp 
-        & trades$price < zombie$price)
-  })), "id"])
-  ask.zombie.ids <- unique(ask.zombies[unlist(lapply(ask.zombies$id, 
-      function(id) {
-    zombie <- tail(ask.zombies[ask.zombies$id == id, ], 1)
-    any(trades$direction == "buy" & trades$timestamp >= zombie$timestamp 
-        & trades$price > zombie$price)
-  })), "id"])
-  c(bid.zombie.ids, ask.zombie.ids)
+##' Save processed data.
+##'
+##' Saves processed data to file. 
+##' @param lob.data Limit order, trade and depth data structure.
+##' @param bin.file File location. 
+##' @author phil
+save.data <- function(lob.data, bin.file) {
+  logger(paste("saving binary to", bin.file))
+  save(file=bin.file, lob.data, compress="bzip2")
 }
-

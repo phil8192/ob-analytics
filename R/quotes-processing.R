@@ -1,21 +1,45 @@
-
-# for some reason, stream sometimes contains duplicate delete events.
-# most of time order deleted, but then filled. sometimes duplicates (exactly 
-# the same).
-remove.duplicates <- function(events) {
-  deletes <- events[events$action == "deleted", ]
-  deletes <- deletes[order(deletes$id, deletes$volume), ]
-  duplicate.deletes <- deletes[deletes$id %in% 
-      deletes[which(duplicated(deletes$id)), ]$id, ]
-  duplicate.event.ids <- duplicate.deletes[duplicated(duplicate.deletes$id), 
-      ]$event.id
-  logger(paste("removed", length(duplicate.event.ids), 
-      "duplicate order cancellations: ", 
-      paste(events[duplicate.event.ids, ]$id, collapse=" ")))
-  events[!events$event.id %in% duplicate.event.ids, ]
-}
-
+##' Read raw limit order event data from a CSV file.
+##'
+##' The CSV file is expected to contain columns of the form:
+##' id, timestamp, exchange.timestamp, price, volume, action, direction 
+##'     where id                 = limit order unique identifier.
+##'           timestamp          = time (in milliseconds) when event first
+##'                                received (locally).
+##'           exchange.timestamp = time (in milliseconds) when order first
+##'                                received at exchange.
+##'           price              = price level of order event.
+##'           volume             = remaining volume of order (in lowest
+##'                                denomination)
+##'           action             = created, modified, deleted.
+##'           direction          = bid, ask.
+##'
+##' The function performs some data sanitisation: removing duplicate events
+##' and ensuring that order events are in the appropriate order. The data are
+##' ordered according to the life-cycle of a limit order:
+##'     order id, volume (desc), action (created,changed,deleted)
+##' 
+##' In addition to returning the sanitised raw data, the function also
+##' appends a column "fill.deltas" representing the change in volume for each
+##' limit order event.
+##' 
+##' @param file Location of CSV file containing limit order events. 
+##' @return A data.frame containing the raw limit order events data.
+##' @author phil
 load.event.data <- function(file) {
+  # stream sometimes contains duplicate (delete) events.
+  # remove to avoid potential negative depth.
+  remove.duplicates <- function(events) {
+    deletes <- events[events$action == "deleted", ]
+    deletes <- deletes[order(deletes$id, deletes$volume), ]
+    duplicate.deletes <- deletes[deletes$id %in% 
+        deletes[which(duplicated(deletes$id)), ]$id, ]
+    duplicate.event.ids <- duplicate.deletes[duplicated(duplicate.deletes$id), 
+        ]$event.id
+    logger(paste("removed", length(duplicate.event.ids), 
+        "duplicate order cancellations: ", 
+    paste(events[duplicate.event.ids, ]$id, collapse=" ")))
+    events[!events$event.id %in% duplicate.event.ids, ]
+  }
 
   logger(paste("loading data from", file))
 
@@ -53,29 +77,21 @@ load.event.data <- function(file) {
   ts.ordered <- unlist(tapply(events$timestamp, events$id, sort), use.names=F)
   events$timestamp <- as.POSIXct(ts.ordered, origin="1970-01-01", tz="UTC")
 
-  matched <- event.match(events, 5000) #within 5 seconds.
-  stopifnot(all(!duplicated(matched[, 1])))
-  stopifnot(all(!duplicated(matched[, 2])))
-
-  events <- cbind(events, matching.event=NA)
-  # ensure bid event.id's in same order a events matrix
-  matched <- matched[order(matched[, 1]), ]
-  #bid->ask events
-  events[events$event.id %in% matched[, 1], ]$matching.event <- matched[, 2]
-  # ensure ask event.id's in same order a events matrix
-  matched <- matched[order(matched[, 2]), ]
-  #ask->bid events
-  events[events$event.id %in% matched[, 2], ]$matching.event <- matched[, 1]
-
   events
 }
 
-# distance of bid/ask limit order from best bid/ask (immediately before order 
-# added/deleted) in bps.
-# "aggressiveness" of limit order.
-# < 0 = below/above best bid/ask
-# = 0 = on best bid/ask (most activity)
-# > 0 = inside spread. (aggressors)
+##' Calculate order aggressiveness with respect to best bid or ask in BPS.
+##' 
+##' Added or deleted limit orders can be assigned a level of "aggressiveness"
+##' with respect to the current best bid (ask) immediately before the order is
+##' added or removed from the order book. Orders placed at the best bid (ask)
+##' are assigned an aggressiveness of 0 BPS, a negative BPS below the best bid
+##' (ask) and a positive BPS if placed inside the spread.
+##' 
+##' @param events The events data.table.
+##' @param depth.summary Order book summary statistics.
+##' @return The events data.table containing a new aggressiveness.bps column.
+##' @author phil
 order.aggressiveness <- function(events, depth.summary) {
   event.diff.bps <- function(events, direction) {
     orders <- events[events$direction == ifelse(direction == 1, "bid", "ask") & 
@@ -91,14 +107,14 @@ order.aggressiveness <- function(events, depth.summary) {
     diff.bps <- 10000*diff.cents/best
     data.frame(event.id=orders$event.id, diff.bps=diff.bps) 
   }
-  bid.diff.bps <- event.diff.bps(events, 1)
-  ask.diff.bps <- event.diff.bps(events, -1)
-  events <- cbind(events, aggressiveness.bps=NA)
-  events[match(bid.diff.bps$event.id, events$event.id), ]$aggressiveness.bps <- 
-      bid.diff.bps$diff.bps
-  events[match(ask.diff.bps$event.id, events$event.id), ]$aggressiveness.bps <- 
-      ask.diff.bps$diff.bps
- 
+  bid.diff <- event.diff.bps(events, 1)
+  ask.diff <- event.diff.bps(events, -1)
+  events$aggressiveness.bps <- NA
+  events[match(bid.diff$event.id, events$event.id), ]$aggressiveness.bps <- 
+     bid.diff$diff.bps
+  events[match(ask.diff$event.id, events$event.id), ]$aggressiveness.bps <- 
+     ask.diff$diff.bps
+      
   events
 }
 

@@ -1,6 +1,59 @@
-# calculate price level volume (depth)
-
+##' Calculate price level volume (depth).
+##'
+##' Given a data.frame of limit order events, this function will calculate
+##' the cumulative volume for each price level over time. Changes in volume
+##' at a price level can occur when an a new order is added to the queue,
+##' updated (partial fill) or deleted (execution or removal). The resulting
+##' time series is of the form:
+##'     [timestamp, price, volume, side]
+##' where timestamp = (local) time at which liquidity changed
+##'           price = price level at which liquidity changed
+##'          volume = amount of volume remaining at this price level
+##'            side = the (current) side of the price level in the order book.
+##' 
+##' @param events Limit order events.
+##' @return Time series of liquidity for each price level in the order book.
+##' @author phil
 price.level.volume <- function(events) {
+  directional.price.level.volume <- function(dir.events) {
+    cols <- c("event.id", "id", "timestamp", "exchange.timestamp", "price", 
+        "volume", "direction", "action")
+    added.volume <- dir.events[(dir.events$action == "created" 
+        | (dir.events$action == "changed" & dir.events$fill == 0)) 
+        & dir.events$type != "pacman" & dir.events$type != "market", cols]
+    cancelled.volume <- dir.events[(dir.events$action == "deleted" 
+        & dir.events$volume > 0) & dir.events$type != "pacman"
+        & dir.events$type != "market", cols]
+    cancelled.volume$volume <- -cancelled.volume$volume
+    # remove deletes with no previous add.
+    cancelled.volume <- cancelled.volume[cancelled.volume$id %in% 
+        added.volume$id, ]
+    filled.volume <- dir.events[dir.events$fill > 0
+        & dir.events$type != "pacman" 
+        & dir.events$type != "market",
+        c("event.id", "id", "timestamp", "exchange.timestamp", "price", "fill", 
+        "direction", "action")]
+    filled.volume$fill <- -filled.volume$fill
+    # remove fills with no previous add.
+    filled.volume <- filled.volume[filled.volume$id %in% added.volume$id, ]
+    colnames(filled.volume) <- cols
+    volume.deltas <- rbind(added.volume, cancelled.volume, filled.volume)
+
+    volume.deltas <- volume.deltas[order(volume.deltas$price, 
+        volume.deltas$timestamp), ]
+    # ^^-- so price level deltas are now in order and order life-cycles can 
+    # overlap..
+
+    cum.volume <- unlist(tapply(volume.deltas$volume, volume.deltas$price, 
+        function(volume) cumsum(volume)), use.names=F)
+
+    # this can happen with missing data...
+    cum.volume <- ifelse(cum.volume < 0, 0, cum.volume)
+
+    cbind(volume.deltas[, c("timestamp", "price")], volume=cum.volume, 
+        side=volume.deltas$direction)
+  }
+    
   logger("calculating price level volume from bid event deltas...")
   bids <- events[events$direction == "bid", ]
   depth.bid <- directional.price.level.volume(bids)
@@ -8,93 +61,42 @@ price.level.volume <- function(events) {
   asks <- events[events$direction == "ask", ]
   depth.ask <- directional.price.level.volume(asks)
   depth.data <- rbind(depth.bid, depth.ask)
+    
   depth.data[order(depth.data$timestamp), ]
 }
 
-directional.price.level.volume <- function(events) {
-  cols <- c("event.id", "id", "timestamp", "exchange.timestamp", "price", 
-      "volume", "direction", "action")
-  added.volume <- events[(events$action == "created" 
-      | (events$action == "changed" & events$fill == 0)) 
-      & events$type != "pacman" & events$type != "market", cols]
-  cancelled.volume <- events[(events$action == "deleted" 
-      & events$volume > 0) & events$type != "pacman" & events$type != "market", 
-      cols]
-  cancelled.volume$volume <- -cancelled.volume$volume
-  # remove deletes with no previous add.
-  cancelled.volume <- cancelled.volume[cancelled.volume$id %in% 
-      added.volume$id, ]
-  filled.volume <- events[events$fill > 0 & events$type != "pacman" 
-      & events$type != "market",
-      c("event.id", "id", "timestamp", "exchange.timestamp", "price", "fill", 
-      "direction", "action")]
-  filled.volume$fill <- -filled.volume$fill
-  # remove fills with no previous add.
-  filled.volume <- filled.volume[filled.volume$id %in% added.volume$id, ]
-  colnames(filled.volume) <- cols
-  volume.deltas <- rbind(added.volume, cancelled.volume, filled.volume)
-
-  volume.deltas <- volume.deltas[order(volume.deltas$price, 
-      volume.deltas$timestamp), ]
-  # ^^-- so price level deltas are now in order and order life-cycles can 
-  # overlap..
-
-  cum.volume <- unlist(tapply(volume.deltas$volume, volume.deltas$price, 
-      function(volume) cumsum(volume)), use.names=F)
-
-  # this can happen with missing data...
-  cum.volume <- ifelse(cum.volume < 0, 0, cum.volume)
-
-  cbind(volume.deltas[, c("timestamp", "price")], volume=cum.volume, 
-      side=volume.deltas$direction)
-}
-
-# <ref: plot.price.levels.faster
-# depth level changes between a range.
-# timestamp of last depth level change < begining of range shifted forward to 
-# edge of begining.
-filter.depth <- function(depth, from, to) {
-  logger(paste("filter depth between", from, "and", to))
-  pre <- depth[depth$timestamp <= from, ]
-  logger(paste("got", nrow(pre), "previous deltas"))
-  pre <- pre[order(pre$price, pre$timestamp), ]
-  logger(paste("ordered", nrow(pre), "previous deltas"))
-  # last update for each price level <= from. this becomes the starting point 
-  # for all updates within the range.
-  pre <- pre[!duplicated(pre$price, fromLast=T) & pre$volume > 0, ] 
-  logger(paste("extracted", nrow(pre), "previously updated deltas"))
-  # clamp range
-  if(nrow(pre) > 0) {
-    pre$timestamp <- as.POSIXct(sapply(pre$timestamp, function(r) max(from, r)),
-        origin="1970-01-01", tz="UTC") 
-    logger("clamped range.")
-  }
-  mid <- depth[depth$timestamp > from & depth$timestamp < to, ]
-  logger(paste("got", nrow(mid), "in range deltas"))
-  range <- rbind(pre, mid)
-  logger(paste("appended range now contains", nrow(range), "deltas"))
-  # close off loose ends.
-  price.levels <- unique(range$price)
-  # last side of each price level:
-  range <- range[order(range$price, range$timestamp), ]
-  last.sides <- range[!duplicated(range$price, fromLast=T), "side"]
-  range <- rbind(range, data.frame(timestamp=to, price=price.levels, volume=0, 
-      side=last.sides))
-  # ensure it is in order
-  range <- range[order(range$price, range$timestamp), ]
-  logger(paste("closed range. depth filtering resulted in", 
-      length(unique(range$price)), "price levels."))
-  range
-}
-
-# todo: this is dog slow. needs some work.
-
-# pre-process order depth metrics.
-# returns a matrix of the form:
-# [timestamp, best bid price, best bid volume, volume at 20 percentile 
-# increments below best bid in 25bps bins: best.bid:(best.bid*0.95). vwap in 20 
-# percentile bins, #price gaps in 20 percentile increments.. , same repeated for 
-# ask, except: best.ask:(best.ask*1.05). ]
+##' Calculate order book summary statistics/metrics.
+##'
+##' This function calculates various summary statistics describing the state of
+##' the limit order book after every event. The metrics are intended to quantify
+##' the "shape" of the order book through time. Currenly the following metrics
+##' are calculated:
+##'
+##'   [timestamp,
+##'    best.bid.price, best.bid.vol,
+##'    bid.vol25:500bps, bid.vwap25:500bps, bid.gap25:500bps,
+##'    best.ask.price, best.ask.vol,
+##'    ask.vol25:500bps, ask.vwap25:500bps, ask.gap25:500bps]
+##'
+##' where timestamp = time of order book state change
+##'  best.bid.price = current best bid price
+##'  best.bid.vol = current amount of volume at the best bid
+##'  bid.vol25:500bps = amount of volume available > -25bps and <= best bid
+##'                     until > 500bps <= 475bps.
+##'  bid.vwap25:500bps = VWAP > -25bps and <= best bid
+##'                     until > 500bps <= 475bps.
+##'  bid.gap25:500bps = number of vacant price levels > -25bps and <= best bid
+##'                     until > 500bps <= 475bps. 0 = all available price levels
+##'                     occupied (maxium density).
+##'    ... the same pattern is then repeated for the ask side.
+##'
+##' TODO: just use mean diff for gap/density summary.
+##' TODO: very inneficient implementation: vectorise or use rcpp.
+##' TODO: additional summary statistics.
+##' 
+##' @param depth Price level cumulative depth calculated by price.level.volume()
+##' @return data.frame containing order book summary statistics.
+##' @author phil
 depth.metrics <- function(depth) {
   pb <- txtProgressBar(1, nrow(depth), 0, style=3)
   pct.names <- function(pct.name) paste0(pct.name, seq(from=25, to=500, by=25), 
