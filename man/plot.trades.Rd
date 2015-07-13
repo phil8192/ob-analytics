@@ -17,7 +17,7 @@ Plots executed prices in trades data.frame, where data.frame contains
 timestamp and price columns.
 }
 \examples{
-\\donotrun{
+\dontrun{
 x <- load.data("order.book.data.Rda")
 p <- plot.trades(x$trades)
 p

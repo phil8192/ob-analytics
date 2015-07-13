@@ -7,7 +7,7 @@
 ##' @author phil
 ##' @export process.data
 ##' @examples
-##' \donotrun{
+##' \dontrun{
 ##' csv.file <- system.file("extdata", "orders.csv", package="microstructure2") 
 ##' lob.data <- process.data(csv.file)
 ##' }

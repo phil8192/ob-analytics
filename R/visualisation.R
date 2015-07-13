@@ -21,7 +21,7 @@ theme.black <- function() {
 #' @param title, y.label Title and Y axis label of the plot.
 #' @export plot.time.series
 #' @examples
-#' \donotrun{
+#' \dontrun{
 #' trades <- lob.data$trades
 #' with(trades, plot.time.series(timestamp, price))
 #'
@@ -59,7 +59,7 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
 #' @param start.time, end.time, Inclusive start and end time of plot.
 #' @export plot.trades
 #' @examples
-#' \donotrun{
+#' \dontrun{
 #' x <- load.data("order.book.data.Rda")
 #' p <- plot.trades(x$trades)
 #' p

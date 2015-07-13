@@ -1,11 +1,34 @@
-
-is.pacman <- function(quotes) {
-  tapply(quotes$price, quotes$id, function(prices) {
-    any(vector.diff(prices) != 0)
-  })
-}
-
+##' Determine limit order types.
+##'
+##' This function infers order type given trade and order event data.
+##' The following categories are assigned to the event data type field:
+##' \describe{
+##'   \item{unknown}{It was not possible to determine the order type}
+##'   \item{flashed-limit}{An order which was created and at some future
+##' time deleted without ever being hit}
+##'   \item{resting-limit}{The order was added and left to rest in the
+##' order book. it may or may not be hit later}
+##'   \item{market-limit}{This is a limit order that crosses the book,
+##' it's volume is filled until it's limit price is reached, at which
+##' point the order comes to land in the book}
+##'   \item{pacman}{This is a special type of (algorithmic) order executed
+##' by the exchange (the order "eats" the best bid or ask at intervals
+##' until filled.}
+##'   \item{market}{This is an order that crosses the book, it's volume
+##' is filled before it's limit price is reached (order never comes to
+##' land in the book.) A market order is the most aggressive order type.}
+##' }
+##' @param events Limit order event data.
+##' @param trades Execution data.
+##' @return The limit order event data with updated type field.
+##' @author phil
 set.order.types <- function(events, trades) {
+  is.pacman <- function(quotes) {
+    tapply(quotes$price, quotes$id, function(prices) {
+      any(vector.diff(prices) != 0)
+    })
+  }
+
   logger("identifying order types...")
 
   events$type <- "unknown"
@@ -66,4 +89,3 @@ set.order.types <- function(events, trades) {
 
   events
 }
-

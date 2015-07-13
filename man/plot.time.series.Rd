@@ -20,7 +20,7 @@
 For general time series plotting.
 }
 \examples{
-\\donotrun{
+\dontrun{
 trades <- lob.data$trades
 with(trades, plot.time.series(timestamp, price))
 

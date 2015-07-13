@@ -25,17 +25,19 @@ s.matrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 ##' (first sequence), Second column = similarity matrix columns
 ##' (second sequence). Each row maps aligned indexs from each sequence:
 ##'
-##' > a <- c(2,4,5)
-##' > b <- 1:5
-##' > align.s(s.matrix(a,b))
-##'      a b
-##' [1,] 1 2
-##' [2,] 2 4
-##' [3,] 3 5
-##'
+##' \preformatted{
+##'   > a <- c(2,4,5)
+##'   > b <- 1:5
+##'   > align.s(s.matrix(a,b))
+##'        a b
+##'   [1,] 1 2
+##'   [2,] 2 4
+##'   [3,] 3 5
+##' }
+##' 
 ##' @author phil
 ##' @examples
-##' \donotrun{
+##' \dontrun{
 ##'   a <- c(2,4,5)
 ##'   b <- 1:5
 ##'   align.s(s.matrix(a, b))

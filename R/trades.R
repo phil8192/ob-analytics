@@ -1,13 +1,33 @@
-# infer trades from event data.
-# (event contains maker/taker)
-
-# determine t&s with maker/taker match.
-# timestamp = min(maker timestamp, taker timestamp) (first time we learned of this trade)
-# price = maker price (taker limit price can cross the book.)
-# volume = traded volume
-# direction = buy or sell (side of the aggressor/taker)
-# maker event id
-# taker event id
+##' Construct trades data.table.
+##'
+##' Given event data which has been pre-matched with maker/taker event ids,
+##' this function will return a data.table containing all matched executions.
+##' 
+##' @param events Limit order event data with assigned maker/taker event ids.
+##' @return A data.frame describing marketable order executions of the following
+##' form:
+##' \describe{
+##'   \item{timestamp}{min(maker timestamp, taker timestamp) (first time we
+##' learned of this trade)}
+##'   \item{price}{Maker price (taker limit price can cross the book.)}
+##'   \item{volume}{Lifted/traded volume}
+##'   \item{direction}{Trade direction (side of the aggressor/taker)}
+##'   \item{maker.event.id}{event.id corresponding to row in events data}
+##'   \item{taker.event.id}{event.id corresponding to tow in events data}
+##'   \item{maker}{Maker limit order id}
+##'   \item{taker}{Taker limit order id}
+##' }
+##'
+##' A market limit order (marketable) is first a taker and then becomes a maker
+##' after landing in the order book before it's limit is reached.
+##'
+##' A market order is always a taker: it's volume will be filled before it's
+##' limit is reached.
+##'
+##' Grouping executions by maker/taker can be used to analyse market impact
+##' events.
+##' 
+##' @author phil
 match.trades <- function(events) {
 
   logger(paste("inferring trades from", nrow(events), "events..."))
@@ -53,11 +73,15 @@ match.trades <- function(events) {
   taker.event.id <- ifelse(bid.maker, matching.asks$event.id, 
       matching.bids$event.id)
 
+  # maker/taker order id
+  maker <- with(events, id[match(maker.event.id, event.id)])
+  taker <- with(events, id[match(taker.event.id, event.id)])
+    
   # return timestamp ordered series.
   combined <- data.frame(timestamp, price, volume, direction, maker.event.id, 
-      taker.event.id)
+      taker.event.id, maker, taker)
   trades <- combined[order(timestamp), ]
-
+    
   jumps <- length(which(abs(diff(trades$price))>5))
   if(jumps>0)
     warning(paste(format(head(events$timestamp,1),"%D"),":",jumps,"jumps >$5"))
@@ -65,4 +89,3 @@ match.trades <- function(events) {
   trades
 
 }
-

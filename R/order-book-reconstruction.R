@@ -10,6 +10,7 @@
 ##' @param max.ask Max ask to return.
 ##' @return Limit Order Book structure:
 ##'
+##' \preformatted{
 ##' > tp <- as.POSIXct("2015-05-01 12:30:15.342", tz="UTC")
 ##' > order.book(lob.data$events, tp, max.price.levels=5)
 ##' $timestamp
@@ -38,13 +39,13 @@
 ##'              volume = Remaining order volume.
 ##'           liquidity = Cumulative sum of volume up util this order (depth).
 ##'                 bps = Distance in BPS from current best bid/ask.
-##' 
+##' }
 ##' @author phil
 ##' @export order.book
 ##' @examples
-##' \donotrun{
-##'   tp <- as.POSIXct("2015-05-01 12:30:15.342", tz="UTC")
-##'   order.book(lob.data$events, max.price.levels=5)
+##' \dontrun{
+##' tp <- as.POSIXct("2015-05-01 12:30:15.342", tz="UTC")
+##' order.book(lob.data$events, max.price.levels=5)
 ##' }
 order.book <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
     max.price.levels=NULL, bps.range=0, min.bid=0, max.ask=Inf) {

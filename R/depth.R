@@ -5,12 +5,13 @@
 ##' at a price level can occur when an a new order is added to the queue,
 ##' updated (partial fill) or deleted (execution or removal). The resulting
 ##' time series is of the form:
+##' \preformatted{
 ##'     [timestamp, price, volume, side]
 ##' where timestamp = (local) time at which liquidity changed
 ##'           price = price level at which liquidity changed
 ##'          volume = amount of volume remaining at this price level
 ##'            side = the (current) side of the price level in the order book.
-##' 
+##' }
 ##' @param events Limit order events.
 ##' @return Time series of liquidity for each price level in the order book.
 ##' @author phil
@@ -71,7 +72,7 @@ price.level.volume <- function(events) {
 ##' the limit order book after every event. The metrics are intended to quantify
 ##' the "shape" of the order book through time. Currenly the following metrics
 ##' are calculated:
-##'
+##' \preformatted{
 ##'   [timestamp,
 ##'    best.bid.price, best.bid.vol,
 ##'    bid.vol25:500bps, bid.vwap25:500bps, bid.gap25:500bps,
@@ -89,7 +90,7 @@ price.level.volume <- function(events) {
 ##'                     until > 500bps <= 475bps. 0 = all available price levels
 ##'                     occupied (maxium density).
 ##'    ... the same pattern is then repeated for the ask side.
-##'
+##'}
 ##' TODO: just use mean diff for gap/density summary.
 ##' TODO: very inneficient implementation: vectorise or use rcpp.
 ##' TODO: additional summary statistics.
