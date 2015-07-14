@@ -72,6 +72,7 @@ price.level.volume <- function(events) {
 ##' the limit order book after every event. The metrics are intended to quantify
 ##' the "shape" of the order book through time. Currenly the following metrics
 ##' are calculated:
+##'
 ##' \preformatted{
 ##'   [timestamp,
 ##'    best.bid.price, best.bid.vol,
@@ -90,7 +91,9 @@ price.level.volume <- function(events) {
 ##'                     until > 500bps <= 475bps. 0 = all available price levels
 ##'                     occupied (maxium density).
 ##'    ... the same pattern is then repeated for the ask side.
-##'}
+##' }
+##'
+##' TODO: needs some work...
 ##' TODO: just use mean diff for gap/density summary.
 ##' TODO: very inneficient implementation: vectorise or use rcpp.
 ##' TODO: additional summary statistics.
@@ -190,5 +193,12 @@ depth.metrics <- function(depth) {
     }
     setTxtProgressBar(pb, i)
   }
-  cbind(timestamp=ordered.depth$timestamp, data.frame(metrics))
+
+  # back into $  
+  res <- cbind(timestamp=ordered.depth$timestamp, data.frame(metrics))
+  keys <- c("best.bid.price", "best.ask.price", pct.names("bid.vwap"), pct.names("ask.vwap"))
+  res[, keys] <- round(0.01*res[, keys], 2)
+
+  res
+    
 }

@@ -17,7 +17,7 @@
 \item{title,}{y.label Title and Y axis label of the plot.}
 }
 \description{
-For general time series plotting.
+General time series plot.
 }
 \examples{
 \dontrun{
@@ -30,5 +30,8 @@ series <- rep(1:10, 6)
 p <- plot.time.series(timestamp, series)
 p
 }
+}
+\author{
+phil
 }
 

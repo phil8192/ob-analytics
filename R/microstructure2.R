@@ -2,6 +2,7 @@
 #'
 #' @name microstructure2
 #' @docType package
+#' @import ggplot2
 NULL
 
 #' Example pre-processed data.

@@ -103,8 +103,8 @@ order.aggressiveness <- function(events, depth.summary) {
         ifelse(direction == 1, "best.bid.price", "best.ask.price")]
     orders <- tail(orders, -1)
     best <- head(best, -1)
-    diff.cents <- direction * (100*orders$price - best)
-    diff.bps <- 10000*diff.cents/best
+    diff.price <- direction * (orders$price - best)
+    diff.bps <- 10000*diff.price/best
     data.frame(event.id=orders$event.id, diff.bps=diff.bps) 
   }
   bid.diff <- event.diff.bps(events, 1)

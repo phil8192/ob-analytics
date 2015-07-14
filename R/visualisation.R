@@ -1,3 +1,9 @@
+##' Black theme.
+##'
+##' Default graph look and feel.
+##'
+##' @return Theme. 
+##' @author phil
 theme.black <- function() {
   theme_bw() + theme(panel.background=element_rect(fill="#000000"),
                  panel.border=element_rect(size=0),
@@ -11,26 +17,23 @@ theme.black <- function() {
 		 legend.background=element_rect(fill="#000000", size=0))
 }
 
-#' General time series plot. 
-#'
-#' For general time series plotting.
-#' 
-#' @param timestamp POSIXct timestamps.
-#' @param series The time series.
-#' @param start.time, end.time, Inclusive start and end time of plot.
-#' @param title, y.label Title and Y axis label of the plot.
-#' @export plot.time.series
-#' @examples
-#' \dontrun{
-#' trades <- lob.data$trades
-#' with(trades, plot.time.series(timestamp, price))
-#'
-#' timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"), 
-#'                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
-#' series <- rep(1:10, 6)
-#' p <- plot.time.series(timestamp, series)
-#' p
-#' }
+##' General purpose time series plot.
+##'
+##' @param timestamp POSIXct timestamps.
+##' @param series The time series.
+##' @param start.time, end.time, Inclusive start and end time of plot.
+##' @param title, y.label Title and Y axis label of the plot.
+##' @author phil
+##' @examples
+##' \dontrun{
+##' with(lob.data$trades, plot.time.series(timestamp, price))
+##'
+##' timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"), 
+##'                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
+##' series <- rep(1:10, 6)
+##' plot.time.series(timestamp, series)
+##' }
+##' @export plot.time.series
 plot.time.series <- function(timestamp, series, start.time=min(timestamp),
     end.time=max(timestamp), title="time series", y.label="series") {
   stopifnot(length(timestamp) == length(series))
@@ -50,20 +53,19 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
   p + theme.black()
 }
 
-#' Plot trades. 
-#'
-#' Plots executed prices in trades data.frame, where data.frame contains 
-#' timestamp and price columns.
-#' 
-#' @param timestamp POSIXct timestamps.
-#' @param start.time, end.time, Inclusive start and end time of plot.
-#' @export plot.trades
-#' @examples
-#' \dontrun{
-#' x <- load.data("order.book.data.Rda")
-#' p <- plot.trades(x$trades)
-#' p
-#' }
+##' Plot trades.
+##'
+##' A convenience function for plotting the trades data.frame in a nice way.
+##' 
+##' @param trades Trades data.frame
+##' @param start.time Plot from
+##' @param end.time Plot to
+##' @author phil
+##' @examples
+##' \dontrun{
+##' with(lob.data, plot.trades(trades))
+##' }
+##' @export plot.trades
 plot.trades <- function(trades, start.time=min(trades$timestamp),
     end.time=max(trades$timestamp)) {
   ts <- trades[trades$timestamp >= start.time & trades$timestamp <= end.time, ]
@@ -81,11 +83,14 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 #depth.filtered <- depth[depth$price >= min(trades$price)-5
 #                      & depth$price <= max(trades$price)+5, ]
 
+# TODO: should be able to omit depth.summary (spread) and trades.
+# TODO: clean this up...
+
 #' @export plot.price.levels
-plot.price.levels <- function(depth, depth.summary, trades, show.mp=F, 
-    show.all.depth=T, col.bias=0.1, start.time=head(depth$timestamp, 1), 
+plot.price.levels <- function(depth, depth.summary, trades, show.mp=T, 
+    show.all.depth=F, col.bias=0.1, start.time=head(depth$timestamp, 1), 
     end.time=tail(depth$timestamp, 1), price.from=NULL, price.to=NULL, 
-    volume.from=NULL, volume.to=NULL) {
+    volume.from=NULL, volume.to=NULL, volume.scale=1) {
 
   # depth level changes between a range.
   # timestamp of last depth level change < begining of range shifted forward to 
@@ -125,9 +130,9 @@ plot.price.levels <- function(depth, depth.summary, trades, show.mp=F,
     range
   }
     
-  trades.filtered <- trades[trades$timestamp >= from.time 
+  trades.filtered <- trades[trades$timestamp >= start.time 
                           & trades$timestamp <= end.time, ]
-  spread.filtered <- depth.summary[depth.summary$timestamp >= from.time 
+  spread.filtered <- depth.summary[depth.summary$timestamp >= start.time 
                                  & depth.summary$timestamp <= end.time, 
       c("timestamp", "best.bid.price", "best.ask.price")]
 
@@ -142,8 +147,8 @@ plot.price.levels <- function(depth, depth.summary, trades, show.mp=F,
                          & (depth$volume >= volume.from | depth$volume == 0)
                          &  depth$volume <= volume.to, ]
   } else {
-    depth.filtered <- depth[depth$price >= min(trades$price)*0.99
-                          & depth$price <= max(trades$price)*1.01, ]   
+    depth.filtered <- depth[depth$price >= min(trades.filtered$price)*0.995
+                          & depth$price <= max(trades.filtered$price)*1.005, ]   
   }
 
   depth.filtered <- filter.depth(depth.filtered, start.time, end.time)
@@ -155,19 +160,20 @@ plot.price.levels <- function(depth, depth.summary, trades, show.mp=F,
       length(v) == 2 & v[1] == start.time & v[2] == end.time
     })
     unchanged.prices <- unique(depth.filtered$price)
-    unchanged.price <- unchanged.prices[unchanged]
+    unchanged.prices <- unchanged.prices[unchanged]
     depth.filtered <- depth.filtered[!depth.filtered$price 
         %in% unchanged.prices, ]
     logger(paste("removed", length(unchanged.prices), "unchanged depths"))
   }
-
+   
   depth.filtered[depth.filtered$volume==0, ]$volume <- NA
-  
+  depth.filtered$volume <- depth.filtered$volume*volume.scale
+    
   plot.price.levels.faster(depth.filtered, spread.filtered, trades.filtered, 
       show.mp, col.bias) 
 }
 
-plot.price.levels.faster <- function(depth, spread, trades, show.mp=F, 
+plot.price.levels.faster <- function(depth, spread, trades, show.mp=T, 
     col.bias=0.1) {
 
   buys <- trades[trades$direction == "buy", ]
