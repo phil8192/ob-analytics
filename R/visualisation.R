@@ -86,15 +86,28 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 # TODO: should be able to omit depth.summary (spread) and trades.
 # TODO: clean this up...
 
-#' @export plot.price.levels
-plot.price.levels <- function(depth, depth.summary, trades, show.mp=T, 
-    show.all.depth=F, col.bias=0.1, start.time=head(depth$timestamp, 1), 
-    end.time=tail(depth$timestamp, 1), price.from=NULL, price.to=NULL, 
-    volume.from=NULL, volume.to=NULL, volume.scale=1) {
+#spread = timestamp,best.bid.price,best.ask.price
 
+#' @export plot.price.levels
+plot.price.levels <- function(
+    depth,
+    spread,
+    trades,
+    show.mp=T, 
+    show.all.depth=F,
+    col.bias=0.1,
+    start.time=head(depth$timestamp, 1), 
+    end.time=tail(depth$timestamp, 1),
+    price.from=NULL,
+    price.to=NULL, 
+    volume.from=NULL,
+    volume.to=NULL,
+    volume.scale=1) {
+   
   # depth level changes between a range.
   # timestamp of last depth level change < begining of range shifted forward to 
   # edge of begining.
+#TODO: move this to depth.r (useful function)
   filter.depth <- function(d, from, to) {
     logger(paste("filter depth between", from, "and", to))
     pre <- d[d$timestamp <= from, ]
@@ -129,31 +142,47 @@ plot.price.levels <- function(depth, depth.summary, trades, show.mp=T,
         length(unique(range$price)), "price levels."))
     range
   }
-    
-  trades.filtered <- trades[trades$timestamp >= start.time 
-                          & trades$timestamp <= end.time, ]
-  spread.filtered <- depth.summary[depth.summary$timestamp >= start.time 
-                                 & depth.summary$timestamp <= end.time, 
-      c("timestamp", "best.bid.price", "best.ask.price")]
 
-  if(!(is.null(price.from) || is.null(price.to) 
-      || is.null(volume.from) || is.null(volume.to))) {
-    trades.filtered <- trades.filtered[trades.filtered$price  >= price.from
-                                     & trades.filtered$price  <= price.to 
-                                     & trades.filtered$volume >= volume.from
-                                     & trades.fitlered$volume <= volume.to, ]
-    depth.filtered <- depth[depth$price  >= price.from
-                         &  depth$price  <= price.to
-                         & (depth$volume >= volume.from | depth$volume == 0)
-                         &  depth$volume <= volume.to, ]
-  } else {
-    depth.filtered <- depth[depth$price >= min(trades.filtered$price)*0.995
-                          & depth$price <= max(trades.filtered$price)*1.005, ]   
+  # filter the spread by start and end time and set price.from, price.to
+  # defaults if needed.
+  if(!is.null(spread)) {
+    spread <- spread[spread$timestamp >= start.time 
+                   & spread$timestamp <= end.time, ]
+    if(is.null(price.from)) price.from <- 0.995*min(spread$best.bid.price)
+    if(is.null(price.to)) price.to <- 1.005*max(spread$best.ask.price)
   }
 
-  depth.filtered <- filter.depth(depth.filtered, start.time, end.time)
+  # filter trades by start and end time and set price.from, price.to
+  # defaults if needed.
+  if(!is.null(trades)) {
+    trades <- trades[trades$timestamp >= start.time 
+                   & trades$timestamp <= end.time, ]
 
-  # remove price levels with no update during time window.
+    # set price.from to range below min trade price if not specified.
+    # filter trades by specified min price otherwise.
+    if(is.null(price.from)) price.from <- 0.995*min(trades$price)
+    else trades <- trades[trades$price >= price.from, ]
+
+    # set price.to to be range above max trade price if not specified.
+    # filter trades by specified max price otherwise.
+    if(is.null(price.to)) price.to <- 1.005*max(trades$price)
+    else trades <- trades[trades$price <= price.to, ]
+  }
+
+  # filter depth by price and volume  
+  if(!is.null(price.from))
+    depth <- depth[depth$price >= price.from, ]
+  if(!is.null(price.to))
+    depth <- depth[depth$price <= price.to, ]
+  if(!is.null(volume.from))
+    depth <- depth[depth$volume >= volume.from | depth$volume == 0, ]
+  if(!is.null(volume.to))
+    depth <- depth[depth$volume <= volume.to, ]
+
+  # now filter the depth by time window
+  depth.filtered <- filter.depth(depth, start.time, end.time)
+
+  # if requested, remove price levels with no update during time window.
   if(!show.all.depth) {
     unchanged <- tapply(depth.filtered$timestamp, depth.filtered$price, 
         function(v) {
@@ -168,9 +197,9 @@ plot.price.levels <- function(depth, depth.summary, trades, show.mp=T,
    
   depth.filtered[depth.filtered$volume==0, ]$volume <- NA
   depth.filtered$volume <- depth.filtered$volume*volume.scale
-    
-  plot.price.levels.faster(depth.filtered, spread.filtered, trades.filtered, 
-      show.mp, col.bias) 
+
+  # after filtering, plot.
+  plot.price.levels.faster(depth.filtered, spread, trades, show.mp, col.bias)
 }
 
 plot.price.levels.faster <- function(depth, spread, trades, show.mp=T, 
