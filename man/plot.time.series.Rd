@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualisation.R
 \name{plot.time.series}
 \alias{plot.time.series}
-\title{General time series plot.}
+\title{General purpose time series plot.}
 \usage{
 \method{plot}{time.series}(timestamp, series, start.time = min(timestamp),
   end.time = max(timestamp), title = "time series", y.label = "series")
@@ -17,18 +17,16 @@
 \item{title,}{y.label Title and Y axis label of the plot.}
 }
 \description{
-General time series plot.
+General purpose time series plot.
 }
 \examples{
 \dontrun{
-trades <- lob.data$trades
-with(trades, plot.time.series(timestamp, price))
+with(lob.data$trades, plot.time.series(timestamp, price))
 
 timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"),
                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
 series <- rep(1:10, 6)
-p <- plot.time.series(timestamp, series)
-p
+plot.time.series(timestamp, series)
 }
 }
 \author{

@@ -51,11 +51,13 @@ process.data <- function(csv.file) {
   depth.summary <- depth.metrics(depth)
   logger("calculating order aggressiveness...")
   events <- order.aggressiveness(events, depth.summary)
+  # depth summary data starts 1 minute later to allow for order book population.
+  offset <- min(events$timestamp) + 60
   list(
     events=events, 
     trades=trades, 
     depth=depth, 
-    depth.summary=depth.summary
+    depth.summary=depth.summary[depth.summary$timestamp >= offset, ]
   )
 }
 

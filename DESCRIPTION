@@ -10,5 +10,6 @@ Imports:
   zoo,
   ggplot2,
   reshape2
-Suggests: 
+Suggests:
+  grid,
   testthat

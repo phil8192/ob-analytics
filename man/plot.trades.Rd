@@ -8,19 +8,21 @@
   end.time = max(trades$timestamp))
 }
 \arguments{
-\item{start.time,}{end.time, Inclusive start and end time of plot.}
+\item{trades}{Trades data.frame}
 
-\item{timestamp}{POSIXct timestamps.}
+\item{start.time}{Plot from}
+
+\item{end.time}{Plot to}
 }
 \description{
-Plots executed prices in trades data.frame, where data.frame contains
-timestamp and price columns.
+A convenience function for plotting the trades data.frame in a nice way.
 }
 \examples{
 \dontrun{
-x <- load.data("order.book.data.Rda")
-p <- plot.trades(x$trades)
-p
+with(lob.data, plot.trades(trades))
 }
+}
+\author{
+phil
 }
 

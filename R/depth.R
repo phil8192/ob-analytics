@@ -66,6 +66,54 @@ price.level.volume <- function(events) {
   depth.data[order(depth.data$timestamp), ]
 }
 
+##' Filter price level volume (depth).
+##'
+##' Given depth data calculated by price.level.volume(), filter so that depth
+##' level changes are between a range: depth changes < or > range are discarded
+##' and min,max timestamps remaining within the range are "clamped" - set to,
+##' min,max of specified range.
+##' 
+##' @param d Depth data (lob.data$depth).
+##' @param from Beginning of range.
+##' @param to End of range.
+##' @return Filtered depth data.
+##' @author phil
+##' @export filter.depth
+filter.depth <- function(d, from, to) {
+  logger(paste("filter depth between", from, "and", to))
+  pre <- d[d$timestamp <= from, ]
+  logger(paste("got", nrow(pre), "previous deltas"))
+  pre <- pre[order(pre$price, pre$timestamp), ]
+  logger(paste("ordered", nrow(pre), "previous deltas"))
+  # last update for each price level <= from. this becomes the starting point 
+  # for all updates within the range.
+  pre <- pre[!duplicated(pre$price, fromLast=T) & pre$volume > 0, ] 
+  logger(paste("extracted", nrow(pre), "previously updated deltas"))
+  # clamp range
+  if(nrow(pre) > 0) {
+    pre$timestamp <- as.POSIXct(sapply(pre$timestamp, function(r) {
+      max(from, r)
+    }), origin="1970-01-01", tz="UTC") 
+    logger("clamped range.")
+  }
+  mid <- d[d$timestamp > from & d$timestamp < to, ]
+  logger(paste("got", nrow(mid), "in range deltas"))
+  range <- rbind(pre, mid)
+  logger(paste("appended range now contains", nrow(range), "deltas"))
+  # close off loose ends.
+  price.levels <- unique(range$price)
+  # last side of each price level:
+  range <- range[order(range$price, range$timestamp), ]
+  last.sides <- range[!duplicated(range$price, fromLast=T), "side"]
+  range <- rbind(range, data.frame(timestamp=to, price=price.levels, volume=0,
+      side=last.sides))
+  # ensure it is in order
+  range <- range[order(range$price, range$timestamp), ]
+  logger(paste("closed range. depth filtering resulted in", 
+      length(unique(range$price)), "price levels."))
+  range
+}
+
 ##' Calculate order book summary statistics/metrics.
 ##'
 ##' This function calculates various summary statistics describing the state of
@@ -202,3 +250,4 @@ depth.metrics <- function(depth) {
   res
     
 }
+

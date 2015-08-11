@@ -29,3 +29,4 @@ logger <- function(msg) {
   caller <- head(sys.call(-1), 1)
   cat(paste0("    ", caller, " => ", msg, "\n"))
 }
+

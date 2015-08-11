@@ -13,9 +13,7 @@ s.matrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 
 ##' Align 2 sequences.
 ##'
-##' Uses Needleman-Wunsch matching algorithm.
-##' See: https://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm
-##' More or less verbatim implementation of ^.
+##' Verbatim implementation of Needleman-Wunsch matching algorithm.
 ##'
 ##' todo: rcpp. (http://adv-r.had.co.nz/Rcpp.html)
 ##' 
@@ -42,6 +40,7 @@ s.matrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 ##'   b <- 1:5
 ##'   align.s(s.matrix(a, b))
 ##' }
+##' @references \url{https://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm}
 align.s <- function(s.matrix, gap=-1) {
   f.matrix <- (function() {
     s.len <- nrow(s.matrix)
