@@ -301,29 +301,6 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=T,
   p + theme.black()
 }
 
-# quote map (shows point in time where an order was added or deleted)
-# good for seeing algo patterns and quote stuffers.
-
-if(F){
-
-    # plot all orders 
-    with(lob.data, plot.quote.map(events))
-
-    # 1 hour of activity and re-scale the volume
-    with(lob.data, plot.quote.map(events,
-                                  start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
-                                  end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
-                                  volume.scale=10^-8))
-    # 15 minutes of activity >= 5 (re-scaled) volume within price range $ [220, 245]
-    with(lob.data, plot.quote.map(events,
-                                  start.time=as.POSIXct("2015-05-01 08:00:00.000", tz="UTC"),
-                                  end.time=as.POSIXct("2015-05-01 08:15:00.000", tz="UTC"),
-                                  price.from=220,
-                                  price.to=245,
-                                  volume.from=5,
-                                  volume.scale=10^-8))
-}
-
 ##' Plot limit order event map.
 ##'
 ##' Generates a visualisation of limit order events (excluding market and market
@@ -416,24 +393,94 @@ plot.event.map <- function(events,
   p + theme.black()
 }
 
-# cancellation map (by volume)
-# good for showing quote stuffing and for algo identification.
-# action = deleted | created
+##' Visualise flashed-limit order volume.
+##'
+##' Plots the points at which volume was added or removed from the limit order
+##' book. A flashed limit-order is a "fleeting" limit order: an order was added,
+##' then removed (usually within a very short period of time). This plot is
+##' especially useful for identifying individual trading algorithms by price and
+##' volume.
+##' 
+##' @param events Limit order events data.frame.
+##' @param action "deleted" for cancelled volume, "added" for added volume.
+##' @param start.time Plot events from this time onward.
+##' @param end.time Plot events up until this time.
+##' @param price.from Plot events with price levels >= this value.
+##' @param price.to Plot events with price levels <= this value.
+##' @param volume.from Plot events with volume >= this value relevant to
+##'                    volume.scale
+##' @param volume.to Plot events with volume <= this value relevant to
+##'                  volume scale.
+##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars. 
+##' @param log.scale If true, plot volume on logarithmic scale.
+##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' # plot all fleeting limit order volume using logarithmic scale.
+##' with(lob.data, plot.volume.map(events, volume.scale=10^-8, log.scale=T))
+##'
+##' # plot fleeting limit order volume within 1 hour range up until 10 units of
+##' # volume.
+##' with(lob.data, plot.volume.map(events, volume.scale=10^-8,
+##'     start.time=as.POSIXct("2015-05-01 09:30:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 10:30:00.000", tz="UTC"),
+##'     volume.to=10))
+##'
+##' }
+##' @export plot.volume.map
+plot.volume.map <- function(events,
+    action="deleted", 
+    start.time=min(events$timestamp),
+    end.time=max(events$timestamp),
+    price.from=NULL,
+    price.to=NULL,
+    volume.from=NULL,
+    volume.to=NULL,
+    volume.scale=1,
+    log.scale=F) {
 
-#' @export plot.volume.map
-plot.volume.map <- function(events, action, 
-    start.time=head(events$timestamp, 1), end.time=tail(events$timestamp, 1)) {
-  filtered <- events[events$action == action 
-      & events$type == "flashed-limit"
+  stopifnot(action == "deleted" || action == "created")
+    
+  events$volume <- events$volume*volume.scale
+
+  # interested in flashed-limit (fleeting orders) within time range.  
+  events <- events[events$action == action & events$type == "flashed-limit"
       & events$timestamp >= start.time & events$timestamp <= end.time, ]
+
+  # filter events by price and volume. if min,max volume is not set, set it to
+  # 99.99% quantile range to avoid plotting outlyers.
+  if(!is.null(price.from))
+    events <- events[events$price >= price.from, ]
+  if(!is.null(price.to))
+    events <- events[events$price <= price.to, ]
+  if(!is.null(volume.from))
+    events <- events[events$volume >= volume.from | events$volume == 0, ]
+  else {
+    lim <- quantile(events$volume, 0.0001)
+    logger(paste("lower volume limit =", lim))
+    events <- events[events$volume >= lim, ]
+  }
+  if(!is.null(volume.to))
+    events <- events[events$volume <= volume.to, ]
+  else {
+    lim <- quantile(events$volume, 0.9999)
+    logger(paste("uppper volume limit =", lim))
+    events <- events[events$volume <= lim, ]
+  }
+
+  vol.scale <- if(log.scale) "log" else "identity" 
+    
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
-  p <- ggplot(data=filtered, mapping=aes(x=timestamp, y=volume))
+  p <- ggplot(data=events, mapping=aes(x=timestamp, y=volume))
   p <- p + geom_point(mapping=aes(colour=direction), size=1, shape=15)
   p <- p + scale_colour_manual(values=col.pal, name="direction     \n")
-  p <- p + scale_y_continuous(name="cancelled volume", labels=function(y) 
-      sprintf("%5s", y))
+  p <- p + scale_y_continuous(name="cancelled volume",
+      labels=function(y) sprintf("%5s", sprintf("%.2f", y)),
+      trans=vol.scale)
   p <- p + xlab("time")
+
   p + theme.black()
 }
 
