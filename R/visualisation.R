@@ -156,6 +156,8 @@ plot.price.levels <- function(depth, spread=NULL, trades=NULL,
     volume.to=NULL,
     volume.scale=1) {
 
+  depth$volume <- depth$volume*volume.scale
+    
   # filter the spread by start and end time and set price.from, price.to
   # defaults if needed.
   if(!is.null(spread)) {
@@ -188,10 +190,9 @@ plot.price.levels <- function(depth, spread=NULL, trades=NULL,
   if(!is.null(price.to))
     depth <- depth[depth$price <= price.to, ]
   if(!is.null(volume.from))
-    depth <- depth[depth$volume*volume.scale >= volume.from
-                   | depth$volume == 0, ]
+    depth <- depth[depth$volume >= volume.from | depth$volume == 0, ]
   if(!is.null(volume.to))
-    depth <- depth[depth$volume*volume.scale <= volume.to, ]
+    depth <- depth[depth$volume <= volume.to, ]
 
   # now filter the depth by time window
   depth.filtered <- filter.depth(depth, start.time, end.time)
@@ -210,7 +211,6 @@ plot.price.levels <- function(depth, spread=NULL, trades=NULL,
   }
    
   depth.filtered[depth.filtered$volume==0, ]$volume <- NA
-  depth.filtered$volume <- depth.filtered$volume*volume.scale
 
   # after filtering, plot.
   plot.price.levels.faster(depth.filtered, spread, trades, show.mp, col.bias)
@@ -304,21 +304,95 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=T,
 # quote map (shows point in time where an order was added or deleted)
 # good for seeing algo patterns and quote stuffers.
 
-#' @export plot.quote.map
-plot.quote.map <- function(events,
-    start.time=head(events$timestamp, 1), 
-    end.time=tail(events$timestamp, 1),
+if(F){
+
+    # plot all orders 
+    with(lob.data, plot.quote.map(events))
+
+    # 1 hour of activity and re-scale the volume
+    with(lob.data, plot.quote.map(events,
+                                  start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
+                                  end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
+                                  volume.scale=10^-8))
+    # 15 minutes of activity >= 5 (re-scaled) volume within price range $ [220, 245]
+    with(lob.data, plot.quote.map(events,
+                                  start.time=as.POSIXct("2015-05-01 08:00:00.000", tz="UTC"),
+                                  end.time=as.POSIXct("2015-05-01 08:15:00.000", tz="UTC"),
+                                  price.from=220,
+                                  price.to=245,
+                                  volume.from=5,
+                                  volume.scale=10^-8))
+}
+
+##' Plot limit order event map.
+##'
+##' Generates a visualisation of limit order events (excluding market and market
+##' limit orders). Ask side orders = red, Bid side orders = blue. Volume of
+##' order determines size of circle. Opaque = volume was added, transparent =
+##' volume was removed.
+##' 
+##' @param events Limit order events data.frame.
+##' @param start.time Plot events from this time onward.
+##' @param end.time Plot events up until this time.
+##' @param price.from Plot events with price levels >= this value.
+##' @param price.to Plot events with price levels <= this value.
+##' @param volume.from Plot events with volume >= this value relevant to
+##'                    volume.scale
+##' @param volume.to Plot events with volume <= this value relevant to
+##'                  volume scale.
+##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars. 
+##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' # plot all orders 
+##' with(lob.data, plot.quote.map(events))
+##'
+##' # 1 hour of activity and re-scale the volume
+##' with(lob.data, plot.quote.map(events,
+##'     start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
+##'     volume.scale=10^-8))
+##' # 15 minutes of activity >= 5 (re-scaled) volume within price range
+##' # $ [220, 245]
+##' with(lob.data, plot.quote.map(events,
+##'     start.time=as.POSIXct("2015-05-01 08:00:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 08:15:00.000", tz="UTC"),
+##'     price.from=220,
+##'     price.to=245,
+##'     volume.from=5,
+##'     volume.scale=10^-8))
+##'
+##' }
+##' @export plot.event.map
+plot.event.map <- function(events,
+    start.time=min(events$timestamp), 
+    end.time=max(events$timestamp),
     price.from=NULL,
-    price.to=NULL) {
-    
+    price.to=NULL,
+    volume.from=NULL,
+    volume.to=NULL,
+    volume.scale=1) {
+
+  # interested in added, and then subsequently cancelled or resting limit orders
   events <- events[events$timestamp >= start.time & events$timestamp <= end.time
       & (events$type == "flashed-limit" | events$type == "resting-limit"), ]
 
-  if(is.null(price.from) & is.null(price.to)) {
-    price.range <- as.numeric(quantile(events$price, c(0.01, 0.99)))
-    price.from <- price.range[1]
-    price.to <- price.range[2]
-  }
+  events$volume <- events$volume*volume.scale
+
+  # filter by specified volume
+  # todo: price, volume, time filtering is very common -move this elsewhere.    
+  if(!is.null(volume.from))
+    events <- events[events$volume >= volume.from, ]
+  if(!is.null(volume.to))
+    events <- events[events$volume <= volume.to, ]
+
+  # if price range has not been specified, set it to contain 99% of data
+  # (to ignore outlying limit orders).
+  if(is.null(price.from))
+    price.from <- as.numeric(quantile(events$price, 0.01))
+  if(is.null(price.to))
+    price.to <- as.numeric(quantile(events$price, 0.99))
 
   events <- events[events$price >= price.from & events$price <= price.to, ]  
     
@@ -326,10 +400,11 @@ plot.quote.map <- function(events,
   deleted <- events[events$action == "deleted", ]
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
+    
   p <- ggplot(data=events, mapping=aes(x=timestamp, y=price))
   p <- p + scale_y_continuous(breaks=seq(round(min(events$price)), 
       round(max(events$price)), by=0.5), name="limit price")
-  p <- p + geom_point(data=created, mapping=aes(size=volume), colour="#333333", 
+  p <- p + geom_point(data=created, mapping=aes(size=volume), colour="#333333",
       shape=19)
   p <- p + geom_point(data=deleted, mapping=aes(size=volume), colour="#333333", 
       shape=1)
@@ -337,6 +412,7 @@ plot.quote.map <- function(events,
   p <- p + geom_point(data=events, mapping=aes(colour=direction), size=0.1)
   p <- p + scale_colour_manual(values=col.pal, guide="none")
   p <- p + xlab("time")
+
   p + theme.black()
 }
 
