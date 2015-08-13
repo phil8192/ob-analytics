@@ -484,24 +484,73 @@ plot.volume.map <- function(events,
   p + theme.black()
 }
 
-# order book cumulative volume at given point in time
+##' Visualise order book depth at any given point in time.
+##'
+##' Plots the cumalative volume on each side of the limit order book.
+##' 
+##' @param order.book A limit order book structure.
+##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars. 
+##' @param show.quantiles If true, highlight top 1% highest volume.
+##' @param show.volume  If true, also show non-cumulative volume.
+##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' # get a limit order book for a specific point in time, limited to +- 150bps
+##' # above/below best bid/ask price.
+##' lob <- order.book(lob.data$events,
+##'     tp=as.POSIXct("2015-05-01 09:38:17.429", tz="UTC"), bps.range=150)
+##'
+##' # visualise the order book liquidity.
+##' plot.current.depth(lob, volume.scale=10^-8)
+##' 
+##' }
+##' @export plot.current.depth
+plot.current.depth <- function(order.book,
+    volume.scale=1,
+    show.quantiles=T,
+    show.volume=T) {
 
-#' @export plot.current.depth
-plot.current.depth <- function(order.book, ascii=F) {
+  # order data.
   bids <- reverse.matrix(order.book$bids)
   asks <- reverse.matrix(order.book$asks)
+
+  # combine both sides into single series.  
   x <- c(bids$price, tail(bids$price, 1), head(asks$price, 1), asks$price)
-  y <- c(bids$liquidity, 0, 0, asks$liquidity)
+  y1 <- c(bids$liquidity, 0, 0, asks$liquidity) * volume.scale
+  y2 <- c(bids$volume, 0, 0, asks$volume) * volume.scale
   col.pal <- c("#ff0000", "#0000ff")
   side <- c(rep("bid", nrow(bids)+1), rep("ask", nrow(asks)+1))
-  depth <- data.frame(price=x, liquidity=y, side=side)
+
+  # "melt" data into single data.frame.
+  depth <- data.frame(price=x, liquidity=y1, volume=y2, side=side)
   p <- ggplot(depth, aes(x=price, y=liquidity, group=side, colour=side))
   p <- p + scale_x_continuous(breaks=seq(round(min(bids$price)), 
       round(max(asks$price)), by=1))
   p <- p + scale_colour_manual(values=col.pal)  
+
+  # plot liquidity (cumulative sum of volume)
   p <- p + geom_step()
+
+  # plot volume
+  if(show.volume)
+    p <- p + geom_bar(stat="identity", mapping=aes(y=volume), colour="#555555")
+
+  # highlight highest 1% volume with vertical lines
+  if(show.quantiles) {
+    bid.quantiles <- with(bids, price[volume >= quantile(volume, 0.99)])
+    ask.quantiles <- with(asks, price[volume >= quantile(volume, 0.99)])
+
+    logger(paste("bid quantiles =", paste(bid.quantiles, collapse=", "),
+                 "ask quantiles =", paste(ask.quantiles, collapse=", ")))
+
+    p <- p + geom_vline(xintercept=bid.quantiles, colour="#222222")
+    p <- p + geom_vline(xintercept=ask.quantiles, colour="#222222")
+  }
+    
   p <- p + ggtitle(as.POSIXct(order.book$timestamp, origin="1970-01-01",
                               tz="UTC"))
+
   p + theme.black()
 }
 
