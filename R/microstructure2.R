@@ -2,7 +2,8 @@
 #'
 #' @name microstructure2
 #' @docType package
-#' @import ggplot2
+#' @import ggplot2 zoo
+#' @importFrom reshape2 melt
 NULL
 
 #' Example pre-processed data.

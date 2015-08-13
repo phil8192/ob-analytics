@@ -554,23 +554,56 @@ plot.current.depth <- function(order.book,
   p + theme.black()
 }
 
-# pct.type = vol | gap
-
-#' @export plot.percentiles
-plot.percentiles <- function(pct.type, depth.summary, 
+##' Visualise available limit order book liquidity through time.
+##'
+##' Plots the available volume in 25bps increments on each side of the order
+##' book in the form of a stacked area graph. The top of the graph depicts the
+##' ask side of the book, whilst the bottom depicts the bid side. Percentiles
+##' and order book sides can be separated by an optional subtle line for
+##' improved legibility.
+##' 
+##' @param depth.summary Depth summary data (lob.data$depth.summary).
+##' @param start.time Plot events from this time onward.
+##' @param end.time Plot events up until this time.
+##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars.
+##' @param percentile.line If true, separate percentiles with subtle line.
+##' @param side.line If true, separate bid/ask side with subtle line.
+##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' # visualise 2 hours of order book liquidity.
+##' # data will be aggregated to minute-by-minute resolution.
+##' plot.volume.percentiles(lob.data$depth.summary,
+##'     start.time=as.POSIXct("2015-05-01 11:00:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 13:00:00.000", tz="UTC"),
+##'     volume.scale=10^-8)
+##'
+##' # visualise 15 minutes of order book liquidity.
+##' # data will be aggregated to second-by-second resolution.
+##' plot.percentiles(lob.data$depth.summary,
+##'     start.time=as.POSIXct("2015-05-01 10:45:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 11:00:00.000", tz="UTC"),
+##'     volume.scale=10^-8)
+##' }
+##' @export plot.volume.percentiles
+plot.volume.percentiles <- function(depth.summary, 
     start.time=head(depth.summary$timestamp, 1),
-    end.time=tail(depth.summary$timestamp, 1), 
-    transform=function(x) x) {
+    end.time=tail(depth.summary$timestamp, 1),
+    volume.scale=1,
+    percentile.line=T,
+    side.line=T) {     
+        
   logger(paste("plot depth percentiles between", start.time, "and", end.time))
 
-  bid.names <- paste0("bid.", pct.type, seq(from=25, to=500, by=25), "bps")
-  ask.names <- paste0("ask.", pct.type, seq(from=25, to=500, by=25), "bps")
+  bid.names <- paste0("bid.vol", seq(from=25, to=500, by=25), "bps")
+  ask.names <- paste0("ask.vol", seq(from=25, to=500, by=25), "bps")
 
   td <- difftime(end.time, start.time, units="secs")
-  logger(td)
+  logger(paste("time range =", td, "secs"))
   td <- round(as.numeric(td))
 
-  # if(td > 15 minutes, minute ticks, else seconds. 
+  # resolution: if(td > 15 minutes, minute ticks, else seconds. 
   frequency <- ifelse(td > 900, "mins", "secs")
   ob.percentiles <- depth.summary[depth.summary$timestamp 
       >= start.time-ifelse(frequency == "mins", 60, 1) & depth.summary$timestamp
@@ -589,56 +622,72 @@ plot.percentiles <- function(pct.type, depth.summary,
   logger(paste("aggregation:", min(intervals), ":", max(intervals), "by =", 
       frequency))
 
-  # aggregate by intervals
+  # use zoo to aggregate by intervals. take mean of each interval.
   aggregated <- aggregate(zoo.obj, intervals, mean)
   ob.percentiles <- data.frame(timestamp=unique(intervals)+ifelse(frequency == 
       "mins", 60, 1), aggregated, row.names=NULL)
 
-  bid.names <- paste0("bid.", pct.type, sprintf("%03d", seq(from=25, to=500, 
+  bid.names <- paste0("bid.vol", sprintf("%03d", seq(from=25, to=500, 
       by=25)), "bps")
-  ask.names <- paste0("ask.", pct.type, sprintf("%03d", seq(from=25, to=500, 
+  ask.names <- paste0("ask.vol", sprintf("%03d", seq(from=25, to=500, 
       by=25)), "bps")
   colnames(ob.percentiles) <- c("timestamp", bid.names, ask.names) 
+
   max.ask <- max(rowSums(ob.percentiles[, 22:41]))
   max.bid <- max(rowSums(ob.percentiles[, 2:21]))
 
-  # centre
-  y.range <- transform(max(max.ask, max.bid)) # centre
-
+  # use reshape2 to flatten ob.percentiles into single data.frame.  
   melted.asks <- melt(ob.percentiles, id.vars="timestamp", 
       measure.vars=ask.names, variable.name="percentile", 
       value.name="liquidity")
   melted.asks$percentile <- factor(melted.asks$percentile, rev(ask.names))
-  melted.asks$liquidity <- transform(melted.asks$liquidity)
+  melted.asks$liquidity <- volume.scale*(melted.asks$liquidity)
   melted.bids <- melt(ob.percentiles, id.vars="timestamp", 
       measure.vars=bid.names, variable.name="percentile", 
       value.name="liquidity")
   melted.bids$percentile <- factor(melted.bids$percentile, bid.names)
-  melted.bids$liquidity <- transform(melted.bids$liquidity)
+  melted.bids$liquidity <- volume.scale*(melted.bids$liquidity)
+
   col.pal <- colorRampPalette(c("#f92b20", "#fe701b", "#facd1f", "#d6fd1c", 
       "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"))(20)
   col.pal <- c(col.pal, col.pal)
-  breaks <- c(rev(paste0("ask.", pct.type, sprintf("%03d", seq(from=50, to=500, 
-      by=50)), "bps")), paste0("bid.", pct.type, sprintf("%03d", seq(from=50, 
+  breaks <- c(rev(paste0("ask.vol", sprintf("%03d", seq(from=50, to=500, 
+      by=50)), "bps")), paste0("bid.vol", sprintf("%03d", seq(from=50, 
       to=500, by=50)), "bps"))
   legend.names <- c(rev(paste0("+", sprintf("%03d", seq(from=50, to=500, 
       by=50)), "bps")), paste0("-", sprintf("%03d", seq(from=50, to=500, 
       by=50)), "bps"))
-  logger("creating plot..")                  
+
+  # top stack (asks)  
   p <- ggplot(data=melted.asks, mapping=aes(x=timestamp, y=liquidity, 
       fill=percentile))
   p <- p + geom_area(position="stack")
-  p <- p + geom_line(mapping=aes(ymax=0), position="stack", col="black", 
-      size=0.25)
+
+  # bottom stack (bids)
   p <- p + geom_area(data=melted.bids, aes(x=timestamp, y=-liquidity, 
       fill=percentile), position="stack")
-  p <- p + geom_line(data=melted.bids, aes(x=timestamp, y=-liquidity, ymax=0), 
-      position="stack", col="black", size=0.25)
+    
+  # seperate percentiles by black line    
+  if(percentile.line) {
+    p <- p + geom_line(mapping=aes(ymax=0), position="stack", col="#000000",
+        size=0.1)
+    p <- p + geom_line(data=melted.bids, aes(x=timestamp, y=-liquidity, ymax=0), 
+        position="stack", col="#000000", size=0.1)
+  }
+
+  # colour  
   p <- p + scale_fill_manual(values=col.pal, breaks=breaks, labels=legend.names,
       name="depth         \n")
+
+  # seperate bid ask sides by black line  
+  if(side.line)
+    p <- p + geom_hline(yintercept=0, col="#000000", size=0.1)
+
+  # limit the volume range    
+  y.range <- volume.scale*(max(max.ask, max.bid))
   p <- p + ylim(-y.range, y.range)
-  p <- p + xlab("time")
-  p + theme.black()
+
+  p + xlab("time") + theme.black()
 }
 
 # val = volume | price
@@ -648,6 +697,7 @@ plot.histogram <- function(events,
     start.time=head(events$timestamp, 1),
     end.time=tail(events$timestamp, 1),
     val="") {
+    
   events <- events[events$timestamp >= start.time 
                  & events$timestamp <= end.time, ] 
   td <- difftime(end.time, start.time, units="secs")
