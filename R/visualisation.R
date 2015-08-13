@@ -104,7 +104,7 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 ##'                    volume.scale
 ##' @param volume.to Plot depth with volume <= this value relevant to
 ##'                  volume scale.
-##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars. 
+##' @param volume.scale Volume scale factor.
 ##' @author phil
 ##' @examples
 ##' \dontrun{
@@ -298,6 +298,7 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=T,
   }
   p <- p + theme(legend.title=element_text(hjust=3, vjust=20))
   p <- p + xlab("time")
+
   p + theme.black()
 }
 
@@ -317,7 +318,7 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=T,
 ##'                    volume.scale
 ##' @param volume.to Plot events with volume <= this value relevant to
 ##'                  volume scale.
-##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars. 
+##' @param volume.scale Volume scale factor.
 ##' @author phil
 ##' @examples
 ##' \dontrun{
@@ -411,7 +412,7 @@ plot.event.map <- function(events,
 ##'                    volume.scale
 ##' @param volume.to Plot events with volume <= this value relevant to
 ##'                  volume scale.
-##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars. 
+##' @param volume.scale Volume scale factor.
 ##' @param log.scale If true, plot volume on logarithmic scale.
 ##' @author phil
 ##' @examples
@@ -489,7 +490,7 @@ plot.volume.map <- function(events,
 ##' Plots the cumalative volume on each side of the limit order book.
 ##' 
 ##' @param order.book A limit order book structure.
-##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars. 
+##' @param volume.scale Volume scale factor.
 ##' @param show.quantiles If true, highlight top 1% highest volume.
 ##' @param show.volume  If true, also show non-cumulative volume.
 ##' @author phil
@@ -565,7 +566,7 @@ plot.current.depth <- function(order.book,
 ##' @param depth.summary Depth summary data (lob.data$depth.summary).
 ##' @param start.time Plot events from this time onward.
 ##' @param end.time Plot events up until this time.
-##' @param volume.scale Rescale the volume. 0.01 = Cents to Dollars.
+##' @param volume.scale Volume scale factor.
 ##' @param percentile.line If true, separate percentiles with subtle line.
 ##' @param side.line If true, separate bid/ask side with subtle line.
 ##' @author phil
@@ -690,40 +691,61 @@ plot.volume.percentiles <- function(depth.summary,
   p + xlab("time") + theme.black()
 }
 
-# val = volume | price
-
-#' @export plot.histogram
+##' Plot a histogram given event data.
+##'
+##' Convenience function for plotting event price and volume histograms.
+##' Will plot ask/bid bars side by side.
+##' 
+##' @param events Event data.
+##' @param start.time Include event data >= this time.
+##' @param end.time Include event data <= this time.
+##' @param val "volume" or "price".
+##' @param bw Bar width (for price, 0.5 = 50 cent buckets.)
+##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' # necessary columns from event data.
+##' events <- lob.data$events[, c("timestamp", "direction", "price", "volume")]
+##'
+##' # re-scale volume (if needed)
+##' events$volume <- events$volume * 10^-8
+##'
+##' # histogram of all volume aggregated into 5 unit buckets.
+##' plot.histogram(events[events$volume < 50, ], val="volume", bw=5)
+##'
+##' dev.new()
+##'
+##' # histogram of 99% of limit prices during a 1 hour time frame.
+##' # bar width set to 0.25: counts are aggregated into 25 cent buckets. 
+##' plot.histogram(events[events$price <= quantile(events$price, 0.99)
+##'                     & events$price >= quantile(events$price, 0.01), ],
+##'     start.time=as.POSIXct("2015-05-01 06:00:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 07:00:00.000", tz="UTC"),
+##'     val="price", bw=0.25)
+##'
+##' }
+##' @export plot.histogram
 plot.histogram <- function(events,
-    start.time=head(events$timestamp, 1),
-    end.time=tail(events$timestamp, 1),
-    val="") {
+    start.time=min(events$timestamp),
+    end.time=max(events$timestamp),
+    val="volume",
+    bw=NULL) {
+ 
+  stopifnot(val == "volume" || val == "price")
+  logger(paste("from =", start.time, "to =", end.time))
     
-  events <- events[events$timestamp >= start.time 
-                 & events$timestamp <= end.time, ] 
-  td <- difftime(end.time, start.time, units="secs")
-  td <- round(as.numeric(td)) 
-  if(val=="volume") {
-    if(td > 10800) bw <- 10
-    else bw <- 1
-  }
-  if(val=="price") {
-    if(td > 10800) bw <- 5
-    else bw <- 0.25
-  }
-  p <- ggplot(data=events, mapping=aes(x=val, fill=direction,
-      colour=direction))
+  events <- events[events$timestamp >= start.time
+                 & events$timestamp <= end.time, ]
+
+  # use aes_string for variable x value.
+  p <- ggplot(data=events,
+              mapping=aes_string(x=val, fill="direction", colour="direction"))
+    
   p <- p + geom_bar(binwidth=bw, position="dodge")
   p <- p + scale_colour_manual(values=c("#0000ff", "#ff0000"))
   p <- p + scale_fill_manual(values=c("#0000ff", "#ff0000"))
   p <- p + ggtitle(paste("events", val, "distribution"))
+    
   p + theme.black()
 }
-
-# x=volume vs event count. 
-
-#' @export plot.volume.histogram
-plot.volume.histogram <- function(...) plot.histogram(..., val="volume")
-
-#' @export plot.price.histogram
-plot.price.histogram  <- function(...) plot.histogram(..., val="price")
-
