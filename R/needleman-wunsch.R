@@ -7,7 +7,7 @@
 ##' @param filter A similarity function. Default: 1 if equal, -1 otherwise.
 ##' @return A similarity matrix.
 ##' @author phil
-s.matrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
+sMatrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
   sapply(b, function(b) filter(b, a))
 }
 
@@ -17,7 +17,7 @@ s.matrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 ##'
 ##' todo: rcpp. (http://adv-r.had.co.nz/Rcpp.html)
 ##' 
-##' @param s.matrix Similarity matrix. See s.matrix(...).
+##' @param s.matrix Similarity matrix. See sMatrix(...).
 ##' @param gap Penality assigned to a gap (missing or extra value).
 ##' @return 2 column matrix. First column = similarity matrix rows
 ##' (first sequence), Second column = similarity matrix columns
@@ -26,7 +26,7 @@ s.matrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 ##' \preformatted{
 ##'   > a <- c(2,4,5)
 ##'   > b <- 1:5
-##'   > align.s(s.matrix(a,b))
+##'   > alignS(sMatrix(a,b))
 ##'        a b
 ##'   [1,] 1 2
 ##'   [2,] 2 4
@@ -38,10 +38,10 @@ s.matrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 ##' \dontrun{
 ##'   a <- c(2,4,5)
 ##'   b <- 1:5
-##'   align.s(s.matrix(a, b))
+##'   alignS(sMatrix(a, b))
 ##' }
 ##' @references \url{https://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm}
-align.s <- function(s.matrix, gap=-1) {
+alignS <- function(s.matrix, gap=-1) {
   f.matrix <- (function() {
     s.len <- nrow(s.matrix)
     q.len <- ncol(s.matrix)

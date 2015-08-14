@@ -1,12 +1,12 @@
-vector.diff <- function(v) c(0, tail(v, -1) - head(v, -1))
+vectorDiff <- function(v) c(0, tail(v, -1) - head(v, -1))
 
-reverse.matrix <- function(m) m[rev(1:nrow(m)), ]
+reverseMatrix <- function(m) m[rev(1:nrow(m)), ]
 
 norml <- function(v, minv=min(v), maxv=max(v)) (v-minv)/(maxv-minv)
 
-to.zoo <- function(v) zoo(v[, -which(colnames(v) == "timestamp")], v$timestamp)
+toZoo <- function(v) zoo(v[, -which(colnames(v) == "timestamp")], v$timestamp)
 
-interval.sum.breaks <- function(v, breaks) {
+intervalSumBreaks <- function(v, breaks) {
   cs <- cumsum(v)
   intervals <- cs[breaks]
   c(head(intervals, 1), tail(intervals, -1) - head(intervals, -1)) 
@@ -14,13 +14,13 @@ interval.sum.breaks <- function(v, breaks) {
 
 vwap <- function(price, volume) as.numeric(price %*% volume / sum(volume))
 
-interval.vwap <- function(price, volume, breaks) 
-  interval.sum.breaks(price*volume, breaks) /
-      interval.sum.breaks(volume, breaks)
+intervalVwap <- function(price, volume, breaks) 
+  intervalSumBreaks(price*volume, breaks) /
+      intervalSumBreaks(volume, breaks)
 
 # similarly, can define a cumulative definition of price.level.density:
-interval.price.level.gaps <- 
-  function(volume, breaks) interval.sum.breaks(ifelse(volume == 0, 1, 0), 
+intervalPriceLevelGaps <- 
+  function(volume, breaks) intervalSumBreaks(ifelse(volume == 0, 1, 0), 
       breaks)
 
 # logs to console in form of:

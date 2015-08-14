@@ -12,7 +12,7 @@
 ##'
 ##' \preformatted{
 ##' > tp <- as.POSIXct("2015-05-01 12:30:15.342", tz="UTC")
-##' > order.book(lob.data$events, tp, max.price.levels=5)
+##' > orderBook(lob.data$events, tp, max.price.levels=5)
 ##' $timestamp
 ##' [1] "2015-05-01 12:45:15.342 UTC"
 ##' 
@@ -41,16 +41,18 @@
 ##'                 bps = Distance in BPS from current best bid/ask.
 ##' }
 ##' @author phil
-##' @export order.book
+##' @export orderBook
 ##' @examples
 ##' \dontrun{
 ##' tp <- as.POSIXct("2015-05-01 12:30:15.342", tz="UTC")
-##' order.book(lob.data$events, max.price.levels=5)
+##' orderBook(lob.data$events, max.price.levels=5)
 ##' }
-order.book <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
+orderBook <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
     max.price.levels=NULL, bps.range=0, min.bid=0, max.ask=Inf) {
+
   pct.range <- bps.range*0.0001
-  active.bids <- function(active.orders) {
+
+  activeBids <- function(active.orders) {
     bids <- active.orders[active.orders$direction=="bid" & 
         active.orders$type != "market", ]
     # order by price, then each price level is fifo, ordered by order id (could 
@@ -60,7 +62,8 @@ order.book <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
     cbind(bids, bps=((first.price-bids$price)/first.price)*10000, 
         liquidity=cumsum(bids$volume))
   }
-  active.asks <- function(active.orders) {
+
+  activeAsks <- function(active.orders) {
     asks <- active.orders[active.orders$direction=="ask" & 
         active.orders$type != "market", ]
     asks <- asks[order(asks$price, asks$id), ]
@@ -68,6 +71,7 @@ order.book <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
     cbind(asks, bps=((asks$price-first.price)/first.price)*10000, 
         liquidity=cumsum(asks$volume))
   }
+
   active.orders <- (function() {
     # current active orders (all active orders + their entire lifecycle)
     created.before <- events[events$action == "created" & 
@@ -96,24 +100,28 @@ order.book <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
     stopifnot(all(!duplicated(active.orders$id)))
 
     active.orders
+
   })()
   
-  asks <- active.asks(active.orders)[, c("id", "timestamp",
+  asks <- activeAsks(active.orders)[, c("id", "timestamp",
       "exchange.timestamp", "price", "volume", "liquidity", "bps")]
   # reverse the asks (ascending price)
   asks <- asks[rev(1:nrow(asks)), ]
-  bids <- active.bids(active.orders)[, c("id", "timestamp",
+  bids <- activeBids(active.orders)[, c("id", "timestamp",
       "exchange.timestamp", "price", "volume", "liquidity", "bps")]
+
   if(pct.range > 0) {
     max.ask <- tail(asks, 1)$price*(1+pct.range)
     asks <- asks[asks$price <= max.ask, ]
     min.bid <- head(bids, 1)$price*(1-pct.range)
     bids <- bids[bids$price >= min.bid, ]
   } 
+
   if(!is.null(max.price.levels)) {
     asks <- tail(asks, max.price.levels)
     bids <- head(bids, max.price.levels)
   }
+
   rownames(asks) <- NULL
   rownames(bids) <- NULL
 

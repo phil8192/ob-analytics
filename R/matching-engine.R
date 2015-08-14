@@ -12,7 +12,7 @@
 ##' @param events data frame of order book events. 
 ##' @param cut.off.ms events occuring outside of this time (in milliseconds) 
 ##'        will be considered as candidate matches.  
-event.match <- function(events, cut.off.ms=5000) {
+eventMatch <- function(events, cut.off.ms=5000) {
   matcher <- function() {
     logger(paste("matching", nrow(events), "events..."))
 
@@ -64,12 +64,12 @@ event.match <- function(events, cut.off.ms=5000) {
         # process events by "bursts"/"pulses".
 
         # same as: t(ifelse(abs(distance.matrix.ms) <= 5000, 1, -1))
-        sm <- s.matrix(bids$timestamp, asks$timestamp, filter=function(f1, f2) {
+        sm <- sMatrix(bids$timestamp, asks$timestamp, filter=function(f1, f2) {
           ifelse(abs(as.integer(difftime(f1, f2, units="secs")*1000)) <=
               cut.off.ms, 1, -1)
         })
 
-        aligned.idx <- align.s(s.matrix=sm)
+        aligned.idx <- alignS(s.matrix=sm)
 
         matched.bids <- bids[aligned.idx[, 1], ]
         matched.asks <- asks[aligned.idx[, 2], ]

@@ -28,7 +28,7 @@
 ##' events.
 ##' 
 ##' @author phil
-match.trades <- function(events) {
+matchTrades <- function(events) {
 
   logger(paste("inferring trades from", nrow(events), "events..."))
 

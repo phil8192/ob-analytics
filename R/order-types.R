@@ -22,10 +22,10 @@
 ##' @param trades Execution data.
 ##' @return The limit order event data with updated type field.
 ##' @author phil
-set.order.types <- function(events, trades) {
-  is.pacman <- function(quotes) {
+setOrderTypes <- function(events, trades) {
+  isPacman <- function(quotes) {
     tapply(quotes$price, quotes$id, function(prices) {
-      any(vector.diff(prices) != 0)
+      any(vectorDiff(prices) != 0)
     })
   }
 
@@ -36,7 +36,7 @@ set.order.types <- function(events, trades) {
       "resting-limit", "market-limit", "pacman", "market"))
 
   # pacman orders (this needs to be determined first)
-  pac.men <- which(is.pacman(events))
+  pac.men <- which(isPacman(events))
   logger(paste("found", length(pac.men), "pacman orders"))
   events[which(events$id %in% names(pac.men)), ]$type <- "pacman"
   

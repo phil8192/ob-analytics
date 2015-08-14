@@ -1,17 +1,17 @@
 Package: microstructure2
-Version: 1.0.0
-LazyData: true
-Title: microstructure 
+Title: Limit Order Book Analysis
 Description: The description of a package is usually long,
-    spanning multiple lines. The second and subsequent lines
-    should be indented, usually with four spaces.
-Authors@R: person("Phil", "Nocturne", email="phil@parasec.net", 
-    role=c("aut", "cre"))
+  spanning multiple lines. The second and subsequent lines
+  should be indented, usually with four spaces.
+Author: Phil Nocturne
+Maintainer: Phil Nocturne <phil@parasec.net>
+Date: 2015-08-14
+Version: 0.1.0
+URL: http://parasec.net
+BugReports: http://parasec.net/contact
 License: GPL (>= 2)
-Imports:
-  zoo,
-  ggplot2,
-  reshape2
-Suggests:
-  grid,
-  testthat
+Depends: R (>= 3.0.0)
+Imports: zoo, ggplot2, reshape2
+Suggests: grid, testthat
+LazyData: true
+

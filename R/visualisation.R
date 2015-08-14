@@ -4,7 +4,7 @@
 ##'
 ##' @return Theme. 
 ##' @author phil
-theme.black <- function() {
+themeBlack <- function() {
   theme_bw() + theme(panel.background=element_rect(fill="#000000"),
                  panel.border=element_rect(size=0),
 		 panel.grid.major=element_blank(),
@@ -21,26 +21,30 @@ theme.black <- function() {
 ##'
 ##' @param timestamp POSIXct timestamps.
 ##' @param series The time series.
-##' @param start.time, end.time, Inclusive start and end time of plot.
-##' @param title, y.label Title and Y axis label of the plot.
+##' @param start.time Plot from this time onward.
+##' @param end.time Plot up until this time.
+##' @param title Plot title.
+##' @param y.label Y axis label of the plot.
 ##' @author phil
 ##' @examples
-##' \dontrun{
-##' with(lob.data$trades, plot.time.series(timestamp, price))
+##'
+##' with(lob.data$trades, plotTimeSeries(timestamp, price))
 ##'
 ##' timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"), 
 ##'                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
 ##' series <- rep(1:10, 6)
-##' plot.time.series(timestamp, series)
-##' }
-##' @export plot.time.series
-plot.time.series <- function(timestamp, series, start.time=min(timestamp),
+##' plotTimeSeries(timestamp, series)
+##'
+##' @export plotTimeSeries
+plotTimeSeries <- function(timestamp, series, start.time=min(timestamp),
     end.time=max(timestamp), title="time series", y.label="series") {
+
   stopifnot(length(timestamp) == length(series))
-  logger(paste("plot time series between", start.time, "and", end.time))
+  logger(paste("plotTimeSeries between", start.time, "and", end.time))
+
   df <- data.frame(ts=timestamp, val=series)
   df <- df[df$ts >= start.time & df$ts <= end.time, ]
-  p <- ggplot(data=df, aes(x=ts, y=val))
+  p <- ggplot(data=df, mapping=aes_string(x="ts", y="val"))
   ### ggplot ignores timezone, even though explicitly set. work around is:
   p <- p + scale_x_datetime(limits=c(start.time, end.time), 
       labels=function(x) format(x, "%H:%M:%S", tz="UTC"))
@@ -50,10 +54,11 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
   p <- p + geom_line(colour="grey")
   p <- p + xlab("time")
   p <- p + ylab(y.label)
-  p + theme.black()
+
+  p + themeBlack()
 }
 
-##' Plot trades.
+##' plotTrades.
 ##'
 ##' A convenience function for plotting the trades data.frame in a nice way.
 ##' 
@@ -62,19 +67,22 @@ plot.time.series <- function(timestamp, series, start.time=min(timestamp),
 ##' @param end.time Plot to
 ##' @author phil
 ##' @examples
-##' \dontrun{
-##' with(lob.data, plot.trades(trades))
-##' }
-##' @export plot.trades
-plot.trades <- function(trades, start.time=min(trades$timestamp),
+##' 
+##' with(lob.data, plotTrades(trades))
+##' 
+##' @export plotTrades
+plotTrades <- function(trades, start.time=min(trades$timestamp),
     end.time=max(trades$timestamp)) {
+
   ts <- trades[trades$timestamp >= start.time & trades$timestamp <= end.time, ]
-  p <- ggplot(data=ts, aes(x=timestamp, y=price))
+
+  p <- ggplot(data=ts, mapping=aes_string(x="timestamp", y="price"))
   p <- p + scale_y_continuous(breaks=seq(round(min(ts$price)), 
       round(max(ts$price)), by=1), name="limit price")
   p <- p + geom_step(data=ts, colour="grey")
   p <- p + xlab("time")
-  p + theme.black()
+
+  p + themeBlack()
 }
 
 ##' Plot order book price level heat map. 
@@ -107,18 +115,19 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 ##' @param volume.scale Volume scale factor.
 ##' @author phil
 ##' @examples
-##' \dontrun{
+##' 
 ##' # bid/ask spread.
 ##' spread <- with(lob.data, depth.summary[, c("timestamp", "best.bid.price",
 ##'                                            "best.ask.price")])
+##' \dontrun{
 ##'
 ##' # plot all depth levels, rescaling the volume by 10^-8.
 ##' # produce 2 plots side-by-side: second plot contains depth levels with > 50
 ##' # units of volume.
-##' p1 <- with(lob.data, plot.price.levels(depth, spread,
+##' p1 <- with(lob.data, plotPriceLevels(depth, spread,
 ##'                                        col.bias=0.1,
 ##'                                        volume.scale=10^-8))
-##' p2 <- with(lob.data, plot.price.levels(depth, spread,
+##' p2 <- with(lob.data, plotPriceLevels(depth, spread,
 ##'                                        col.bias=0.1,
 ##'                                        volume.scale=10^-8,
 ##'                                        volume.from=50))
@@ -127,24 +136,22 @@ plot.trades <- function(trades, start.time=min(trades$timestamp),
 ##' print(p1, vp=viewport(layout.pos.row=1, layout.pos.col=1))
 ##' print(p2, vp=viewport(layout.pos.row=1, layout.pos.col=2))
 ##'
-##' dev.new()
+##' }
 ##'
 ##' # zoom into 1 hour of activity, show the spread and directional trades. 
-##' with(lob.data, plot.price.levels(depth, spread, trades,
+##' with(lob.data, plotPriceLevels(depth, spread, trades,
 ##'    start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
 ##'    end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
 ##'    volume.scale=10^-8))
 ##'
-##' dev.new()
-##'
 ##' # zoom in to 15 minutes of activity, show the bid/ask midprice.
-##' with(lob.data, plot.price.levels(depth, spread,
-##'    show.mp=F,
+##' with(lob.data, plotPriceLevels(depth, spread,
+##'    show.mp=FALSE,
 ##'    start.time=as.POSIXct("2015-05-01 18:00:00.000", tz="UTC"),
 ##'    end.time=as.POSIXct("2015-05-01 18:15:00.000", tz="UTC")))
-##' }
-##' @export plot.price.levels
-plot.price.levels <- function(depth, spread=NULL, trades=NULL,
+##'
+##' @export plotPriceLevels
+plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
     show.mp=T, 
     show.all.depth=F,
     col.bias=0.1,
@@ -195,7 +202,7 @@ plot.price.levels <- function(depth, spread=NULL, trades=NULL,
     depth <- depth[depth$volume <= volume.to, ]
 
   # now filter the depth by time window
-  depth.filtered <- filter.depth(depth, start.time, end.time)
+  depth.filtered <- filterDepth(depth, start.time, end.time)
 
   # if requested, remove price levels with no update during time window.
   if(!show.all.depth) {
@@ -213,12 +220,12 @@ plot.price.levels <- function(depth, spread=NULL, trades=NULL,
   depth.filtered[depth.filtered$volume==0, ]$volume <- NA
 
   # after filtering, plot.
-  plot.price.levels.faster(depth.filtered, spread, trades, show.mp, col.bias)
+  plotPriceLevelsFaster(depth.filtered, spread, trades, show.mp, col.bias)
 }
 
 ##' Poor man's heatmap.
 ##'
-##' Used by plot.price.levels filtering function. 
+##' Used by plotPriceLevels filtering function. 
 ##' 
 ##' An individual order book will consist of hundreds of thousands to millions
 ##' of updates per day. Plotting a heatmap of order book depth with even a few
@@ -231,12 +238,14 @@ plot.price.levels <- function(depth, spread=NULL, trades=NULL,
 ##' @param spread Spread to overlay (lob.data$depth.summary[, c(1, 2, 64)])
 ##' @param trades Trades (lob.data$trades).
 ##' @param show.mp If True, spread will be summarised as midprice.
-##' @param show.all.depth If True, show resting (and never hit) limit orders.
 ##' @param col.bias 1 = uniform colour spectrum. 0.25 = bias toward 0.25
 ##'                 (more red less blue). <= 0 enables logarithmic scaling.
 ##' @author phil
-plot.price.levels.faster <- function(depth, spread, trades, show.mp=T, 
+plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T, 
     col.bias=0.1) {
+
+  # ggplot2 hack (see plotVolumePercentiles()) 
+  price <- NULL; volume <- NULL; best.bid.price <- NULL; best.ask.price <- NULL
 
   buys <- trades[trades$direction == "buy", ]
   sells <- trades[trades$direction == "sell", ]
@@ -299,7 +308,7 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=T,
   p <- p + theme(legend.title=element_text(hjust=3, vjust=20))
   p <- p + xlab("time")
 
-  p + theme.black()
+  p + themeBlack()
 }
 
 ##' Plot limit order event map.
@@ -321,19 +330,18 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=T,
 ##' @param volume.scale Volume scale factor.
 ##' @author phil
 ##' @examples
-##' \dontrun{
 ##'
 ##' # plot all orders 
-##' with(lob.data, plot.quote.map(events))
+##' with(lob.data, plotEventMap(events))
 ##'
 ##' # 1 hour of activity and re-scale the volume
-##' with(lob.data, plot.quote.map(events,
+##' with(lob.data, plotEventMap(events,
 ##'     start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
 ##'     volume.scale=10^-8))
 ##' # 15 minutes of activity >= 5 (re-scaled) volume within price range
 ##' # $ [220, 245]
-##' with(lob.data, plot.quote.map(events,
+##' with(lob.data, plotEventMap(events,
 ##'     start.time=as.POSIXct("2015-05-01 08:00:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 08:15:00.000", tz="UTC"),
 ##'     price.from=220,
@@ -341,9 +349,8 @@ plot.price.levels.faster <- function(depth, spread, trades, show.mp=T,
 ##'     volume.from=5,
 ##'     volume.scale=10^-8))
 ##'
-##' }
-##' @export plot.event.map
-plot.event.map <- function(events,
+##' @export plotEventMap
+plotEventMap <- function(events,
     start.time=min(events$timestamp), 
     end.time=max(events$timestamp),
     price.from=NULL,
@@ -379,19 +386,20 @@ plot.event.map <- function(events,
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
     
-  p <- ggplot(data=events, mapping=aes(x=timestamp, y=price))
+  p <- ggplot(data=events, mapping=aes_string(x="timestamp", y="price"))
   p <- p + scale_y_continuous(breaks=seq(round(min(events$price)), 
       round(max(events$price)), by=0.5), name="limit price")
-  p <- p + geom_point(data=created, mapping=aes(size=volume), colour="#333333",
-      shape=19)
-  p <- p + geom_point(data=deleted, mapping=aes(size=volume), colour="#333333", 
-      shape=1)
+  p <- p + geom_point(data=created, 
+      mapping=aes_string(size="volume"), colour="#333333", shape=19)
+  p <- p + geom_point(data=deleted, 
+      mapping=aes_string(size="volume"), colour="#333333", shape=1)
   p <- p + scale_size_continuous(name="volume        \n") 
-  p <- p + geom_point(data=events, mapping=aes(colour=direction), size=0.1)
+  p <- p + geom_point(data=events, 
+      mapping=aes_string(colour="direction"), size=0.1)
   p <- p + scale_colour_manual(values=col.pal, guide="none")
   p <- p + xlab("time")
 
-  p + theme.black()
+  p + themeBlack()
 }
 
 ##' Visualise flashed-limit order volume.
@@ -416,21 +424,19 @@ plot.event.map <- function(events,
 ##' @param log.scale If true, plot volume on logarithmic scale.
 ##' @author phil
 ##' @examples
-##' \dontrun{
 ##'
 ##' # plot all fleeting limit order volume using logarithmic scale.
-##' with(lob.data, plot.volume.map(events, volume.scale=10^-8, log.scale=T))
+##' with(lob.data, plotVolumeMap(events, volume.scale=10^-8, log.scale=TRUE))
 ##'
 ##' # plot fleeting limit order volume within 1 hour range up until 10 units of
 ##' # volume.
-##' with(lob.data, plot.volume.map(events, volume.scale=10^-8,
+##' with(lob.data, plotVolumeMap(events, volume.scale=10^-8,
 ##'     start.time=as.POSIXct("2015-05-01 09:30:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 10:30:00.000", tz="UTC"),
 ##'     volume.to=10))
 ##'
-##' }
-##' @export plot.volume.map
-plot.volume.map <- function(events,
+##' @export plotVolumeMap
+plotVolumeMap <- function(events,
     action="deleted", 
     start.time=min(events$timestamp),
     end.time=max(events$timestamp),
@@ -474,15 +480,15 @@ plot.volume.map <- function(events,
     
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
-  p <- ggplot(data=events, mapping=aes(x=timestamp, y=volume))
-  p <- p + geom_point(mapping=aes(colour=direction), size=1, shape=15)
+  p <- ggplot(data=events, mapping=aes_string(x="timestamp", y="volume"))
+  p <- p + geom_point(mapping=aes_string(colour="direction"), size=1, shape=15)
   p <- p + scale_colour_manual(values=col.pal, name="direction     \n")
   p <- p + scale_y_continuous(name="cancelled volume",
       labels=function(y) sprintf("%5s", sprintf("%.2f", y)),
       trans=vol.scale)
   p <- p + xlab("time")
 
-  p + theme.black()
+  p + themeBlack()
 }
 
 ##' Visualise order book depth at any given point in time.
@@ -495,26 +501,24 @@ plot.volume.map <- function(events,
 ##' @param show.volume If true, also show non-cumulative volume.
 ##' @author phil
 ##' @examples
-##' \dontrun{
 ##'
 ##' # get a limit order book for a specific point in time, limited to +- 150bps
 ##' # above/below best bid/ask price.
-##' lob <- order.book(lob.data$events,
+##' lob <- orderBook(lob.data$events,
 ##'     tp=as.POSIXct("2015-05-01 09:38:17.429", tz="UTC"), bps.range=150)
 ##'
 ##' # visualise the order book liquidity.
-##' plot.current.depth(lob, volume.scale=10^-8)
+##' plotCurrentDepth(lob, volume.scale=10^-8)
 ##' 
-##' }
-##' @export plot.current.depth
-plot.current.depth <- function(order.book,
+##' @export plotCurrentDepth
+plotCurrentDepth <- function(order.book,
     volume.scale=1,
     show.quantiles=T,
     show.volume=T) {
 
   # order data.
-  bids <- reverse.matrix(order.book$bids)
-  asks <- reverse.matrix(order.book$asks)
+  bids <- reverseMatrix(order.book$bids)
+  asks <- reverseMatrix(order.book$asks)
 
   # combine both sides into single series.  
   x <- c(bids$price, tail(bids$price, 1), head(asks$price, 1), asks$price)
@@ -525,7 +529,8 @@ plot.current.depth <- function(order.book,
 
   # "melt" data into single data.frame.
   depth <- data.frame(price=x, liquidity=y1, volume=y2, side=side)
-  p <- ggplot(depth, aes(x=price, y=liquidity, group=side, colour=side))
+  p <- ggplot(data=depth, 
+      mapping=aes_string(x="price", y="liquidity", group="side",colour="side"))
   p <- p + scale_x_continuous(breaks=seq(round(min(bids$price)), 
       round(max(asks$price)), by=1))
   p <- p + scale_colour_manual(values=col.pal)  
@@ -535,7 +540,8 @@ plot.current.depth <- function(order.book,
 
   # plot volume
   if(show.volume)
-    p <- p + geom_bar(stat="identity", mapping=aes(y=volume), colour="#555555")
+    p <- p + geom_bar(stat="identity", 
+        mapping=aes_string(y="volume"), colour="#555555")
 
   # highlight highest 1% volume with vertical lines
   if(show.quantiles) {
@@ -552,7 +558,7 @@ plot.current.depth <- function(order.book,
   p <- p + ggtitle(as.POSIXct(order.book$timestamp, origin="1970-01-01",
                               tz="UTC"))
 
-  p + theme.black()
+  p + themeBlack()
 }
 
 ##' Visualise available limit order book liquidity through time.
@@ -571,29 +577,35 @@ plot.current.depth <- function(order.book,
 ##' @param side.line If true, separate bid/ask side with subtle line.
 ##' @author phil
 ##' @examples
-##' \dontrun{
 ##'
 ##' # visualise 2 hours of order book liquidity.
 ##' # data will be aggregated to minute-by-minute resolution.
-##' plot.volume.percentiles(lob.data$depth.summary,
+##' plotVolumePercentiles(lob.data$depth.summary,
 ##'     start.time=as.POSIXct("2015-05-01 11:00:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 13:00:00.000", tz="UTC"),
 ##'     volume.scale=10^-8)
 ##'
 ##' # visualise 15 minutes of order book liquidity.
 ##' # data will be aggregated to second-by-second resolution.
-##' plot.percentiles(lob.data$depth.summary,
+##' plotVolumePercentiles(lob.data$depth.summary,
 ##'     start.time=as.POSIXct("2015-05-01 10:45:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 11:00:00.000", tz="UTC"),
 ##'     volume.scale=10^-8)
-##' }
-##' @export plot.volume.percentiles
-plot.volume.percentiles <- function(depth.summary, 
+##'
+##' @export plotVolumePercentiles
+plotVolumePercentiles <- function(depth.summary, 
     start.time=head(depth.summary$timestamp, 1),
     end.time=tail(depth.summary$timestamp, 1),
     volume.scale=1,
     percentile.line=T,
     side.line=T) {     
+
+  # ggplot2 hack
+  # this is a hack to stop (R CMD check) complaining about ggplot's aes()
+  # function refering to global vars. other option is to enclose ggplot call
+  # within a with(data, {}) block or use aes_string().
+  # see: http://stackoverflow.com/questions/9439256
+  liquidity <- NULL; percentile <- NULL 
         
   logger(paste("plot depth percentiles between", start.time, "and", end.time))
 
@@ -616,7 +628,7 @@ plot.volume.percentiles <- function(depth.summary,
       fromLast=T), ] 
 
   # convert to zoo object
-  zoo.obj <- to.zoo(ob.percentiles)
+  zoo.obj <- toZoo(ob.percentiles)
 
   # intervals truncated to frequency
   intervals <- as.POSIXct(trunc(time(zoo.obj), frequency))
@@ -660,19 +672,21 @@ plot.volume.percentiles <- function(depth.summary,
       by=50)), "bps"))
 
   # top stack (asks)  
-  p <- ggplot(data=melted.asks, mapping=aes(x=timestamp, y=liquidity, 
-      fill=percentile))
+  p <- ggplot(data=melted.asks, 
+      mapping=aes(x=timestamp, y=liquidity, fill=percentile))
   p <- p + geom_area(position="stack")
 
   # bottom stack (bids)
-  p <- p + geom_area(data=melted.bids, aes(x=timestamp, y=-liquidity, 
-      fill=percentile), position="stack")
+  p <- p + geom_area(data=melted.bids, 
+      mapping=aes(x=timestamp, y=-liquidity, fill=percentile), 
+      position="stack")
     
   # seperate percentiles by black line    
   if(percentile.line) {
     p <- p + geom_line(mapping=aes(ymax=0), position="stack", col="#000000",
         size=0.1)
-    p <- p + geom_line(data=melted.bids, aes(x=timestamp, y=-liquidity, ymax=0), 
+    p <- p + geom_line(data=melted.bids, 
+        mapping=aes(x=timestamp, y=-liquidity, ymax=0), 
         position="stack", col="#000000", size=0.1)
   }
 
@@ -688,7 +702,7 @@ plot.volume.percentiles <- function(depth.summary,
   y.range <- volume.scale*(max(max.ask, max.bid))
   p <- p + ylim(-y.range, y.range)
 
-  p + xlab("time") + theme.black()
+  p + xlab("time") + themeBlack()
 }
 
 ##' Plot a histogram given event data.
@@ -703,7 +717,6 @@ plot.volume.percentiles <- function(depth.summary,
 ##' @param bw Bar width (for price, 0.5 = 50 cent buckets.)
 ##' @author phil
 ##' @examples
-##' \dontrun{
 ##'
 ##' # necessary columns from event data.
 ##' events <- lob.data$events[, c("timestamp", "direction", "price", "volume")]
@@ -712,21 +725,18 @@ plot.volume.percentiles <- function(depth.summary,
 ##' events$volume <- events$volume * 10^-8
 ##'
 ##' # histogram of all volume aggregated into 5 unit buckets.
-##' plot.events.histogram(events[events$volume < 50, ], val="volume", bw=5)
-##'
-##' dev.new()
+##' plotEventsHistogram(events[events$volume < 50, ], val="volume", bw=5)
 ##'
 ##' # histogram of 99% of limit prices during a 1 hour time frame.
 ##' # bar width set to 0.25: counts are aggregated into 25 cent buckets. 
-##' plot.events.histogram(events[events$price <= quantile(events$price, 0.99)
+##' plotEventsHistogram(events[events$price <= quantile(events$price, 0.99)
 ##'                     & events$price >= quantile(events$price, 0.01), ],
 ##'     start.time=as.POSIXct("2015-05-01 06:00:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 07:00:00.000", tz="UTC"),
 ##'     val="price", bw=0.25)
 ##'
-##' }
-##' @export plot.events.histogram
-plot.events.histogram <- function(events,
+##' @export plotEventsHistogram
+plotEventsHistogram <- function(events,
     start.time=min(events$timestamp),
     end.time=max(events$timestamp),
     val="volume",
@@ -747,5 +757,5 @@ plot.events.histogram <- function(events,
   p <- p + scale_fill_manual(values=c("#0000ff", "#ff0000"))
   p <- p + ggtitle(paste("events", val, "distribution"))
     
-  p + theme.black()
+  p + themeBlack()
 }

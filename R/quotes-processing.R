@@ -25,10 +25,10 @@
 ##' @param file Location of CSV file containing limit order events. 
 ##' @return A data.frame containing the raw limit order events data.
 ##' @author phil
-load.event.data <- function(file) {
+loadEventData <- function(file) {
   # stream sometimes contains duplicate (delete) events.
   # remove to avoid potential negative depth.
-  remove.duplicates <- function(events) {
+  removeDuplicates <- function(events) {
     deletes <- events[events$action == "deleted", ]
     deletes <- deletes[order(deletes$id, deletes$volume), ]
     duplicate.deletes <- deletes[deletes$id %in% 
@@ -61,12 +61,12 @@ load.event.data <- function(file) {
       events[, "action"], events[, "timestamp"]), ]
 
   events <- cbind(event.id=1:nrow(events), events)
-  events <- remove.duplicates(events)
+  events <- removeDuplicates(events)
 
-  fill.deltas <- unlist(tapply(events$volume, events$id, vector.diff), 
+  fill.deltas <- unlist(tapply(events$volume, events$id, vectorDiff), 
       use.names=F)
   # for pacman orders, do not log volume for price update events.
-  fill.deltas <- ifelse(unlist(tapply(events$price, events$id, vector.diff), 
+  fill.deltas <- ifelse(unlist(tapply(events$price, events$id, vectorDiff), 
       use.names=F) == 0, fill.deltas, 0)
   events <- cbind(events, fill=abs(fill.deltas))
 
@@ -92,8 +92,8 @@ load.event.data <- function(file) {
 ##' @param depth.summary Order book summary statistics.
 ##' @return The events data.table containing a new aggressiveness.bps column.
 ##' @author phil
-order.aggressiveness <- function(events, depth.summary) {
-  event.diff.bps <- function(events, direction) {
+orderAggressiveness <- function(events, depth.summary) {
+  eventDiffBps <- function(events, direction) {
     orders <- events[events$direction == ifelse(direction == 1, "bid", "ask") & 
         events$action != "changed" & (events$type == "flashed-limit" | 
         events$type == "resting-limit"), ]
@@ -107,8 +107,8 @@ order.aggressiveness <- function(events, depth.summary) {
     diff.bps <- 10000*diff.price/best
     data.frame(event.id=orders$event.id, diff.bps=diff.bps) 
   }
-  bid.diff <- event.diff.bps(events, 1)
-  ask.diff <- event.diff.bps(events, -1)
+  bid.diff <- eventDiffBps(events, 1)
+  ask.diff <- eventDiffBps(events, -1)
   events$aggressiveness.bps <- NA
   events[match(bid.diff$event.id, events$event.id), ]$aggressiveness.bps <- 
      bid.diff$diff.bps

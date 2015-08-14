@@ -5,14 +5,14 @@
 ##' @param csv.file Location of CSV file to import
 ##' @return A list of order book events, trades, order book depth and summary
 ##' @author phil
-##' @export process.data
+##' @export processData
 ##' @examples
 ##' \dontrun{
 ##' csv.file <- system.file("extdata", "orders.csv", package="microstructure2") 
-##' lob.data <- process.data(csv.file)
+##' lob.data <- processData(csv.file)
 ##' }
-process.data <- function(csv.file) {
-  get.zombie.ids <- function(events, trades) {
+processData <- function(csv.file) {
+  getZombieIds <- function(events, trades) {
     cancelled <- events[events$action == "deleted", ]$id
     zombies <- events[!events$id %in% cancelled, ]
     bid.zombies <- zombies[zombies$direction == "bid", ]
@@ -32,11 +32,11 @@ process.data <- function(csv.file) {
     c(bid.zombie.ids, ask.zombie.ids)
   }
 
-  events <- load.event.data(csv.file)
-  events <- event.match(events)
-  trades <- match.trades(events)
-  events <- set.order.types(events, trades)
-  zombie.ids <- get.zombie.ids(events, trades)
+  events <- loadEventData(csv.file)
+  events <- eventMatch(events)
+  trades <- matchTrades(events)
+  events <- setOrderTypes(events, trades)
+  zombie.ids <- getZombieIds(events, trades)
   zombies <- events[events$id %in% zombie.ids, ]
   events <- events[!events$id %in% zombie.ids, ]
   logger(paste("removed", length(zombie.ids), "zombies"))
@@ -46,11 +46,11 @@ process.data <- function(csv.file) {
   events <- events[!events$event.id %in% duplicate.update.event.ids, ]
   logger(paste("removed", length(duplicate.update.event.ids), 
       "duplicated updates"))
-  depth <- price.level.volume(events)
+  depth <- priceLevelVolume(events)
   logger("calculating depth metrics (may take some time...)")
-  depth.summary <- depth.metrics(depth)
+  depth.summary <- depthMetrics(depth)
   logger("calculating order aggressiveness...")
-  events <- order.aggressiveness(events, depth.summary)
+  events <- orderAggressiveness(events, depth.summary)
   # depth summary data starts 1 minute later to allow for order book population.
   offset <- min(events$timestamp) + 60
   list(
@@ -67,11 +67,10 @@ process.data <- function(csv.file) {
 ##' @param bin.file File location.
 ##' @return Limit order, trade and depth data structure.
 ##' @author phil
-##' @export load.data
-load.data <- function(bin.file) {
+##' @export loadData
+loadData <- function(bin.file) {
   logger(paste("loading binary from", bin.file))
-  load(file=bin.file, verbose=F)
-  lob.data
+  readRDS(file=bin.file)
 }
 
 ##' Save processed data.
@@ -80,7 +79,8 @@ load.data <- function(bin.file) {
 ##' @param lob.data Limit order, trade and depth data structure.
 ##' @param bin.file File location. 
 ##' @author phil
-save.data <- function(lob.data, bin.file) {
+##' @export saveData
+saveData <- function(lob.data, bin.file) {
   logger(paste("saving binary to", bin.file))
-  save(file=bin.file, lob.data, compress="bzip2")
+  saveRDS(lob.data, file=bin.file)
 }
