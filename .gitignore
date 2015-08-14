@@ -1,6 +1,4 @@
 *.swp
 .Rhistory
-R/.Rhistory
-man/
 notes.txt
 
