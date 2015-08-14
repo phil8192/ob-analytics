@@ -491,8 +491,8 @@ plot.volume.map <- function(events,
 ##' 
 ##' @param order.book A limit order book structure.
 ##' @param volume.scale Volume scale factor.
-##' @param show.quantiles If true, highlight top 1% highest volume.
-##' @param show.volume  If true, also show non-cumulative volume.
+##' @param show.quantiles If true, highlight top 1\% highest volume.
+##' @param show.volume If true, also show non-cumulative volume.
 ##' @author phil
 ##' @examples
 ##' \dontrun{
@@ -712,21 +712,21 @@ plot.volume.percentiles <- function(depth.summary,
 ##' events$volume <- events$volume * 10^-8
 ##'
 ##' # histogram of all volume aggregated into 5 unit buckets.
-##' plot.histogram(events[events$volume < 50, ], val="volume", bw=5)
+##' plot.events.histogram(events[events$volume < 50, ], val="volume", bw=5)
 ##'
 ##' dev.new()
 ##'
 ##' # histogram of 99% of limit prices during a 1 hour time frame.
 ##' # bar width set to 0.25: counts are aggregated into 25 cent buckets. 
-##' plot.histogram(events[events$price <= quantile(events$price, 0.99)
+##' plot.events.histogram(events[events$price <= quantile(events$price, 0.99)
 ##'                     & events$price >= quantile(events$price, 0.01), ],
 ##'     start.time=as.POSIXct("2015-05-01 06:00:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 07:00:00.000", tz="UTC"),
 ##'     val="price", bw=0.25)
 ##'
 ##' }
-##' @export plot.histogram
-plot.histogram <- function(events,
+##' @export plot.events.histogram
+plot.events.histogram <- function(events,
     start.time=min(events$timestamp),
     end.time=max(events$timestamp),
     val="volume",

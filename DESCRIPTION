@@ -1,11 +1,13 @@
 Package: microstructure2
-Version: 0.1
+Version: 1.0.0
 LazyData: true
 Title: microstructure 
-Description: microstructure 
-Maintainer: Phil <phil@parasec.net>
-Author: Phil
-License: GPL 
+Description: The description of a package is usually long,
+    spanning multiple lines. The second and subsequent lines
+    should be indented, usually with four spaces.
+Authors@R: person("Phil", "Nocturne", email="phil@parasec.net", 
+    role=c("aut", "cre"))
+License: GPL (>= 2)
 Imports:
   zoo,
   ggplot2,
