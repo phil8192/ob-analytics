@@ -28,6 +28,7 @@
 ##' events.
 ##' 
 ##' @author phil
+##' @keywords internal
 matchTrades <- function(events) {
 
   logger(paste("inferring trades from", nrow(events), "events..."))

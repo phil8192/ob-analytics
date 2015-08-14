@@ -34,9 +34,11 @@ todo: rcpp. (http://adv-r.had.co.nz/Rcpp.html)
 }
 \examples{
 \dontrun{
-  a <- c(2,4,5)
-  b <- 1:5
-  alignS(sMatrix(a, b))
+
+a <- c(2,4,5)
+b <- 1:5
+alignS(sMatrix(a, b))
+
 }
 }
 \author{
@@ -45,4 +47,5 @@ phil
 \references{
 \url{https://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm}
 }
+\keyword{internal}
 

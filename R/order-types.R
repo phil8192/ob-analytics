@@ -22,6 +22,7 @@
 ##' @param trades Execution data.
 ##' @return The limit order event data with updated type field.
 ##' @author phil
+##' @keywords internal
 setOrderTypes <- function(events, trades) {
   isPacman <- function(quotes) {
     tapply(quotes$price, quotes$id, function(prices) {

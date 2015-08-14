@@ -43,10 +43,10 @@
 ##' @author phil
 ##' @export orderBook
 ##' @examples
-##' \dontrun{
+##' 
 ##' tp <- as.POSIXct("2015-05-01 12:30:15.342", tz="UTC")
 ##' orderBook(lob.data$events, max.price.levels=5)
-##' }
+##'
 orderBook <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
     max.price.levels=NULL, bps.range=0, min.bid=0, max.ask=Inf) {
 

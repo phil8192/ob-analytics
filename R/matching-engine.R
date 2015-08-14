@@ -12,6 +12,7 @@
 ##' @param events data frame of order book events. 
 ##' @param cut.off.ms events occuring outside of this time (in milliseconds) 
 ##'        will be considered as candidate matches.  
+##' @keywords internal
 eventMatch <- function(events, cut.off.ms=5000) {
   matcher <- function() {
     logger(paste("matching", nrow(events), "events..."))

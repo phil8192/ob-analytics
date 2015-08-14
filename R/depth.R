@@ -15,6 +15,7 @@
 ##' @param events Limit order events.
 ##' @return Time series of liquidity for each price level in the order book.
 ##' @author phil
+##' @keywords internal
 priceLevelVolume <- function(events) {
   directionalPriceLevelVolume <- function(dir.events) {
     cols <- c("event.id", "id", "timestamp", "exchange.timestamp", "price", 
@@ -149,6 +150,7 @@ filterDepth <- function(d, from, to) {
 ##' @param depth Price level cumulative depth calculated by priceLevelVolume()
 ##' @return data.frame containing order book summary statistics.
 ##' @author phil
+##' @keywords internal
 depthMetrics <- function(depth) {
   pb <- txtProgressBar(1, nrow(depth), 0, style=3)
   pctNames <- function(pct.name) paste0(pct.name, seq(from=25, to=500, by=25), 

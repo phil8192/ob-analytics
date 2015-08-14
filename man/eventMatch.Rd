@@ -22,4 +22,5 @@ problem, and the Needleman-Wunsch algorithm is applied. As such, the
 function acts as a type of "one shot" matching engine, simulating an order
 book matching engine without the need to reconstruct the whole book.
 }
+\keyword{internal}
 

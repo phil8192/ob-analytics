@@ -7,6 +7,7 @@
 ##' @param filter A similarity function. Default: 1 if equal, -1 otherwise.
 ##' @return A similarity matrix.
 ##' @author phil
+##' @keywords internal
 sMatrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
   sapply(b, function(b) filter(b, a))
 }
@@ -36,11 +37,14 @@ sMatrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 ##' @author phil
 ##' @examples
 ##' \dontrun{
-##'   a <- c(2,4,5)
-##'   b <- 1:5
-##'   alignS(sMatrix(a, b))
+##'
+##' a <- c(2,4,5)
+##' b <- 1:5
+##' alignS(sMatrix(a, b))
+##'
 ##' }
 ##' @references \url{https://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm}
+##' @keywords internal
 alignS <- function(s.matrix, gap=-1) {
   f.matrix <- (function() {
     s.len <- nrow(s.matrix)

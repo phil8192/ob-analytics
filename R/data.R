@@ -5,12 +5,14 @@
 ##' @param csv.file Location of CSV file to import
 ##' @return A list of order book events, trades, order book depth and summary
 ##' @author phil
-##' @export processData
 ##' @examples
 ##' \dontrun{
+##'
 ##' csv.file <- system.file("extdata", "orders.csv", package="microstructure2") 
 ##' lob.data <- processData(csv.file)
+##'
 ##' }
+##' @export processData
 processData <- function(csv.file) {
   getZombieIds <- function(events, trades) {
     cancelled <- events[events$action == "deleted", ]$id

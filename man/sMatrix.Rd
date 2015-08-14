@@ -22,4 +22,5 @@ Construct a similarity matrix between 2 vectors.
 \author{
 phil
 }
+\keyword{internal}
 

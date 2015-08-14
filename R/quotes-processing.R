@@ -25,6 +25,7 @@
 ##' @param file Location of CSV file containing limit order events. 
 ##' @return A data.frame containing the raw limit order events data.
 ##' @author phil
+##' @keywords internal
 loadEventData <- function(file) {
   # stream sometimes contains duplicate (delete) events.
   # remove to avoid potential negative depth.
@@ -92,6 +93,7 @@ loadEventData <- function(file) {
 ##' @param depth.summary Order book summary statistics.
 ##' @return The events data.table containing a new aggressiveness.bps column.
 ##' @author phil
+##' @keywords internal
 orderAggressiveness <- function(events, depth.summary) {
   eventDiffBps <- function(events, direction) {
     orders <- events[events$direction == ifelse(direction == 1, "bid", "ask") & 

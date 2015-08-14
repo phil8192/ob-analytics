@@ -58,10 +58,8 @@ $bids
 Reconstructs a limit order book for a specific point in time.
 }
 \examples{
-\dontrun{
 tp <- as.POSIXct("2015-05-01 12:30:15.342", tz="UTC")
 orderBook(lob.data$events, max.price.levels=5)
-}
 }
 \author{
 phil

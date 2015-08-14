@@ -17,8 +17,10 @@ Imports and performs pre-processing of limit order data contained in a CSV.
 }
 \examples{
 \dontrun{
+
 csv.file <- system.file("extdata", "orders.csv", package="microstructure2")
 lob.data <- processData(csv.file)
+
 }
 }
 \author{

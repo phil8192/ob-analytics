@@ -4,6 +4,7 @@
 ##'
 ##' @return Theme. 
 ##' @author phil
+##' @keywords internal
 themeBlack <- function() {
   theme_bw() + theme(panel.background=element_rect(fill="#000000"),
                  panel.border=element_rect(size=0),
