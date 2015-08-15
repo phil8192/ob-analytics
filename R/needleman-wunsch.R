@@ -16,8 +16,6 @@ sMatrix <- function(a, b, filter=function(f1, f2) ifelse(f1 == f2, 1, -1)) {
 ##'
 ##' Verbatim implementation of Needleman-Wunsch matching algorithm.
 ##'
-##' todo: rcpp. (http://adv-r.had.co.nz/Rcpp.html)
-##' 
 ##' @param s.matrix Similarity matrix. See sMatrix(...).
 ##' @param gap Penality assigned to a gap (missing or extra value).
 ##' @return 2 column matrix. First column = similarity matrix rows

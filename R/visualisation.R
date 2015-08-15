@@ -367,7 +367,6 @@ plotEventMap <- function(events,
   events$volume <- events$volume*volume.scale
 
   # filter by specified volume
-  # todo: price, volume, time filtering is very common -move this elsewhere.    
   if(!is.null(volume.from))
     events <- events[events$volume >= volume.from, ]
   if(!is.null(volume.to))

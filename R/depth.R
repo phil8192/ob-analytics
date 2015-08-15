@@ -142,11 +142,6 @@ filterDepth <- function(d, from, to) {
 ##'    ... the same pattern is then repeated for the ask side.
 ##' }
 ##'
-##' TODO: needs some work...
-##' TODO: just use mean diff for gap/density summary.
-##' TODO: very inneficient implementation: vectorise or use rcpp.
-##' TODO: additional summary statistics.
-##' 
 ##' @param depth Price level cumulative depth calculated by priceLevelVolume()
 ##' @return data.frame containing order book summary statistics.
 ##' @author phil
