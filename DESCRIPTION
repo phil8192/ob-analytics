@@ -14,4 +14,3 @@ Depends: R (>= 3.0.0)
 Imports: zoo, ggplot2, reshape2
 Suggests: grid, testthat
 LazyData: true
-
