@@ -29,9 +29,6 @@ alignS(s.matrix, gap = -1)
 \description{
 Verbatim implementation of Needleman-Wunsch matching algorithm.
 }
-\details{
-todo: rcpp. (http://adv-r.had.co.nz/Rcpp.html)
-}
 \examples{
 \dontrun{
 

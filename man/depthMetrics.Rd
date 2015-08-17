@@ -38,11 +38,6 @@ where timestamp = time of order book state change
                     occupied (maxium density).
    ... the same pattern is then repeated for the ask side.
 }
-
-TODO: needs some work...
-TODO: just use mean diff for gap/density summary.
-TODO: very inneficient implementation: vectorise or use rcpp.
-TODO: additional summary statistics.
 }
 \author{
 phil

@@ -59,7 +59,7 @@ eventMatch <- function(events, cut.off.ms=5000) {
       } else {
 
         # there is a chance 1 bid matched multiple ask timestamps, so first 
-        # matching attempt failed... now use needleman–wunsch algorithm to find 
+        # matching attempt failed... now use alignment algorithm to find
         # optimal alignment. note that the first attempt can fail if multiple 
         # orders for the same volume occur in rapid fire. could group and then 
         # process events by "bursts"/"pulses".

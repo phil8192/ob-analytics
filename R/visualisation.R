@@ -332,9 +332,11 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
 ##' @author phil
 ##' @examples
 ##'
+##' \dontrun{
 ##' # plot all orders 
 ##' with(lob.data, plotEventMap(events))
-##'
+##' }
+##' 
 ##' # 1 hour of activity and re-scale the volume
 ##' with(lob.data, plotEventMap(events,
 ##'     start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
@@ -585,13 +587,15 @@ plotCurrentDepth <- function(order.book,
 ##'     end.time=as.POSIXct("2015-05-01 13:00:00.000", tz="UTC"),
 ##'     volume.scale=10^-8)
 ##'
+##' \dontrun{
 ##' # visualise 15 minutes of order book liquidity.
 ##' # data will be aggregated to second-by-second resolution.
 ##' plotVolumePercentiles(lob.data$depth.summary,
 ##'     start.time=as.POSIXct("2015-05-01 10:45:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 11:00:00.000", tz="UTC"),
 ##'     volume.scale=10^-8)
-##'
+##' }
+##' 
 ##' @export plotVolumePercentiles
 plotVolumePercentiles <- function(depth.summary, 
     start.time=head(depth.summary$timestamp, 1),

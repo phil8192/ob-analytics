@@ -54,8 +54,8 @@ function provides price, volume and a colour bias range to overcome this.
 }
 \examples{
 # bid/ask spread.
-spread <- with(lob.data, depth.summary[, c("timestamp", "best.bid.price",
-                                           "best.ask.price")])
+spread <- with(lob.data, getSpread(depth.summary))
+
 \dontrun{
 
 # plot all depth levels, rescaling the volume by 10^-8.

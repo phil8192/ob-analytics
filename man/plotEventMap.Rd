@@ -34,8 +34,10 @@ order determines size of circle. Opaque = volume was added, transparent =
 volume was removed.
 }
 \examples{
+\dontrun{
 # plot all orders
 with(lob.data, plotEventMap(events))
+}
 
 # 1 hour of activity and re-scale the volume
 with(lob.data, plotEventMap(events,

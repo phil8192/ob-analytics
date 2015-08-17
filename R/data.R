@@ -8,7 +8,7 @@
 ##' @examples
 ##' \dontrun{
 ##'
-##' csv.file <- system.file("extdata", "orders.csv", package="microstructure2") 
+##' csv.file <- system.file("extdata", "orders.csv.bz2", package="microstructure2") 
 ##' lob.data <- processData(csv.file)
 ##'
 ##' }

@@ -252,7 +252,7 @@ depthMetrics <- function(depth) {
 ##' Extracts the spread from the depth summary, removing any points in which a
 ##' change to bid/ask price/volume did not occur.
 ##' 
-##' @param depth.summary 
+##' @param depth.summary Depth summary data.
 ##' @return Bid/Ask spread
 ##' @author phil
 ##' @examples
