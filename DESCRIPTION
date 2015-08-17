@@ -12,5 +12,6 @@ BugReports: http://parasec.net/contact
 License: GPL (>= 2)
 Depends: R (>= 3.0.0)
 Imports: zoo, ggplot2, reshape2
-Suggests: grid, testthat
+Suggests: grid, testthat, knitr
 LazyData: true
+VignetteBuilder: knitr

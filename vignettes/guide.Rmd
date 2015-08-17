@@ -1,0 +1,61 @@
+---
+title: "Microstructure2 Guide"
+author: "Phil Nocturne"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Microstructure2 Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+library(microstructure2)
+knitr::opts_chunk$set(fig.dpi=96)
+```
+
+intro.
+
+## Plot trades 
+
+some text and a plot.
+
+```{r}
+with(lob.data, plotTrades(trades))
+```
+
+## Plot order book price level heat map
+
+plot all depth levels, rescaling the volume by 10^-8.
+produce 2 plots side-by-side: second plot contains depth levels with > 50 units of volume.
+
+```{r}
+spread <- with(lob.data, getSpread(depth.summary))
+p1 <- with(lob.data, plotPriceLevels(depth, spread, col.bias=0.1, volume.scale=10^-8))
+p2 <- with(lob.data, plotPriceLevels(depth, spread, col.bias=0.1, volume.scale=10^-8, volume.from=50))
+library(grid)
+pushViewport(viewport(layout=grid.layout(1, 2)))
+print(p1, vp=viewport(layout.pos.row=1, layout.pos.col=1))
+print(p2, vp=viewport(layout.pos.row=1, layout.pos.col=2))
+```
+
+zoom into 1 hour of activity, show the spread and directional trades.
+
+```{r}
+spread <- with(lob.data, getSpread(depth.summary))
+with(lob.data, plotPriceLevels(depth, spread, trades,
+   start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
+   end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
+   volume.scale=10^-8))
+```
+
+zoom in to 15 minutes of activity, show the bid/ask midprice.
+
+```{r}
+spread <- with(lob.data, getSpread(depth.summary))
+with(lob.data, plotPriceLevels(depth, spread,
+    show.mp=FALSE,
+    start.time=as.POSIXct("2015-05-01 18:00:00.000", tz="UTC"),
+    end.time=as.POSIXct("2015-05-01 18:15:00.000", tz="UTC")))
+```
+
