@@ -118,8 +118,8 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
 ##' @examples
 ##' 
 ##' # bid/ask spread.
-##' spread <- with(lob.data, depth.summary[, c("timestamp", "best.bid.price",
-##'                                            "best.ask.price")])
+##' spread <- with(lob.data, getSpread(depth.summary))
+##' 
 ##' \dontrun{
 ##'
 ##' # plot all depth levels, rescaling the volume by 10^-8.
