@@ -90,3 +90,55 @@ matchTrades <- function(events) {
   trades
 
 }
+
+##' Trade impacts.
+##'
+##' Generates a data.frame containing order book impacts. An impact consists
+##' of 1 or more limit orders being hit in order to fulfil a market order. 
+##' 
+##' @param trades 
+##' @return A data.frame containing a summary of market order impacts:
+##' \describe{
+##'   \item{id}{market order id}
+##'   \item{min.price}{minimum executed price}
+##'   \item{max.price}{maximum executed price}
+##'   \item{vwap}{VWAP obtained by market order}
+##'   \item{hits}{number of limit orders hit by market order}
+##'   \item{vol}{total volume removed by this impact}
+##'   \item{start.time}{(local) start time of this impact}
+##'   \item{end.time}{(local) end time of this impact}
+##'   \item{dir}{direction of this impact (buy or sell)}
+##' }
+##' @author phil
+##' @examples
+##'
+##' # get impacts data.frame from trades data.
+##' impacts <- tradeImpacts(lob.data$trades)
+##'
+##' # impacts (in bps) 
+##' sell.bps <- with(impacts[impacts$dir == "sell", ], {
+##'   (max.price-min.price)/max.price
+##' })
+##' 10000*summary(sell.bps[sell.bps > 0])
+##'
+##' @export tradeImpacts
+tradeImpacts <- function(trades) {
+
+  # group by taker id.
+  by.group <- by(trades, trades$taker, function(impact) {
+    with(impact, {
+      list(id=tail(taker, 1),
+           min.price=min(price),
+           max.price=max(price),
+           vwap=round(vwap(price, volume), 2),
+           hits=nrow(impact),
+           vol=sum(volume),
+           start.time=min(timestamp),
+           end.time=max(timestamp),
+           dir=tail(direction, 1))
+    })
+  })
+    
+  # return conversion of (by) result to data.frame
+  do.call("rbind", lapply(by.group, function(x) data.frame(x)))
+}

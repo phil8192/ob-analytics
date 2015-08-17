@@ -9,6 +9,7 @@ existing
 
 * refactor time, price, volume filtering (very common operation)
 
+* example use of library with knitr
 
 functionality
 -------------
@@ -16,6 +17,7 @@ functionality
 * add limit order age and event counts to summary statistics
 
 * link created orders to previously cancelled orders (strategic runs)
+
 * visualise strategic runs
 
 * impact data
@@ -25,4 +27,8 @@ functionality
   - impact
 
 * maybe order flow, imbalance etc. (discretised)
+
+* graph themes
+
+* automated "manipulation" detection
 
