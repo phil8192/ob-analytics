@@ -244,7 +244,32 @@ depthMetrics <- function(depth) {
   keys <- c("best.bid.price", "best.ask.price", pctNames("bid.vwap"), pctNames("ask.vwap"))
   res[, keys] <- round(0.01*res[, keys], 2)
 
-  res
+  res   
+}
+
+##' Get the spread.
+##'
+##' Extracts the spread from the depth summary, removing any points in which a
+##' change to bid/ask price/volume did not occur.
+##' 
+##' @param depth.summary 
+##' @return Bid/Ask spread
+##' @author phil
+##' @examples
+##'
+##' with(lob.data, tail(getSpread(depth.summary)))
+##'
+##' @export getSpread
+getSpread <- function(depth.summary) {
+  spread <- depth.summary[, c("timestamp",
+                              "best.bid.price", "best.bid.vol",
+                              "best.ask.price", "best.ask.vol")]
+
+  changes <- (diff(spread$best.bid.price) != 0
+            | diff(spread$best.bid.vol)   != 0
+            | diff(spread$best.ask.price) != 0
+            | diff(spread$best.ask.vol)   != 0)
     
+  spread[c(T, changes), ]   
 }
 
