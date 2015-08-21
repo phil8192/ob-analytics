@@ -1,18 +1,22 @@
 ---
 title: "Microstructure2 Guide"
-author: "Phil Nocturne"
+author: "[Phil Nocturne](http://parasec.net)"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
-  %\VignetteIndexEntry{Microstructure2 Guide}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Microstructure2 Guide}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r, include=FALSE}
 library(microstructure2)
-knitr::opts_chunk$set(fig.dpi=96)
+knitr::opts_chunk$set(dpi=100, fig.width=8, fig.height=6, results="hide") 
 ```
+
+# header
 
 intro.
 

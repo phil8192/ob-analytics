@@ -1,6 +1,14 @@
 existing
 --------
 
+* reduce example dataset size.
+
+* exported function sanity checks.
+
+* clean up documentation.
+
+* example use of library with knitr (vignette)
+
 * clean up summary statistics code in depth.R.
   - use rcpp.
   - remove "gap" summary statistic
@@ -8,8 +16,6 @@ existing
 * rcpp needleman-wunsch.R
 
 * refactor time, price, volume filtering (very common operation)
-
-* example use of library with knitr
 
 functionality
 -------------
