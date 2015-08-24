@@ -53,11 +53,11 @@ loadEventData <- function(file) {
   events$action <- factor(events$action, c("created", "changed", "deleted"))
   events$direction <- factor(events$direction, c("bid", "ask"))
 
-  # order quote data by id, then by volume (decreasing), then finally, by order 
+  # order event data by id, then by volume (decreasing), then finally, by order 
   # of action: created,changed,deleted.
   # then finally, in the case of multiple changes and no volume change 
   # (price update) order by our timestamp. (this is for exchanges that allow 
-  # in-place quote updates)
+  # in-place event updates)
   events <- events[order(events[, "id"], -events[, "volume"], 
       events[, "action"], events[, "timestamp"]), ]
 

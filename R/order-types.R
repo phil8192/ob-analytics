@@ -24,8 +24,8 @@
 ##' @author phil
 ##' @keywords internal
 setOrderTypes <- function(events, trades) {
-  isPacman <- function(quotes) {
-    tapply(quotes$price, quotes$id, function(prices) {
+  isPacman <- function(events) {
+    tapply(events$price, events$id, function(prices) {
       any(vectorDiff(prices) != 0)
     })
   }
