@@ -151,7 +151,7 @@ depthMetrics <- function(depth) {
   ordered.depth$price <- as.integer(round(100 * ordered.depth$price))
   depth.matrix <- cbind(ordered.depth$price, ordered.depth$volume, 
       ifelse(ordered.depth$side == "bid", 0, 1))
-  metrics <- matrix(0, ncol=124, nrow=nrow(ordered.depth), 
+  metrics <- matrix(0, ncol=84, nrow=nrow(ordered.depth), 
       dimnames=list(1:nrow(ordered.depth),
                     c("best.bid.price", "best.bid.vol", 
                     pctNames("bid.vol"), pctNames("bid.vwap"),
