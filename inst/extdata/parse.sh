@@ -26,7 +26,7 @@
 #           action             = created, modified, deleted.
 #           direction          = bid, ask.
 echo "id,timestamp,exchange.timestamp,price,volume,action,direction" >orders.csv
-bzcat 2015-05-01.log.bz2 \
+xzcat 2015-05-01.log.xz \
   |grep -v order_book \
   |grep -v trade \
   |sed 's/,//g; s/\"//g; s/{//g; s/}//g' \
