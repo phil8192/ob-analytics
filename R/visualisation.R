@@ -99,7 +99,7 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
 ##' function provides price, volume and a colour bias range to overcome this.
 ##' 
 ##' @param depth The order book depth (lob.data$depth).
-##' @param spread Spread to overlay (lob.data$depth.summary[, c(1, 2, 64)])
+##' @param spread Spread to overlay (getSpread(lob.data$depth.summary))
 ##' @param trades Trades (lob.data$trades).
 ##' @param show.mp If True, spread will be summarised as midprice.
 ##' @param show.all.depth If True, show resting (and never hit) limit orders.
@@ -236,7 +236,7 @@ plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
 ##' colour coded lines for each price level update.
 ##' 
 ##' @param depth The order book depth (lob.data$depth).
-##' @param spread Spread to overlay (lob.data$depth.summary[, c(1, 2, 64)])
+##' @param spread Spread to overlay (getSpread(lob.data$depth.summary))
 ##' @param trades Trades (lob.data$trades).
 ##' @param show.mp If True, spread will be summarised as midprice.
 ##' @param col.bias 1 = uniform colour spectrum. 0.25 = bias toward 0.25
