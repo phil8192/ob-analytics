@@ -1,8 +1,6 @@
 existing
 --------
 
-* reduce example dataset size.
-
 * exported function sanity checks.
 
 * clean up documentation.
@@ -24,12 +22,6 @@ functionality
 * link created orders to previously cancelled orders (strategic runs)
 
 * visualise strategic runs
-
-* impact data
-
-* order trace:
-  - fills (maker/taker match)
-  - impact
 
 * maybe order flow, imbalance etc. (discretised)
 

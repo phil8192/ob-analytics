@@ -22,9 +22,9 @@ are calculated:
 \preformatted{
   [timestamp,
    best.bid.price, best.bid.vol,
-   bid.vol25:500bps, bid.vwap25:500bps, bid.gap25:500bps,
+   bid.vol25:500bps, bid.vwap25:500bps,
    best.ask.price, best.ask.vol,
-   ask.vol25:500bps, ask.vwap25:500bps, ask.gap25:500bps]
+   ask.vol25:500bps, ask.vwap25:500bps]
 
 where timestamp = time of order book state change
  best.bid.price = current best bid price
@@ -33,9 +33,6 @@ where timestamp = time of order book state change
                     until > 500bps <= 475bps.
  bid.vwap25:500bps = VWAP > -25bps and <= best bid
                     until > 500bps <= 475bps.
- bid.gap25:500bps = number of vacant price levels > -25bps and <= best bid
-                    until > 500bps <= 475bps. 0 = all available price levels
-                    occupied (maxium density).
    ... the same pattern is then repeated for the ask side.
 }
 }

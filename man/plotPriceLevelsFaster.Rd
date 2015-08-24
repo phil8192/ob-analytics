@@ -9,7 +9,7 @@ plotPriceLevelsFaster(depth, spread, trades, show.mp = T, col.bias = 0.1)
 \arguments{
 \item{depth}{The order book depth (lob.data$depth).}
 
-\item{spread}{Spread to overlay (lob.data$depth.summary[, c(1, 2, 64)])}
+\item{spread}{Spread to overlay (getSpread(lob.data$depth.summary))}
 
 \item{trades}{Trades (lob.data$trades).}
 

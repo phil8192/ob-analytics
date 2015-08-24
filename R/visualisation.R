@@ -141,15 +141,15 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
 ##'
 ##' # zoom into 1 hour of activity, show the spread and directional trades. 
 ##' with(lob.data, plotPriceLevels(depth, spread, trades,
-##'    start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
-##'    end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
+##'    start.time=as.POSIXct("2015-05-01 03:25:00.000", tz="UTC"),
+##'    end.time=as.POSIXct("2015-05-01 04:25:00.000", tz="UTC"),
 ##'    volume.scale=10^-8))
 ##'
 ##' # zoom in to 15 minutes of activity, show the bid/ask midprice.
 ##' with(lob.data, plotPriceLevels(depth, spread,
 ##'    show.mp=FALSE,
-##'    start.time=as.POSIXct("2015-05-01 18:00:00.000", tz="UTC"),
-##'    end.time=as.POSIXct("2015-05-01 18:15:00.000", tz="UTC")))
+##'    start.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
+##'    end.time=as.POSIXct("2015-05-01 03:45:00.000", tz="UTC")))
 ##'
 ##' @export plotPriceLevels
 plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
@@ -339,14 +339,14 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
 ##' 
 ##' # 1 hour of activity and re-scale the volume
 ##' with(lob.data, plotEventMap(events,
-##'     start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
-##'     end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
+##'     start.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 04:00:00.000", tz="UTC"),
 ##'     volume.scale=10^-8))
 ##' # 15 minutes of activity >= 5 (re-scaled) volume within price range
 ##' # $ [220, 245]
 ##' with(lob.data, plotEventMap(events,
-##'     start.time=as.POSIXct("2015-05-01 08:00:00.000", tz="UTC"),
-##'     end.time=as.POSIXct("2015-05-01 08:15:00.000", tz="UTC"),
+##'     start.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 03:45:00.000", tz="UTC"),
 ##'     price.from=220,
 ##'     price.to=245,
 ##'     volume.from=5,
@@ -433,8 +433,8 @@ plotEventMap <- function(events,
 ##' # plot fleeting limit order volume within 1 hour range up until 10 units of
 ##' # volume.
 ##' with(lob.data, plotVolumeMap(events, volume.scale=10^-8,
-##'     start.time=as.POSIXct("2015-05-01 09:30:00.000", tz="UTC"),
-##'     end.time=as.POSIXct("2015-05-01 10:30:00.000", tz="UTC"),
+##'     start.time=as.POSIXct("2015-05-01 02:30:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
 ##'     volume.to=10))
 ##'
 ##' @export plotVolumeMap
@@ -507,7 +507,7 @@ plotVolumeMap <- function(events,
 ##' # get a limit order book for a specific point in time, limited to +- 150bps
 ##' # above/below best bid/ask price.
 ##' lob <- orderBook(lob.data$events,
-##'     tp=as.POSIXct("2015-05-01 09:38:17.429", tz="UTC"), bps.range=150)
+##'     tp=as.POSIXct("2015-05-01 04:38:17.429", tz="UTC"), bps.range=150)
 ##'
 ##' # visualise the order book liquidity.
 ##' plotCurrentDepth(lob, volume.scale=10^-8)
@@ -583,16 +583,16 @@ plotCurrentDepth <- function(order.book,
 ##' # visualise 2 hours of order book liquidity.
 ##' # data will be aggregated to minute-by-minute resolution.
 ##' plotVolumePercentiles(lob.data$depth.summary,
-##'     start.time=as.POSIXct("2015-05-01 11:00:00.000", tz="UTC"),
-##'     end.time=as.POSIXct("2015-05-01 13:00:00.000", tz="UTC"),
+##'     start.time=as.POSIXct("2015-05-01 02:30:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 04:30:00.000", tz="UTC"),
 ##'     volume.scale=10^-8)
 ##'
 ##' \dontrun{
 ##' # visualise 15 minutes of order book liquidity.
 ##' # data will be aggregated to second-by-second resolution.
 ##' plotVolumePercentiles(lob.data$depth.summary,
-##'     start.time=as.POSIXct("2015-05-01 10:45:00.000", tz="UTC"),
-##'     end.time=as.POSIXct("2015-05-01 11:00:00.000", tz="UTC"),
+##'     start.time=as.POSIXct("2015-05-01 04:30:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 04:35:00.000", tz="UTC"),
 ##'     volume.scale=10^-8)
 ##' }
 ##' 
@@ -735,8 +735,8 @@ plotVolumePercentiles <- function(depth.summary,
 ##' # bar width set to 0.25: counts are aggregated into 25 cent buckets. 
 ##' plotEventsHistogram(events[events$price <= quantile(events$price, 0.99)
 ##'                     & events$price >= quantile(events$price, 0.01), ],
-##'     start.time=as.POSIXct("2015-05-01 06:00:00.000", tz="UTC"),
-##'     end.time=as.POSIXct("2015-05-01 07:00:00.000", tz="UTC"),
+##'     start.time=as.POSIXct("2015-05-01 02:15:00.000", tz="UTC"),
+##'     end.time=as.POSIXct("2015-05-01 03:15:00.000", tz="UTC"),
 ##'     val="price", bw=0.25)
 ##'
 ##' @export plotEventsHistogram

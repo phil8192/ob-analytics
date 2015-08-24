@@ -36,8 +36,8 @@ plotEventsHistogram(events[events$volume < 50, ], val="volume", bw=5)
 # bar width set to 0.25: counts are aggregated into 25 cent buckets.
 plotEventsHistogram(events[events$price <= quantile(events$price, 0.99)
                     & events$price >= quantile(events$price, 0.01), ],
-    start.time=as.POSIXct("2015-05-01 06:00:00.000", tz="UTC"),
-    end.time=as.POSIXct("2015-05-01 07:00:00.000", tz="UTC"),
+    start.time=as.POSIXct("2015-05-01 02:15:00.000", tz="UTC"),
+    end.time=as.POSIXct("2015-05-01 03:15:00.000", tz="UTC"),
     val="price", bw=0.25)
 }
 \author{

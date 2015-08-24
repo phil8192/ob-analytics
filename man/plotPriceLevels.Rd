@@ -13,7 +13,7 @@ plotPriceLevels(depth, spread = NULL, trades = NULL, show.mp = T,
 \arguments{
 \item{depth}{The order book depth (lob.data$depth).}
 
-\item{spread}{Spread to overlay (lob.data$depth.summary[, c(1, 2, 64)])}
+\item{spread}{Spread to overlay (getSpread(lob.data$depth.summary))}
 
 \item{trades}{Trades (lob.data$trades).}
 
@@ -77,15 +77,15 @@ print(p2, vp=viewport(layout.pos.row=1, layout.pos.col=2))
 
 # zoom into 1 hour of activity, show the spread and directional trades.
 with(lob.data, plotPriceLevels(depth, spread, trades,
-   start.time=as.POSIXct("2015-05-01 14:00:00.000", tz="UTC"),
-   end.time=as.POSIXct("2015-05-01 15:00:00.000", tz="UTC"),
+   start.time=as.POSIXct("2015-05-01 03:25:00.000", tz="UTC"),
+   end.time=as.POSIXct("2015-05-01 04:25:00.000", tz="UTC"),
    volume.scale=10^-8))
 
 # zoom in to 15 minutes of activity, show the bid/ask midprice.
 with(lob.data, plotPriceLevels(depth, spread,
    show.mp=FALSE,
-   start.time=as.POSIXct("2015-05-01 18:00:00.000", tz="UTC"),
-   end.time=as.POSIXct("2015-05-01 18:15:00.000", tz="UTC")))
+   start.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
+   end.time=as.POSIXct("2015-05-01 03:45:00.000", tz="UTC")))
 }
 \author{
 phil
