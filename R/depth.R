@@ -5,13 +5,14 @@
 ##' at a price level can occur when an a new order is added to the queue,
 ##' updated (partial fill) or deleted (execution or removal). The resulting
 ##' time series is of the form:
-##' \preformatted{
-##'     [timestamp, price, volume, side]
-##' where timestamp = (local) time at which liquidity changed
-##'           price = price level at which liquidity changed
-##'          volume = amount of volume remaining at this price level
-##'            side = the (current) side of the price level in the order book.
+##'
+##' \describe{
+##'   \item{timestamp}{local time at which volume changed}
+##'   \item{price}{price level at which volume changed}
+##'   \item{volume}{amount of volume now remaining at this price level}
+##'   \item{side}{the current side of the price level in the order book}
 ##' }
+##'
 ##' @param events Limit order events.
 ##' @return Time series of liquidity for each price level in the order book.
 ##' @author phil
@@ -67,51 +68,109 @@ priceLevelVolume <- function(events) {
   depth.data[order(depth.data$timestamp), ]
 }
 
-##' Filter priceLevelVolume (depth).
+##' Filter price level volume.
 ##'
-##' Given depth data calculated by priceLevelVolume(), filter so that depth
-##' level changes are between a range: depth changes < or > range are discarded
-##' and min,max timestamps remaining within the range are "clamped" - set to,
-##' min,max of specified range.
+##' Given depth data calculated by \code{\link{priceLevelVolume}}, filter
+##' between a specified time range. The resulting data will contain price level
+##' volume which is active only within the specified time range.
+##'
+##' For price levels with volume > 0 before the time range starts, timestamps
+##' will be set to the supplied \code{from} parameter.
+##'
+##' For volume > 0 after the time range ends, timestamps will be set to the
+##' supplied \code{to} parameter and volume set to 0.
+##'
+##' For example, the following data taken from \code{\link{priceLevelVolume}}
+##' for price level 243.29 shows the available volume through time at that
+##' price level between \code{00:52:37.686} and \code{03:28:49.621}.
 ##' 
-##' @param d Depth data (lob.data$depth).
+##' \tabular{rrrr}{
+##'   timestamp               \tab price  \tab volume    \tab side \cr
+##'   2015-05-01 00:52:37.686 \tab 243.29 \tab 911500000 \tab ask  \cr
+##;   2015-05-01 01:00:33.111 \tab 243.29 \tab 0         \tab ask  \cr
+##'   2015-05-01 01:00:36.243 \tab 243.29 \tab 862200000 \tab ask  \cr
+##'   2015-05-01 02:45:43.052 \tab 243.29 \tab 0         \tab ask  \cr
+##'   2015-05-01 02:52:24.063 \tab 243.29 \tab 614700000 \tab ask  \cr
+##'   2015-05-01 02:52:51.413 \tab 243.29 \tab 0         \tab ask  \cr
+##'   2015-05-01 02:53:13.904 \tab 243.29 \tab 952300000 \tab ask  \cr
+##'   2015-05-01 03:28:49.621 \tab 243.29 \tab 0         \tab ask}
+##'
+##' applying \code{filterDepth} to this data for a time range beteen
+##' \code{02:45} and \code{03:00} will result in the following:
+##' 
+##' \tabular{rrrr}{
+##'   timestamp               \tab price  \tab volume    \tab side \cr
+##'   2015-05-01 02:45:00.000 \tab 243.29 \tab 862200000 \tab ask  \cr
+##'   2015-05-01 02:45:43.052 \tab 243.29 \tab 0         \tab ask  \cr
+##'   2015-05-01 02:52:24.063 \tab 243.29 \tab 614700000 \tab ask  \cr
+##'   2015-05-01 02:52:51.413 \tab 243.29 \tab 0         \tab ask  \cr
+##'   2015-05-01 02:53:13.904 \tab 243.29 \tab 952300000 \tab ask  \cr
+##'   2015-05-01 03:00:00.000 \tab 243.29 \tab 0         \tab ask}
+##'
+##' Note that the timestamps at the begining and end of the table have been
+##' \emph{clamped} to the specified range and the volume set to 0 at the end.
+##' 
+##' @param d Depth data (see: \code{\link{lob.data}})
 ##' @param from Beginning of range.
 ##' @param to End of range.
 ##' @return Filtered depth data.
 ##' @author phil
+##' @examples
+##'
+##' # obtain price level volume for a 15 minute window.
+##' filtered <- with(lob.data, filterDepth(depth,
+##'     from=as.POSIXct("2015-05-01 02:45:00.000", tz="UTC"),
+##'     to=as.POSIXct("2015-05-01 03:00:00.000", tz="UTC")))
+##'
+##' # top 5 most active price levels during this 15 minute window.
+##' head(sort(tapply(filtered$volume, filtered$price, length),
+##'     decreasing=TRUE), 5)
+##'
+##' # extract available volume for price level 233.78, then plot it.
+##' level.233.78 <- filtered[filtered$price == 233.78, c("timestamp", "volume")]
+##' plotTimeSeries(level.233.78$timestamp, level.233.78$volume*10^-8)
+##' 
 ##' @export filterDepth
 filterDepth <- function(d, from, to) {
+
+  # 1. get all active price levels before start of range.  
   logger(paste("filterDepth between", from, "and", to))
   pre <- d[d$timestamp <= from, ]
   logger(paste("got", nrow(pre), "previous deltas"))
   pre <- pre[order(pre$price, pre$timestamp), ]
   logger(paste("ordered", nrow(pre), "previous deltas"))
+
   # last update for each price level <= from. this becomes the starting point 
   # for all updates within the range.
   pre <- pre[!duplicated(pre$price, fromLast=T) & pre$volume > 0, ] 
   logger(paste("extracted", nrow(pre), "previously updated deltas"))
-  # clamp range
+
+  # clamp range (reset timestamp to from if price level active before start of
+  # range.
   if(nrow(pre) > 0) {
     pre$timestamp <- as.POSIXct(sapply(pre$timestamp, function(r) {
       max(from, r)
     }), origin="1970-01-01", tz="UTC") 
     logger("clamped range.")
   }
+
+  # 2. add all volume change within the range.
   mid <- d[d$timestamp > from & d$timestamp < to, ]
   logger(paste("got", nrow(mid), "in range deltas"))
   range <- rbind(pre, mid)
   logger(paste("appended range now contains", nrow(range), "deltas"))
-  # close off loose ends.
-  price.levels <- unique(range$price)
-  # last side of each price level:
-  range <- range[order(range$price, range$timestamp), ]
-  last.sides <- range[!duplicated(range$price, fromLast=T), "side"]
-  range <- rbind(range, data.frame(timestamp=to, price=price.levels, volume=0,
-      side=last.sides))
-  # ensure it is in order
+
+  # 3. at the end of the range, set all price level volume to 0.
+  open.ends <- data.frame(timestamp=to,
+      range[(!duplicated(range$price, fromLast=T)) & range$volume > 0, -1])
+  open.ends$volume <- 0
+
+  # combine pre, mid and open.ends. ensure it is in order.  
+  range <- rbind(range, open.ends)
   range <- range[order(range$price, range$timestamp), ]
   logger(paste("closed range. depth filtering resulted in", 
       length(unique(range$price)), "price levels."))
+
   range
 }
 
@@ -239,20 +298,41 @@ depthMetrics <- function(depth) {
   keys <- c("best.bid.price", "best.ask.price", pctNames("bid.vwap"), pctNames("ask.vwap"))
   res[, keys] <- round(0.01*res[, keys], 2)
 
-  res   
+  res
+
 }
 
 ##' Get the spread.
 ##'
 ##' Extracts the spread from the depth summary, removing any points in which a
 ##' change to bid/ask price/volume did not occur.
+##'
+##' The spread (best bid and ask price) will change following a market order or
+##' upon the addition/cancellation of a limit order at, or within, the range of
+##' the current best bid/ask. A change to the spread that is \emph{not} the
+##' result of a market order (an impact/market shock) is known as a
+##' \emph{quote}.
+##'
+##' The following table shows a market spread betwen \code{05:03:22.546} and
+##' \code{05:04:42.957}. During this time, the best ask price and volume changes
+##' whilst the best bid price and volume remains static.
 ##' 
-##' @param depth.summary Depth summary data.
+##' \tabular{rrrrr}{
+##'   timestamp    \tab bid.price \tab bid.vol  \tab ask.price \tab ask.vol \cr
+##'   05:03:22.546 \tab 235.45    \tab 16235931 \tab 235.72    \tab 39375160 \cr
+##'   05:03:24.990 \tab 235.45    \tab 16235931 \tab 235.72    \tab 21211607 \cr
+##'   05:03:25.450 \tab 235.45    \tab 16235931 \tab 235.71    \tab 39375160 \cr
+##'   05:04:15.477 \tab 235.45    \tab 16235931 \tab 235.72    \tab 39058160 \cr
+##'   05:04:16.670 \tab 235.45    \tab 16235931 \tab 235.71    \tab 39058160 \cr
+##'   05:04:42.957 \tab 235.45    \tab 16235931 \tab 235.71    \tab 77019160}
+##' 
+##' @param depth.summary Depth summary data (see: \code{\link{lob.data}}).
 ##' @return Bid/Ask spread
 ##' @author phil
 ##' @examples
 ##'
-##' with(lob.data, tail(getSpread(depth.summary)))
+##' # get the last 25 quotes (changes to the spread).
+##' with(lob.data, tail(getSpread(depth.summary), 25))
 ##'
 ##' @export getSpread
 getSpread <- function(depth.summary) {

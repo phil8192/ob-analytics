@@ -31,8 +31,8 @@ themeBlack <- function() {
 ##'
 ##' with(lob.data$trades, plotTimeSeries(timestamp, price))
 ##'
-##' timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"), 
-##'                  as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
+##' timestamp <- seq(as.POSIXct("2015-05-01 00:00:00.000", tz="UTC"), 
+##'                  as.POSIXct("2015-05-01 00:59:00.000", tz="UTC"), by=60)
 ##' series <- rep(1:10, 6)
 ##' plotTimeSeries(timestamp, series)
 ##'
@@ -49,10 +49,9 @@ plotTimeSeries <- function(timestamp, series, start.time=min(timestamp),
   ### ggplot ignores timezone, even though explicitly set. work around is:
   p <- p + scale_x_datetime(limits=c(start.time, end.time), 
       labels=function(x) format(x, "%H:%M:%S", tz="UTC"))
-  p <- p + scale_y_continuous(labels=function(y) sprintf("%3s", 
-      sprintf("%.3s", y)))
+  p <- p + scale_y_continuous()
   p <- p + ggtitle(title)
-  p <- p + geom_line(colour="grey")
+  p <- p + geom_step(colour="grey")
   p <- p + xlab("time")
   p <- p + ylab(y.label)
 

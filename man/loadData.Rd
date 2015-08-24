@@ -4,16 +4,28 @@
 \alias{loadData}
 \title{Load pre-processed data.}
 \usage{
-loadData(bin.file)
+loadData(bin.file, ...)
 }
 \arguments{
 \item{bin.file}{File location.}
+
+\item{...}{\code{\link{readRDS}}.}
 }
 \value{
 Limit order, trade and depth data structure.
 }
 \description{
 Loads previously saved pre-processed data.
+}
+\details{
+Convenience function.
+}
+\examples{
+\dontrun{
+
+lob.data <- loadData(bin.file="/tmp/lob.data.rds")
+
+}
 }
 \author{
 phil

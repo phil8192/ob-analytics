@@ -66,23 +66,43 @@ processData <- function(csv.file) {
 ##' Load pre-processed data. 
 ##'
 ##' Loads previously saved pre-processed data.
+##'
+##' Convenience function.
+##'
 ##' @param bin.file File location.
+##' @param ... \code{\link{readRDS}}.
 ##' @return Limit order, trade and depth data structure.
 ##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' lob.data <- loadData(bin.file="/tmp/lob.data.rds")
+##' 
+##' }
 ##' @export loadData
-loadData <- function(bin.file) {
+loadData <- function(bin.file, ...) {
   logger(paste("loading binary from", bin.file))
-  readRDS(file=bin.file)
+  readRDS(file=bin.file, ...)
 }
 
 ##' Save processed data.
 ##'
 ##' Saves processed data to file. 
+##'
+##' Convenience function.
+##'
 ##' @param lob.data Limit order, trade and depth data structure.
-##' @param bin.file File location. 
+##' @param bin.file File to save to.
+##' @param ... \code{\link{saveRDS}}.
 ##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' saveData(lob.data, bin.file="/tmp/lob.data.rds", compress="xz")
+##' 
+##' }
 ##' @export saveData
-saveData <- function(lob.data, bin.file) {
+saveData <- function(lob.data, bin.file, ...) {
   logger(paste("saving binary to", bin.file))
-  saveRDS(lob.data, file=bin.file)
+  saveRDS(lob.data, file=bin.file, ...)
 }

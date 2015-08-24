@@ -26,8 +26,8 @@ General purpose time series plot.
 \examples{
 with(lob.data$trades, plotTimeSeries(timestamp, price))
 
-timestamp <- seq(as.POSIXct("2015-01-01 00:00:00.000", tz="UTC"),
-                 as.POSIXct("2015-01-01 00:59:00.000", tz="UTC"), by=60)
+timestamp <- seq(as.POSIXct("2015-05-01 00:00:00.000", tz="UTC"),
+                 as.POSIXct("2015-05-01 00:59:00.000", tz="UTC"), by=60)
 series <- rep(1:10, 6)
 plotTimeSeries(timestamp, series)
 }

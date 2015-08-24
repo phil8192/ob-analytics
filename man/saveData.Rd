@@ -4,15 +4,27 @@
 \alias{saveData}
 \title{Save processed data.}
 \usage{
-saveData(lob.data, bin.file)
+saveData(lob.data, bin.file, ...)
 }
 \arguments{
 \item{lob.data}{Limit order, trade and depth data structure.}
 
-\item{bin.file}{File location.}
+\item{bin.file}{File to save to.}
+
+\item{...}{\code{\link{saveRDS}}.}
 }
 \description{
 Saves processed data to file.
+}
+\details{
+Convenience function.
+}
+\examples{
+\dontrun{
+
+saveData(lob.data, bin.file="/tmp/lob.data.rds", compress="xz")
+
+}
 }
 \author{
 phil

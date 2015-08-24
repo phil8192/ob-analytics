@@ -18,12 +18,13 @@ the cumulative volume for each price level over time. Changes in volume
 at a price level can occur when an a new order is added to the queue,
 updated (partial fill) or deleted (execution or removal). The resulting
 time series is of the form:
-\preformatted{
-    [timestamp, price, volume, side]
-where timestamp = (local) time at which liquidity changed
-          price = price level at which liquidity changed
-         volume = amount of volume remaining at this price level
-           side = the (current) side of the price level in the order book.
+}
+\details{
+\describe{
+  \item{timestamp}{local time at which volume changed}
+  \item{price}{price level at which volume changed}
+  \item{volume}{amount of volume now remaining at this price level}
+  \item{side}{the current side of the price level in the order book}
 }
 }
 \author{

@@ -2,12 +2,12 @@
 % Please edit documentation in R/depth.R
 \name{filterDepth}
 \alias{filterDepth}
-\title{Filter priceLevelVolume (depth).}
+\title{Filter price level volume.}
 \usage{
 filterDepth(d, from, to)
 }
 \arguments{
-\item{d}{Depth data (lob.data$depth).}
+\item{d}{Depth data (see: \code{\link{lob.data}})}
 
 \item{from}{Beginning of range.}
 
@@ -17,10 +17,59 @@ filterDepth(d, from, to)
 Filtered depth data.
 }
 \description{
-Given depth data calculated by priceLevelVolume(), filter so that depth
-level changes are between a range: depth changes < or > range are discarded
-and min,max timestamps remaining within the range are "clamped" - set to,
-min,max of specified range.
+Given depth data calculated by \code{\link{priceLevelVolume}}, filter
+between a specified time range. The resulting data will contain price level
+volume which is active only within the specified time range.
+}
+\details{
+For price levels with volume > 0 before the time range starts, timestamps
+will be set to the supplied \code{from} parameter.
+
+For volume > 0 after the time range ends, timestamps will be set to the
+supplied \code{to} parameter and volume set to 0.
+
+For example, the following data taken from \code{\link{priceLevelVolume}}
+for price level 243.29 shows the available volume through time at that
+price level between \code{00:52:37.686} and \code{03:28:49.621}.
+
+\tabular{rrrr}{
+  timestamp               \tab price  \tab volume    \tab side \cr
+  2015-05-01 00:52:37.686 \tab 243.29 \tab 911500000 \tab ask  \cr
+  2015-05-01 01:00:36.243 \tab 243.29 \tab 862200000 \tab ask  \cr
+  2015-05-01 02:45:43.052 \tab 243.29 \tab 0         \tab ask  \cr
+  2015-05-01 02:52:24.063 \tab 243.29 \tab 614700000 \tab ask  \cr
+  2015-05-01 02:52:51.413 \tab 243.29 \tab 0         \tab ask  \cr
+  2015-05-01 02:53:13.904 \tab 243.29 \tab 952300000 \tab ask  \cr
+  2015-05-01 03:28:49.621 \tab 243.29 \tab 0         \tab ask}
+
+applying \code{filterDepth} to this data for a time range beteen
+\code{02:45} and \code{03:00} will result in the following:
+
+\tabular{rrrr}{
+  timestamp               \tab price  \tab volume    \tab side \cr
+  2015-05-01 02:45:00.000 \tab 243.29 \tab 862200000 \tab ask  \cr
+  2015-05-01 02:45:43.052 \tab 243.29 \tab 0         \tab ask  \cr
+  2015-05-01 02:52:24.063 \tab 243.29 \tab 614700000 \tab ask  \cr
+  2015-05-01 02:52:51.413 \tab 243.29 \tab 0         \tab ask  \cr
+  2015-05-01 02:53:13.904 \tab 243.29 \tab 952300000 \tab ask  \cr
+  2015-05-01 03:00:00.000 \tab 243.29 \tab 0         \tab ask}
+
+Note that the timestamps at the begining and end of the table have been
+\emph{clamped} to the specified range and the volume set to 0 at the end.
+}
+\examples{
+# obtain price level volume for a 15 minute window.
+filtered <- with(lob.data, filterDepth(depth,
+    from=as.POSIXct("2015-05-01 02:45:00.000", tz="UTC"),
+    to=as.POSIXct("2015-05-01 03:00:00.000", tz="UTC")))
+
+# top 5 most active price levels during this 15 minute window.
+head(sort(tapply(filtered$volume, filtered$price, length),
+    decreasing=TRUE), 5)
+
+# extract available volume for price level 233.78, then plot it.
+level.233.78 <- filtered[filtered$price == 233.78, c("timestamp", "volume")]
+plotTimeSeries(level.233.78$timestamp, level.233.78$volume*10^-8)
 }
 \author{
 phil

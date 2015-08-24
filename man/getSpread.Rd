@@ -7,7 +7,7 @@
 getSpread(depth.summary)
 }
 \arguments{
-\item{depth.summary}{Depth summary data.}
+\item{depth.summary}{Depth summary data (see: \code{\link{lob.data}}).}
 }
 \value{
 Bid/Ask spread
@@ -16,8 +16,29 @@ Bid/Ask spread
 Extracts the spread from the depth summary, removing any points in which a
 change to bid/ask price/volume did not occur.
 }
+\details{
+The spread (best bid and ask price) will change following a market order or
+upon the addition/cancellation of a limit order at, or within, the range of
+the current best bid/ask. A change to the spread that is \emph{not} the
+result of a market order (an impact/market shock) is known as a
+\emph{quote}.
+
+The following table shows a market spread betwen \code{05:03:22.546} and
+\code{05:04:42.957}. During this time, the best ask price and volume changes
+whilst the best bid price and volume remains static.
+
+\tabular{rrrrr}{
+  timestamp    \tab bid.price \tab bid.vol  \tab ask.price \tab ask.vol \cr
+  05:03:22.546 \tab 235.45    \tab 16235931 \tab 235.72    \tab 39375160 \cr
+  05:03:24.990 \tab 235.45    \tab 16235931 \tab 235.72    \tab 21211607 \cr
+  05:03:25.450 \tab 235.45    \tab 16235931 \tab 235.71    \tab 39375160 \cr
+  05:04:15.477 \tab 235.45    \tab 16235931 \tab 235.72    \tab 39058160 \cr
+  05:04:16.670 \tab 235.45    \tab 16235931 \tab 235.71    \tab 39058160 \cr
+  05:04:42.957 \tab 235.45    \tab 16235931 \tab 235.71    \tab 77019160}
+}
 \examples{
-with(lob.data, tail(getSpread(depth.summary)))
+# get the last 25 quotes (changes to the spread).
+with(lob.data, tail(getSpread(depth.summary), 25))
 }
 \author{
 phil
