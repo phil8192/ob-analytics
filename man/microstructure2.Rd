@@ -6,6 +6,16 @@
 \alias{microstructure2-package}
 \title{microstructure2.}
 \description{
-microstructure2.
+package description.
+}
+\details{
+package details.
+}
+\author{
+phil nocturne \email{phil@parasec.net}
+Maintainer: Hadley Wickham \email{h.wickham@gmail.com}
+}
+\references{
+\url{http://parasec.net/transmission/order-book-visualisation}
 }
 

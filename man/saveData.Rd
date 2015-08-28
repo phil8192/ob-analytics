@@ -23,7 +23,6 @@ Convenience function.
 \dontrun{
 
 saveData(lob.data, bin.file="/tmp/lob.data.rds", compress="xz")
-
 }
 }
 \author{

@@ -3,22 +3,34 @@
 \docType{data}
 \name{lob.data}
 \alias{lob.data}
-\title{Example pre-processed data.}
-\format{A list containing 4 data frames.}
+\title{Example limit order book data.}
+\format{A list containing 4 data frames as returned by
+        \code{\link{processData}}}
+\source{
+\url{https://www.bitstamp.net/websocket}
+}
 \usage{
 data(lob.data)
 }
 \description{
-24 hours of Limit Order Book data obtained from the Bitstamp exchange on
-2015-05-01.
+50,393 limit order events. 482 trades.
 }
 \details{
-\itemize{
-  \item events. Limit order events.
-  \item trades. Inferred trades (executions).
-  \item depth.  Order book price level depth through time.
-  \item depth.summary. Limit order book summary statistics.
+5 hours of limit order book event data obtained from the Bitstamp (bitcoin)
+exchange on 2015-05-01 (midnight until 5am). The data has been preprocessed
+with the \code{\link{processData}} function.
 }
+\author{
+phil
+}
+\references{
+\url{https://github.com/phil8192/ticker}
+}
+\seealso{
+\code{\link{events}},
+         \code{\link{trades}},
+         \code{\link{depth}},
+         \code{\link{depth.summary}}
 }
 \keyword{datasets}
 

@@ -1,18 +1,5 @@
 ##' Read raw limit order event data from a CSV file.
 ##'
-##' The CSV file is expected to contain columns of the form:
-##' id, timestamp, exchange.timestamp, price, volume, action, direction 
-##'     where id                 = limit order unique identifier.
-##'           timestamp          = time (in milliseconds) when event first
-##'                                received (locally).
-##'           exchange.timestamp = time (in milliseconds) when order first
-##'                                received at exchange.
-##'           price              = price level of order event.
-##'           volume             = remaining volume of order (in lowest
-##'                                denomination)
-##'           action             = created, modified, deleted.
-##'           direction          = bid, ask.
-##'
 ##' The function performs some data sanitisation: removing duplicate events
 ##' and ensuring that order events are in the appropriate order. The data are
 ##' ordered according to the life-cycle of a limit order:

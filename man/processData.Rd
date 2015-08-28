@@ -2,7 +2,7 @@
 % Please edit documentation in R/data.R
 \name{processData}
 \alias{processData}
-\title{Import CSV file containing limit order events.}
+\title{Import CSV file.}
 \usage{
 processData(csv.file)
 }
@@ -10,17 +10,50 @@ processData(csv.file)
 \item{csv.file}{Location of CSV file to import}
 }
 \value{
-A list of order book events, trades, order book depth and summary
+A list containing 4 data frames:
+\describe{
+  \item{\link{events}}{Limit order events.}
+  \item{\link{trades}}{Inferred trades (executions).}
+  \item{\link{depth}}{Order book price level depth through time.}
+  \item{\link{depth.summary}}{Limit order book summary statistics.}
+}
 }
 \description{
-Imports and performs pre-processing of limit order data contained in a CSV.
+Imports and performs preprocessing of limit order data contained in a CSV.
+}
+\details{
+The CSV file is expected to contain 7 columns:
+
+\describe{
+  \item{id}{Numeric limit order unique identifier}
+  \item{timestamp}{Time in milliseconds when event received locally}
+  \item{exchange.timestamp}{Time in milliseconds when order first created on
+the exchange}
+  \item{price}{Price level of order event}
+  \item{volume}{Remaining order volume}
+  \item{action}{Event type (see below)}
+  \item{direction}{Side of order book (bid or ask)}
+}
+
+\emph{action} describes the limit order life-cycle:
+
+\describe{
+  \item{created}{The limit order has been created}
+  \item{modified}{The limit order has been modified (partial fill)}
+  \item{deleted}{The limit order was deleted. If the remaining volume is 0,
+the order has been filled.}
+}
+
+An example dataset returned from this function can be seen in
+\code{\link{lob.data}} which is the result of processing the example data
+included in the \code{inst/extdata} directory of this package.
 }
 \examples{
 \dontrun{
 
-csv.file <- system.file("extdata", "orders.csv.bz2", package="microstructure2")
+csv.file <- system.file("extdata", "orders.csv.xz",
+    package="microstructure2")
 lob.data <- processData(csv.file)
-
 }
 }
 \author{

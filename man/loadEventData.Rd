@@ -13,25 +13,12 @@ loadEventData(file)
 A data.frame containing the raw limit order events data.
 }
 \description{
-The CSV file is expected to contain columns of the form:
-id, timestamp, exchange.timestamp, price, volume, action, direction
-    where id                 = limit order unique identifier.
-          timestamp          = time (in milliseconds) when event first
-                               received (locally).
-          exchange.timestamp = time (in milliseconds) when order first
-                               received at exchange.
-          price              = price level of order event.
-          volume             = remaining volume of order (in lowest
-                               denomination)
-          action             = created, modified, deleted.
-          direction          = bid, ask.
-}
-\details{
 The function performs some data sanitisation: removing duplicate events
 and ensuring that order events are in the appropriate order. The data are
 ordered according to the life-cycle of a limit order:
     order id, volume (desc), action (created,changed,deleted)
-
+}
+\details{
 In addition to returning the sanitised raw data, the function also
 appends a column "fill.deltas" representing the change in volume for each
 limit order event.
