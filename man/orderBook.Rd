@@ -5,14 +5,14 @@
 \title{Instantaneous limit order book reconstruction.}
 \usage{
 orderBook(events, tp = as.POSIXlt(Sys.time(), tz = "UTC"),
-  max.price.levels = NULL, bps.range = 0, min.bid = 0, max.ask = Inf)
+  max.levels = NULL, bps.range = 0, min.bid = 0, max.ask = Inf)
 }
 \arguments{
 \item{events}{Limit order events data.frame.}
 
 \item{tp}{Time point to re-construct order book at.}
 
-\item{max.price.levels}{Max number of price levels to return.}
+\item{max.levels}{Max number of price levels to return.}
 
 \item{bps.range}{Max depth to return +- BPS from best bid/ask.}
 
@@ -21,11 +21,31 @@ orderBook(events, tp = as.POSIXlt(Sys.time(), tz = "UTC"),
 \item{max.ask}{Max ask to return.}
 }
 \value{
-Limit Order Book structure:
+Limit Order Book structure. A list containing 3 fields:
+
+\describe{
+  \item{timestamp}{Timestamp the order book was reconstructed for.}
+  \item{asks}{A data.frame containing the Ask side of the order book.}
+  \item{bids}{A data.frame containing the Bid side of the order book.}
+}
+
+The \emph{bids} and \emph{asks} data consists of the following:
+
+\describe{
+  \item{id}{Limit order Id.}
+  \item{timestamp}{Last modification time to limit order.}
+  \item{exchange.timestamp}{Time at which order was placed in order book.}
+  \item{price}{Limit order price.}
+  \item{volume}{Limit orer volume.}
+  \item{liquidity}{Cumulative sum of volume from best bid/ask up until price.}
+  \item{bps}{Distance (in BPS) of order from best bid/ask.}
+}
+
+Both the \emph{bids} and \emph{asks} data are ordered by descending price.
 
 \preformatted{
 > tp <- as.POSIXct("2015-05-01 03:30:15.342", tz="UTC")
-> orderBook(lob.data$events, tp, max.price.levels=5)
+> orderBook(lob.data$events, tp, max.levels=5)
 $timestamp
 [1] "2015-05-01 03:30:15.342 UTC"
 
@@ -59,7 +79,7 @@ Reconstructs a limit order book for a specific point in time.
 }
 \examples{
 tp <- as.POSIXct("2015-05-01 04:25:15.342", tz="UTC")
-orderBook(lob.data$events, max.price.levels=5)
+orderBook(lob.data$events, max.levels=5)
 }
 \author{
 phil

@@ -6,14 +6,18 @@
 \alias{microstructure2-package}
 \title{microstructure2.}
 \description{
-package description.
+Limit order book event analysis.
 }
 \details{
-package details.
+Main functionality:
+\itemize{
+  \item Limit order book event processing and analysis.
+  \item Visualise order book state and market impacts.
+  \item Order book reconstruction.
+}
 }
 \author{
 phil nocturne \email{phil@parasec.net}
-Maintainer: Hadley Wickham \email{h.wickham@gmail.com}
 }
 \references{
 \url{http://parasec.net/transmission/order-book-visualisation}

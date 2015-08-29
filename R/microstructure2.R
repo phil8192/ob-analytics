@@ -1,8 +1,13 @@
 ##' microstructure2.
 ##'
-##' package description.
+##' Limit order book event analysis.
 ##'
-##' package details.
+##' Main functionality:
+##' \itemize{
+##'   \item Limit order book event processing and analysis.
+##'   \item Visualise order book state and market impacts.
+##'   \item Order book reconstruction.
+##' }
 ##' 
 ##' @name microstructure2
 ##' @docType package
@@ -37,9 +42,22 @@ NULL
 
 ##' Limit order events.
 ##'
-##' event desc.
+##' A data.table containing the lifecycle of limit orders.
 ##'
-##' test details
+##' The purpose of this table is to keep account of the lifecycle of all orders
+##' in both sides of the limit order book. The lifecycle of an individual limit
+##' order follows a sequence of events:
+##'
+##' \describe{
+##'   \item{created}{The order is created with a specified amount of volume and
+##' a limit price.}
+##'   \item{changed}{0 or more modification events occur when the order is
+##' partially filled. On each modification, the remaining volume will decrease.}
+##'   \item{deleted}{The order may be deleted at the request of the trader or, in
+##' the event that the order has been completely filled, deleted by the exchange.
+##' An order deleted by the exchange as a result of being filled with have 0
+##' remaining volume at time of deletion.}
+##' }
 ##'
 ##' @docType data
 ##' @keywords datasets
@@ -68,7 +86,7 @@ NULL
 ##' \describe{
 ##'   \item{unknown}{It was not possible to infer the order type given the
 ##' available data.}
-##'   \item{flashed-limit}{Order was created then subsequently deleted. 96% of
+##'   \item{flashed-limit}{Order was created then subsequently deleted. 96\% of
 ##' example data.}
 ##'   \item{resting-limit}{Order was created and left in order book indefinitely
 ##' until filled.}
@@ -76,8 +94,8 @@ NULL
 ##' book at it's limit price.}
 ##'   \item{market}{Order was completely filled and did not come to rest in the
 ##' order book.}
-##'   \item{pacman}{An order which is modified \emph{in situ} (a exchange
-##' algorithmic order).}
+##'   \item{pacman}{A limit-price modified \emph{in situ} (exchange algorithmic
+##' order).}
 ##' }
 ##' 
 ##' @family Limit order book data
@@ -87,7 +105,12 @@ NULL
 ##'
 ##' Inferred trades (executions).
 ##'
-##' trade details
+##' The trades data.table contains a log of all executions ordered by local
+##' timestamp. In addition to the usual timestamp, price and volume information,
+##' each row also contains the trade direction (buyer or seller initiated) and
+##' maker/taker limit order ids. The maker/taker event and limit order ids can
+##' be used to group trades into market impacts. See:
+##' \code{\link{tradeImpacts}}.
 ##'
 ##' @docType data
 ##' @keywords datasets
@@ -95,27 +118,30 @@ NULL
 ##' @author phil
 ##' @format A data.frame consisting of the following fields:
 ##' \describe{
-##'   \item{event.id}{}
-##'   \item{id}{}
-##'   \item{timestamp}{}
-##'   \item{exchange.timestamp}{}
-##'   \item{price}{}
-##'   \item{volume}{}
-##'   \item{action}{}
-##'   \item{direction}{}
-##'   \item{fill}{}
-##'   \item{matching.event}{}
-##'   \item{type}{}
-##'   \item{aggressiveness.bps}{}
+##'   \item{timestamp}{Local event timestamp.}
+##'   \item{price}{Price at which the trade occured.}
+##'   \item{volume}{Amount of traded volume.}
+##'   \item{direction}{The trade direction: \emph{buy} or \emph{sell}.}
+##'   \item{maker.event.id}{Corresponding market \emph{making} event id in
+##' \code{\link{events}}.}
+##'   \item{taker.event.id}{Corresponding market \emph{taking} event id in
+##' \code{\link{events}}.}
+##'   \item{maker}{Id of the market \emph{making} limit order in
+##' \code{\link{events}}.}
+##'   \item{taker}{Id of the market \emph{taking} limit order in
+##' \code{\link{events}}.}
 ##' }
+##' 
 ##' @family Limit order book data
 NULL
 
 ##' Depth.
 ##'
-##' Inferred trades (executions).
+##' Price level depth (liquidity) through time.
 ##'
-##' trade details
+##' The depth data.table describes the amount of available volume for all price
+##' levels in the limit order book through time. Each row corresponds to a limit
+##' order event, in which volume has been added or removed.
 ##'
 ##' @docType data
 ##' @keywords datasets
@@ -123,27 +149,22 @@ NULL
 ##' @author phil
 ##' @format A data.frame consisting of the following fields:
 ##' \describe{
-##'   \item{event.id}{}
-##'   \item{id}{}
-##'   \item{timestamp}{}
-##'   \item{exchange.timestamp}{}
-##'   \item{price}{}
-##'   \item{volume}{}
-##'   \item{action}{}
-##'   \item{direction}{}
-##'   \item{fill}{}
-##'   \item{matching.event}{}
-##'   \item{type}{}
-##'   \item{aggressiveness.bps}{}
+##'   \item{timestamp}{Time at which volume was added or removed.}
+##'   \item{price}{Order book price level.}
+##'   \item{volume}{Amount of remaining volume at this price level.}
+##'   \item{side}{The side of the price level: \emph{bid} or \emph{ask}.}
 ##' }
+##' 
 ##' @family Limit order book data
 NULL
 
 ##' Depth summary.
 ##'
-##' Inferred trades (executions).
+##' Limit order book summary statistics.
 ##'
-##' trade details
+##' Various summary statistics describing the state of the order book after
+##' every limit order event. The metrics are intended to quantify the
+##' \emph{shape} of the order book through time.
 ##'
 ##' @docType data
 ##' @keywords datasets
@@ -151,19 +172,20 @@ NULL
 ##' @author phil
 ##' @format A data.frame consisting of the following fields:
 ##' \describe{
-##'   \item{event.id}{}
-##'   \item{id}{}
-##'   \item{timestamp}{}
-##'   \item{exchange.timestamp}{}
-##'   \item{price}{}
-##'   \item{volume}{}
-##'   \item{action}{}
-##'   \item{direction}{}
-##'   \item{fill}{}
-##'   \item{matching.event}{}
-##'   \item{type}{}
-##'   \item{aggressiveness.bps}{}
+##'   \item{timestamp}{Local timestamp corresponding to \code{\link{events}}.}
+##'   \item{best.bid.price}{Best bid price.}
+##'   \item{best.bid.vol}{Amount of volume available at the best bid.}
+##'   \item{bid.vol25:500bps}{The amount of volume available for 20 25bps
+##' percentiles below the best bid.}
+##'   \item{bid.vwap25:500bps}{The VWAP for 20 25bps percentiles below the best
+##' bid.}
+##'   \item{best.ask.price}{The best ask price.}
+##'   \item{best.ask.vol}{Amount of volume available at the best ask.}
+##'   \item{ask.vol25:500bps}{The amount od volume available for 20 25bps
+##' percentiles above the best ask.}
+##'   \item{ask.vwap25:500bps}{The VWAP for 20 25bps percentiles above the best
+##' ask.}
 ##' }
+##' 
 ##' @family Limit order book data
 NULL
-
