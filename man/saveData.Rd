@@ -7,7 +7,7 @@
 saveData(lob.data, bin.file, ...)
 }
 \arguments{
-\item{lob.data}{Limit order, trade and depth data structure.}
+\item{lob.data}{\code{\link{lob.data}} data structure.}
 
 \item{bin.file}{File to save to.}
 

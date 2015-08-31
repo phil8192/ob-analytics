@@ -7,7 +7,7 @@
 filterDepth(d, from, to)
 }
 \arguments{
-\item{d}{Depth data (see: \code{\link{lob.data}})}
+\item{d}{\code{\link{depth}} data.}
 
 \item{from}{Beginning of range.}
 

@@ -21,11 +21,13 @@ plotTimeSeries(timestamp, series, start.time = min(timestamp),
 \item{y.label}{Y axis label of the plot.}
 }
 \description{
-General purpose time series plot.
+Convenience function for plotting time series.
 }
 \examples{
+# plot trades.
 with(lob.data$trades, plotTimeSeries(timestamp, price))
 
+# plot a general time series.
 timestamp <- seq(as.POSIXct("2015-05-01 00:00:00.000", tz="UTC"),
                  as.POSIXct("2015-05-01 00:59:00.000", tz="UTC"), by=60)
 series <- rep(1:10, 6)

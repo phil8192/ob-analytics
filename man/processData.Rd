@@ -51,8 +51,7 @@ included in the \code{inst/extdata} directory of this package.
 \examples{
 \dontrun{
 
-csv.file <- system.file("extdata", "orders.csv.xz",
-    package="microstructure2")
+csv.file <- system.file("extdata", "orders.csv.xz", package="obAnalytics")
 lob.data <- processData(csv.file)
 }
 }

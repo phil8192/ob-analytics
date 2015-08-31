@@ -7,10 +7,10 @@
 getSpread(depth.summary)
 }
 \arguments{
-\item{depth.summary}{Depth summary data (see: \code{\link{lob.data}}).}
+\item{depth.summary}{\code{\link{depth.summary}} data.}
 }
 \value{
-Bid/Ask spread
+Bid/Ask spread quote data.
 }
 \description{
 Extracts the spread from the depth summary, removing any points in which a

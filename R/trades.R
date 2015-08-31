@@ -93,10 +93,12 @@ matchTrades <- function(events) {
 
 ##' Trade impacts.
 ##'
-##' Generates a data.frame containing order book impacts. An impact consists
-##' of 1 or more limit orders being hit in order to fulfil a market order. 
+##' Generates a data.frame containing order book impacts.
+##'
+##' An impact consists of 1 or more limit orders being hit in order to fulfil a
+##' market order. 
 ##' 
-##' @param trades Trade data.
+##' @param trades \code{\link{trades}} data.
 ##' @return A data.frame containing a summary of market order impacts:
 ##' \describe{
 ##'   \item{id}{market order id}

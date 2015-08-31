@@ -8,11 +8,11 @@ plotTrades(trades, start.time = min(trades$timestamp),
   end.time = max(trades$timestamp))
 }
 \arguments{
-\item{trades}{Trades data.frame}
+\item{trades}{\code{\link{trades}} data.}
 
-\item{start.time}{Plot from}
+\item{start.time}{Plot from.}
 
-\item{end.time}{Plot to}
+\item{end.time}{Plot to.}
 }
 \description{
 A convenience function for plotting the trades data.frame in a nice way.

@@ -1,5 +1,5 @@
 ## ---- include=FALSE------------------------------------------------------
-library(microstructure2)
+library(obAnalytics)
 knitr::opts_chunk$set(dpi=100, fig.width=8, fig.height=6, results="hide") 
 
 ## ------------------------------------------------------------------------

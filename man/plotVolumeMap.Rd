@@ -10,7 +10,7 @@ plotVolumeMap(events, action = "deleted",
   volume.to = NULL, volume.scale = 1, log.scale = F)
 }
 \arguments{
-\item{events}{Limit order events data.frame.}
+\item{events}{Limit order \code{\link{events}} data.frame.}
 
 \item{action}{"deleted" for cancelled volume, "added" for added volume.}
 
@@ -34,7 +34,10 @@ volume scale.}
 }
 \description{
 Plots the points at which volume was added or removed from the limit order
-book. A flashed limit-order is a "fleeting" limit order: an order was added,
+book.
+}
+\details{
+A flashed limit-order is a "fleeting" limit order: an order was added,
 then removed (usually within a very short period of time). This plot is
 especially useful for identifying individual trading algorithms by price and
 volume.
@@ -43,8 +46,7 @@ volume.
 # plot all fleeting limit order volume using logarithmic scale.
 with(lob.data, plotVolumeMap(events, volume.scale=10^-8, log.scale=TRUE))
 
-# plot fleeting limit order volume within 1 hour range up until 10 units of
-# volume.
+# "fleeting" order volume within 1 hour range up until 10 units of volume.
 with(lob.data, plotVolumeMap(events, volume.scale=10^-8,
     start.time=as.POSIXct("2015-05-01 02:30:00.000", tz="UTC"),
     end.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),

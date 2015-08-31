@@ -8,7 +8,7 @@ orderBook(events, tp = as.POSIXlt(Sys.time(), tz = "UTC"),
   max.levels = NULL, bps.range = 0, min.bid = 0, max.ask = Inf)
 }
 \arguments{
-\item{events}{Limit order events data.frame.}
+\item{events}{Limit order \code{\link{events}} data.frame.}
 
 \item{tp}{Time point to re-construct order book at.}
 
@@ -42,40 +42,28 @@ The \emph{bids} and \emph{asks} data consists of the following:
 }
 
 Both the \emph{bids} and \emph{asks} data are ordered by descending price.
-
-\preformatted{
-> tp <- as.POSIXct("2015-05-01 03:30:15.342", tz="UTC")
-> orderBook(lob.data$events, tp, max.levels=5)
-$timestamp
-[1] "2015-05-01 03:30:15.342 UTC"
-
-$asks
-        id               timestamp  exchange.timestamp  price     volume  liquidity       bps
-1 65613703 2015-05-01 03:29:53.127 2015-05-01 03:29:52 236.58  910229141 6341547077 2.1138968
-2 65613655 2015-05-01 03:29:24.703 2015-05-01 03:29:24 236.56 1320000000 5431317936 1.2683381
-3 65613700 2015-05-01 03:29:52.040 2015-05-01 03:29:51 236.55 1320000000 4111317936 0.8455587
-4 65613698 2015-05-01 03:29:51.510 2015-05-01 03:29:51 236.54 1600000000 2791317936 0.4227794
-5 65613712 2015-05-01 03:29:56.755 2015-05-01 03:29:56 236.53 1191317936 1191317936 0.0000000
-
-$bids
-        id               timestamp  exchange.timestamp  price    volume liquidity      bps
-1 65613225 2015-05-01 03:27:44.450 2015-05-01 03:24:00 236.36  16154172  16154172 0.000000
-2 65613681 2015-05-01 03:29:42.259 2015-05-01 03:29:41 236.31 200000000 216154172 2.115417
-3 65613220 2015-05-01 03:23:57.963 2015-05-01 03:23:57 236.30 100000000 316154172 2.538501
-4 65612978 2015-05-01 03:21:10.454 2015-05-01 03:21:10 236.28 100000000 416154172 3.384667
-5 65612388 2015-05-01 03:13:08.808 2015-05-01 03:13:08 236.17 100000000 516154172 8.038585
-
-    where        id = Limit order id.
-          timestamp = Last update time (last time order was partially hit)
- exchange.timestamp = Order creation time.
-              price = Limit price.
-             volume = Remaining order volume.
-          liquidity = Cumulative sum of volume up util this order (depth).
-                bps = Distance in BPS from current best bid/ask.
-}
 }
 \description{
-Reconstructs a limit order book for a specific point in time.
+Given a set of \code{\link{events}}, reconstructs a limit order book for a
+specific point in time.
+}
+\details{
+An order book consists of 2 sides: \emph{bids} and \emph{asks}, an example of
+which is shown below:
+
+\tabular{rrrrrrr}{
+      id \tab  price \tab     volume \tab  liquidity \tab  bps \cr
+65613703 \tab 236.58 \tab  910229141 \tab 6341547077 \tab 2.11 \cr
+65613655 \tab 236.56 \tab 1320000000 \tab 5431317936 \tab 1.26 \cr
+65613700 \tab 236.55 \tab 1320000000 \tab 4111317936 \tab 0.84 \cr
+65613698 \tab 236.54 \tab 1600000000 \tab 2791317936 \tab 0.42 \cr
+65613712 \tab 236.53 \tab 1191317936 \tab 1191317936 \tab 0.00 \cr
+       - \tab      - \tab          - \tab          - \tab    - \cr
+65613225 \tab 236.36 \tab   16154172 \tab   16154172 \tab 0.00 \cr
+65613681 \tab 236.31 \tab  200000000 \tab  216154172 \tab 2.11 \cr
+65613220 \tab 236.30 \tab  100000000 \tab  316154172 \tab 2.53 \cr
+65612978 \tab 236.28 \tab  100000000 \tab  416154172 \tab 3.38 \cr
+65612388 \tab 236.17 \tab  100000000 \tab  516154172 \tab 8.03}
 }
 \examples{
 tp <- as.POSIXct("2015-05-01 04:25:15.342", tz="UTC")

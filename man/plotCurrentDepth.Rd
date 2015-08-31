@@ -8,7 +8,7 @@ plotCurrentDepth(order.book, volume.scale = 1, show.quantiles = T,
   show.volume = T)
 }
 \arguments{
-\item{order.book}{A limit order book structure.}
+\item{order.book}{A limit \code{\link{orderBook}} structure.}
 
 \item{volume.scale}{Volume scale factor.}
 

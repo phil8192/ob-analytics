@@ -11,11 +11,11 @@ plotPriceLevels(depth, spread = NULL, trades = NULL, show.mp = T,
   volume.scale = 1)
 }
 \arguments{
-\item{depth}{The order book depth (lob.data$depth).}
+\item{depth}{The order book \code{\link{depth}}.}
 
-\item{spread}{Spread to overlay (getSpread(lob.data$depth.summary))}
+\item{spread}{Spread to overlay obtained from \code{\link{getSpread}}.}
 
-\item{trades}{Trades (lob.data$trades).}
+\item{trades}{\code{\link{trades}} data.}
 
 \item{show.mp}{If True, spread will be summarised as midprice.}
 
@@ -42,12 +42,13 @@ volume scale.}
 }
 \description{
 Produces a visualisation of the limit order book depth through time.
+}
+\details{
 The available volume at each price level is colour coded according to the
 range of volume at all price levels. The colour coding follows the visible
 spectrum, such that larger amounts of volume appear "hotter" than smaller
 amounts, where cold = blue, hot = red.
-}
-\details{
+
 Since the distribution of limit order size exponentially decays, it can be
 difficult to visually differentiate: most values will appear to be blue. The
 function provides price, volume and a colour bias range to overcome this.
@@ -72,7 +73,6 @@ library(grid)
 pushViewport(viewport(layout=grid.layout(1, 2)))
 print(p1, vp=viewport(layout.pos.row=1, layout.pos.col=1))
 print(p2, vp=viewport(layout.pos.row=1, layout.pos.col=2))
-
 }
 
 # zoom into 1 hour of activity, show the spread and directional trades.

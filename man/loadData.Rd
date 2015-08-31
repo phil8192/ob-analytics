@@ -12,7 +12,7 @@ loadData(bin.file, ...)
 \item{...}{\code{\link{readRDS}}.}
 }
 \value{
-Limit order, trade and depth data structure.
+Limit order, trade and depth data structure \code{\link{lob.data}}.
 }
 \description{
 Loads previously saved pre-processed data.

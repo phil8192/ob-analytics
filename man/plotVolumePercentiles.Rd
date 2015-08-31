@@ -7,10 +7,10 @@
 plotVolumePercentiles(depth.summary,
   start.time = head(depth.summary$timestamp, 1),
   end.time = tail(depth.summary$timestamp, 1), volume.scale = 1,
-  percentile.line = T, side.line = T)
+  perc.line = T, side.line = T)
 }
 \arguments{
-\item{depth.summary}{Depth summary data (lob.data$depth.summary).}
+\item{depth.summary}{\code{\link{depth.summary}} data.}
 
 \item{start.time}{Plot events from this time onward.}
 
@@ -18,16 +18,18 @@ plotVolumePercentiles(depth.summary,
 
 \item{volume.scale}{Volume scale factor.}
 
-\item{percentile.line}{If true, separate percentiles with subtle line.}
+\item{perc.line}{If true, separate percentiles with subtle line.}
 
 \item{side.line}{If true, separate bid/ask side with subtle line.}
 }
 \description{
 Plots the available volume in 25bps increments on each side of the order
-book in the form of a stacked area graph. The top of the graph depicts the
-ask side of the book, whilst the bottom depicts the bid side. Percentiles
-and order book sides can be separated by an optional subtle line for
-improved legibility.
+book in the form of a stacked area graph.
+}
+\details{
+The top of the graph depicts the ask side of the book, whilst the bottom
+depicts the bid side. Percentiles and order book sides can be separated by an
+optional subtle line for improved legibility.
 }
 \examples{
 # visualise 2 hours of order book liquidity.
@@ -38,6 +40,7 @@ plotVolumePercentiles(lob.data$depth.summary,
     volume.scale=10^-8)
 
 \dontrun{
+
 # visualise 15 minutes of order book liquidity.
 # data will be aggregated to second-by-second resolution.
 plotVolumePercentiles(lob.data$depth.summary,

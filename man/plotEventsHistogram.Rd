@@ -8,7 +8,7 @@ plotEventsHistogram(events, start.time = min(events$timestamp),
   end.time = max(events$timestamp), val = "volume", bw = NULL)
 }
 \arguments{
-\item{events}{Event data.}
+\item{events}{Limit order \code{\link{events}} data.}
 
 \item{start.time}{Include event data >= this time.}
 

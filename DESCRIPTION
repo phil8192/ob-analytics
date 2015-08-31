@@ -1,17 +1,16 @@
-Package: microstructure2
-Title: Limit Order Book Analysis
-Description: The description of a package is usually long,
-  spanning multiple lines. The second and subsequent lines
-  should be indented, usually with four spaces.
+Package: obAnalytics 
+Title: Limit Order Book Analytics
+Description: Data processing, visualisation and analysis of Limit Order Book
+  event data.
 Author: Phil Nocturne
 Maintainer: Phil Nocturne <phil@parasec.net>
-Date: 2015-08-14
+Date: 2015-08-31
 Version: 0.1.0
 URL: http://parasec.net
 BugReports: http://parasec.net/contact
 License: GPL (>= 2)
 Depends: R (>= 3.0.0)
 Imports: zoo, ggplot2, reshape2
-Suggests: grid, testthat, knitr
+Suggests: grid, knitr
 LazyData: true
 VignetteBuilder: knitr

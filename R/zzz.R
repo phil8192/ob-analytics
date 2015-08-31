@@ -1,9 +1,8 @@
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("Welcome to my package")
+#  packageStartupMessage("obAnalytics")
 }
 
 .onLoad <- function(libname, pkgname) {
-  options(digits.secs=3)
-  options(scipen=999)
+#  options(digits.secs=3)
+#  options(scipen=999)
 }
-

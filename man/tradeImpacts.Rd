@@ -7,7 +7,7 @@
 tradeImpacts(trades)
 }
 \arguments{
-\item{trades}{Trade data.}
+\item{trades}{\code{\link{trades}} data.}
 }
 \value{
 A data.frame containing a summary of market order impacts:
@@ -24,8 +24,11 @@ A data.frame containing a summary of market order impacts:
 }
 }
 \description{
-Generates a data.frame containing order book impacts. An impact consists
-of 1 or more limit orders being hit in order to fulfil a market order.
+Generates a data.frame containing order book impacts.
+}
+\details{
+An impact consists of 1 or more limit orders being hit in order to fulfil a
+market order.
 }
 \examples{
 # get impacts data.frame from trades data.

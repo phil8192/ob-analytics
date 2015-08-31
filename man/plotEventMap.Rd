@@ -9,7 +9,7 @@ plotEventMap(events, start.time = min(events$timestamp),
   volume.from = NULL, volume.to = NULL, volume.scale = 1)
 }
 \arguments{
-\item{events}{Limit order events data.frame.}
+\item{events}{Limit order \code{\link{events}} data.frame.}
 
 \item{start.time}{Plot events from this time onward.}
 
@@ -29,12 +29,20 @@ volume scale.}
 }
 \description{
 Generates a visualisation of limit order events (excluding market and market
-limit orders). Ask side orders = red, Bid side orders = blue. Volume of
-order determines size of circle. Opaque = volume was added, transparent =
-volume was removed.
+limit orders).
+}
+\details{
+\itemize{
+  \item Ask side orders = red.
+  \item Bid side orders = blue.
+  \item Volume of order determines size of circle.
+  \item Opaque = volume was added.
+  \item Transparent = volume was removed.
+}
 }
 \examples{
 \dontrun{
+
 # plot all orders
 with(lob.data, plotEventMap(events))
 }
@@ -44,6 +52,7 @@ with(lob.data, plotEventMap(events,
     start.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
     end.time=as.POSIXct("2015-05-01 04:00:00.000", tz="UTC"),
     volume.scale=10^-8))
+
 # 15 minutes of activity >= 5 (re-scaled) volume within price range
 # $ [220, 245]
 with(lob.data, plotEventMap(events,

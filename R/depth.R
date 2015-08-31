@@ -110,7 +110,7 @@ priceLevelVolume <- function(events) {
 ##' Note that the timestamps at the begining and end of the table have been
 ##' \emph{clamped} to the specified range and the volume set to 0 at the end.
 ##' 
-##' @param d Depth data (see: \code{\link{lob.data}})
+##' @param d \code{\link{depth}} data.
 ##' @param from Beginning of range.
 ##' @param to End of range.
 ##' @return Filtered depth data.
@@ -326,8 +326,8 @@ depthMetrics <- function(depth) {
 ##'   05:04:16.670 \tab 235.45    \tab 16235931 \tab 235.71    \tab 39058160 \cr
 ##'   05:04:42.957 \tab 235.45    \tab 16235931 \tab 235.71    \tab 77019160}
 ##' 
-##' @param depth.summary Depth summary data (see: \code{\link{lob.data}}).
-##' @return Bid/Ask spread
+##' @param depth.summary \code{\link{depth.summary}} data.
+##' @return Bid/Ask spread quote data.
 ##' @author phil
 ##' @examples
 ##'

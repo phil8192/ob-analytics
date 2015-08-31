@@ -20,6 +20,8 @@ themeBlack <- function() {
 
 ##' General purpose time series plot.
 ##'
+##' Convenience function for plotting time series.
+##' 
 ##' @param timestamp POSIXct timestamps.
 ##' @param series The time series.
 ##' @param start.time Plot from this time onward.
@@ -29,8 +31,10 @@ themeBlack <- function() {
 ##' @author phil
 ##' @examples
 ##'
+##' # plot trades.
 ##' with(lob.data$trades, plotTimeSeries(timestamp, price))
 ##'
+##' # plot a general time series.
 ##' timestamp <- seq(as.POSIXct("2015-05-01 00:00:00.000", tz="UTC"), 
 ##'                  as.POSIXct("2015-05-01 00:59:00.000", tz="UTC"), by=60)
 ##' series <- rep(1:10, 6)
@@ -62,9 +66,9 @@ plotTimeSeries <- function(timestamp, series, start.time=min(timestamp),
 ##'
 ##' A convenience function for plotting the trades data.frame in a nice way.
 ##' 
-##' @param trades Trades data.frame
-##' @param start.time Plot from
-##' @param end.time Plot to
+##' @param trades \code{\link{trades}} data.
+##' @param start.time Plot from.
+##' @param end.time Plot to.
 ##' @author phil
 ##' @examples
 ##' 
@@ -88,6 +92,7 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
 ##' Plot order book price level heat map. 
 ##'
 ##' Produces a visualisation of the limit order book depth through time.
+##'
 ##' The available volume at each price level is colour coded according to the
 ##' range of volume at all price levels. The colour coding follows the visible
 ##' spectrum, such that larger amounts of volume appear "hotter" than smaller
@@ -97,9 +102,9 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
 ##' difficult to visually differentiate: most values will appear to be blue. The
 ##' function provides price, volume and a colour bias range to overcome this.
 ##' 
-##' @param depth The order book depth (lob.data$depth).
-##' @param spread Spread to overlay (getSpread(lob.data$depth.summary))
-##' @param trades Trades (lob.data$trades).
+##' @param depth The order book \code{\link{depth}}.
+##' @param spread Spread to overlay obtained from \code{\link{getSpread}}.
+##' @param trades \code{\link{trades}} data.
 ##' @param show.mp If True, spread will be summarised as midprice.
 ##' @param show.all.depth If True, show resting (and never hit) limit orders.
 ##' @param col.bias 1 = uniform colour spectrum. 0.25 = bias toward 0.25
@@ -135,7 +140,6 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
 ##' pushViewport(viewport(layout=grid.layout(1, 2)))
 ##' print(p1, vp=viewport(layout.pos.row=1, layout.pos.col=1))
 ##' print(p2, vp=viewport(layout.pos.row=1, layout.pos.col=2))
-##'
 ##' }
 ##'
 ##' # zoom into 1 hour of activity, show the spread and directional trades. 
@@ -241,6 +245,7 @@ plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
 ##' @param col.bias 1 = uniform colour spectrum. 0.25 = bias toward 0.25
 ##'                 (more red less blue). <= 0 enables logarithmic scaling.
 ##' @author phil
+##' @keywords internal
 plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T, 
     col.bias=0.1) {
 
@@ -314,11 +319,17 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
 ##' Plot limit order event map.
 ##'
 ##' Generates a visualisation of limit order events (excluding market and market
-##' limit orders). Ask side orders = red, Bid side orders = blue. Volume of
-##' order determines size of circle. Opaque = volume was added, transparent =
-##' volume was removed.
+##' limit orders).
+##'
+##' \itemize{
+##'   \item Ask side orders = red.
+##'   \item Bid side orders = blue.
+##'   \item Volume of order determines size of circle.
+##'   \item Opaque = volume was added.
+##'   \item Transparent = volume was removed.
+##' }
 ##' 
-##' @param events Limit order events data.frame.
+##' @param events Limit order \code{\link{events}} data.frame.
 ##' @param start.time Plot events from this time onward.
 ##' @param end.time Plot events up until this time.
 ##' @param price.from Plot events with price levels >= this value.
@@ -332,6 +343,7 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
 ##' @examples
 ##'
 ##' \dontrun{
+##' 
 ##' # plot all orders 
 ##' with(lob.data, plotEventMap(events))
 ##' }
@@ -341,6 +353,7 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
 ##'     start.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 04:00:00.000", tz="UTC"),
 ##'     volume.scale=10^-8))
+##' 
 ##' # 15 minutes of activity >= 5 (re-scaled) volume within price range
 ##' # $ [220, 245]
 ##' with(lob.data, plotEventMap(events,
@@ -406,12 +419,14 @@ plotEventMap <- function(events,
 ##' Visualise flashed-limit order volume.
 ##'
 ##' Plots the points at which volume was added or removed from the limit order
-##' book. A flashed limit-order is a "fleeting" limit order: an order was added,
+##' book.
+##'
+##' A flashed limit-order is a "fleeting" limit order: an order was added,
 ##' then removed (usually within a very short period of time). This plot is
 ##' especially useful for identifying individual trading algorithms by price and
 ##' volume.
 ##' 
-##' @param events Limit order events data.frame.
+##' @param events Limit order \code{\link{events}} data.frame.
 ##' @param action "deleted" for cancelled volume, "added" for added volume.
 ##' @param start.time Plot events from this time onward.
 ##' @param end.time Plot events up until this time.
@@ -429,8 +444,7 @@ plotEventMap <- function(events,
 ##' # plot all fleeting limit order volume using logarithmic scale.
 ##' with(lob.data, plotVolumeMap(events, volume.scale=10^-8, log.scale=TRUE))
 ##'
-##' # plot fleeting limit order volume within 1 hour range up until 10 units of
-##' # volume.
+##' # "fleeting" order volume within 1 hour range up until 10 units of volume.
 ##' with(lob.data, plotVolumeMap(events, volume.scale=10^-8,
 ##'     start.time=as.POSIXct("2015-05-01 02:30:00.000", tz="UTC"),
 ##'     end.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
@@ -496,7 +510,7 @@ plotVolumeMap <- function(events,
 ##'
 ##' Plots the cumalative volume on each side of the limit order book.
 ##' 
-##' @param order.book A limit order book structure.
+##' @param order.book A limit \code{\link{orderBook}} structure.
 ##' @param volume.scale Volume scale factor.
 ##' @param show.quantiles If true, highlight top 1\% highest volume.
 ##' @param show.volume If true, also show non-cumulative volume.
@@ -565,16 +579,17 @@ plotCurrentDepth <- function(order.book,
 ##' Visualise available limit order book liquidity through time.
 ##'
 ##' Plots the available volume in 25bps increments on each side of the order
-##' book in the form of a stacked area graph. The top of the graph depicts the
-##' ask side of the book, whilst the bottom depicts the bid side. Percentiles
-##' and order book sides can be separated by an optional subtle line for
-##' improved legibility.
+##' book in the form of a stacked area graph.
+##'
+##' The top of the graph depicts the ask side of the book, whilst the bottom
+##' depicts the bid side. Percentiles and order book sides can be separated by an
+##' optional subtle line for improved legibility.
 ##' 
-##' @param depth.summary Depth summary data (lob.data$depth.summary).
+##' @param depth.summary \code{\link{depth.summary}} data.
 ##' @param start.time Plot events from this time onward.
 ##' @param end.time Plot events up until this time.
 ##' @param volume.scale Volume scale factor.
-##' @param percentile.line If true, separate percentiles with subtle line.
+##' @param perc.line If true, separate percentiles with subtle line.
 ##' @param side.line If true, separate bid/ask side with subtle line.
 ##' @author phil
 ##' @examples
@@ -587,6 +602,7 @@ plotCurrentDepth <- function(order.book,
 ##'     volume.scale=10^-8)
 ##'
 ##' \dontrun{
+##' 
 ##' # visualise 15 minutes of order book liquidity.
 ##' # data will be aggregated to second-by-second resolution.
 ##' plotVolumePercentiles(lob.data$depth.summary,
@@ -594,13 +610,12 @@ plotCurrentDepth <- function(order.book,
 ##'     end.time=as.POSIXct("2015-05-01 04:35:00.000", tz="UTC"),
 ##'     volume.scale=10^-8)
 ##' }
-##' 
 ##' @export plotVolumePercentiles
 plotVolumePercentiles <- function(depth.summary, 
     start.time=head(depth.summary$timestamp, 1),
     end.time=tail(depth.summary$timestamp, 1),
     volume.scale=1,
-    percentile.line=T,
+    perc.line=T,
     side.line=T) {     
 
   # ggplot2 hack
@@ -685,7 +700,7 @@ plotVolumePercentiles <- function(depth.summary,
       position="stack")
     
   # seperate percentiles by black line    
-  if(percentile.line) {
+  if(perc.line) {
     p <- p + geom_line(mapping=aes(ymax=0), position="stack", col="#000000",
         size=0.1)
     p <- p + geom_line(data=melted.bids, 
@@ -713,7 +728,7 @@ plotVolumePercentiles <- function(depth.summary,
 ##' Convenience function for plotting event price and volume histograms.
 ##' Will plot ask/bid bars side by side.
 ##' 
-##' @param events Event data.
+##' @param events Limit order \code{\link{events}} data.
 ##' @param start.time Include event data >= this time.
 ##' @param end.time Include event data <= this time.
 ##' @param val "volume" or "price".

@@ -40,8 +40,7 @@
 ##' @examples
 ##' \dontrun{
 ##'
-##' csv.file <- system.file("extdata", "orders.csv.xz",
-##'     package="microstructure2")
+##' csv.file <- system.file("extdata", "orders.csv.xz", package="obAnalytics")
 ##' lob.data <- processData(csv.file)
 ##' }
 ##' @export processData
@@ -103,7 +102,7 @@ processData <- function(csv.file) {
 ##'
 ##' @param bin.file File location.
 ##' @param ... \code{\link{readRDS}}.
-##' @return Limit order, trade and depth data structure.
+##' @return Limit order, trade and depth data structure \code{\link{lob.data}}.
 ##' @author phil
 ##' @examples
 ##' \dontrun{
@@ -122,7 +121,7 @@ loadData <- function(bin.file, ...) {
 ##'
 ##' Convenience function.
 ##'
-##' @param lob.data Limit order, trade and depth data structure.
+##' @param lob.data \code{\link{lob.data}} data structure.
 ##' @param bin.file File to save to.
 ##' @param ... \code{\link{saveRDS}}.
 ##' @author phil
