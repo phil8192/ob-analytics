@@ -1,10 +1,16 @@
 ---
-title: "obAnalytics guide"
+title: "obAnalytics Guide"
 author: "[Phil Nocturne](http://parasec.net)"
 date: "`r Sys.Date()`"
 output: 
-  rmarkdown::html_vignette:
+#  rmarkdown::html_vignette:
+  html_document:
+    theme: journal 
     toc: true
+    highlight: espresso 
+  pdf_document:
+    toc: true
+    highlight: espresso
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Microstructure2 Guide}
@@ -13,22 +19,78 @@ vignette: >
 
 ```{r, include=FALSE}
 library(obAnalytics)
-knitr::opts_chunk$set(dpi=100, fig.width=8, fig.height=6, results="hide") 
+#knitr::opts_chunk$set(dpi=100, fig.width=8, fig.height=6, results="hide") 
+knitr::opts_chunk$set(dpi=100, fig.width=10, fig.height=6, results="hide")
 ```
 
-# header
+# Overview 
 
-intro.
+Overview to the package and this guide.
 
-## Plot trades 
 
-some text and a plot.
+# Loading data
+
+lala
+
+## Expected format
+
+lala
+
+## Processing, saving and loading
+
+lala
+
+## Preprocessed example data
+
+lala
+
+
+# Visualisation
+
+lala
+
+## Order book shape
+
+The purpose of the cumulative volume graph is to quickly identify the shape of 
+the limit order book for the given point in time. The "shape" is defined as the 
+cumulative volume available at each price level, starting at the best bid/ask. 
+
+Using this shape, it is possible to visually summarise order book imbalance and
+market depth. 
+
+```{r} 
+# get a limit order book for a specific point in time, limited to +- 150bps
+# above/below best bid/ask price.
+lob <- orderBook(lob.data$events, 
+    tp=as.POSIXct("2015-05-01 04:38:17.429", tz="UTC"), bps.range=150)
+
+# visualise the order book liquidity.
+plotCurrentDepth(lob, volume.scale=10^-8)
+```
+
+In the figure above, an order book has been reconstructed with the _orderBook_
+function for a specific point in time. The visualisation produced with the
+_plotCurrentDepth_ function depicts a number of order book features. Firstly,
+the embedded bar chart at the bottom of the plot shows the amount of volume 
+available at specific price levels ranging from the _bid_ side on the left 
+(blue) through to the _ask_ side (red) on the right. Secondly, the blue and red
+lines show the _cumulative_ volume of the bar chart for the bid and ask sides of
+the order book respectively. Finally, the two subtle vertical lines at price 
+points \$234 and \$238 show the position of the top 1% largest limit orders.
+
+
+## Price level volume
+
+All lob.data:
 
 ```{r}
-with(lob.data, plotTrades(trades))
+# plot all lob.data price level volume between $247 and $245 and overlay the 
+# market midprice.
+spread <- getSpread(lob.data$depth.summary)
+plotPriceLevels(lob.data$depth, spread, price.from=227, price.to=245, 
+    volume.scale=10^-8, col.bias=0.25, show.mp=T)
 ```
 
-## Plot order book price level heat map
 
 plot all depth levels, rescaling the volume by 10^-8.
 produce 2 plots side-by-side: second plot contains depth levels with > 50 units of volume.
@@ -43,23 +105,140 @@ print(p1, vp=viewport(layout.pos.row=1, layout.pos.col=1))
 print(p2, vp=viewport(layout.pos.row=1, layout.pos.col=2))
 ```
 
-zoom into 1 hour of activity, show the spread and directional trades.
+with trades:
 
 ```{r}
-spread <- with(lob.data, getSpread(depth.summary))
-with(lob.data, plotPriceLevels(depth, spread, trades,
-   start.time=as.POSIXct("2015-05-01 03:00:00.000", tz="UTC"),
-   end.time=as.POSIXct("2015-05-01 04:00:00.000", tz="UTC"),
-   volume.scale=10^-8))
+# plot 1 hour of trades centred around the bid/ask spread. 
+plotPriceLevels(lob.data$depth, trades=lob.data$trades, 
+    price.from=236, price.to=237.75, volume.scale=10^-8, col.bias=0.2,
+    start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
+    end.time=as.POSIXct("2015-05-01 02:00:00.000", tz="UTC"))
 ```
 
-zoom in to 15 minutes of activity, show the bid/ask midprice.
+30 minute zoom:
 
 ```{r}
-spread <- with(lob.data, getSpread(depth.summary))
-with(lob.data, plotPriceLevels(depth, spread,
-    show.mp=FALSE,
-    start.time=as.POSIXct("2015-05-01 03:30:00.000", tz="UTC"),
-    end.time=as.POSIXct("2015-05-01 03:45:00.000", tz="UTC")))
+# zoom in to 30 minutes of bid/ask quotes.
+spread <- getSpread(lob.data$depth.summary)
+plotPriceLevels(lob.data$depth, spread, price.from=235.25, price.to=237,
+    start.time=as.POSIXct("2015-05-01 00:45:00.000", tz="UTC"), 
+    end.time=as.POSIXct("2015-05-01 01:15:00.000", tz="UTC"), 
+    volume.scale=10^-8, col.bias=0.5, show.mp=F)
+```
+
+4 minute zoom:
+
+```{r}
+# zoom in to 4 minutes of bid/ask quotes.
+spread <- getSpread(lob.data$depth.summary)
+plotPriceLevels(lob.data$depth, spread, price.from=235.90, price.to=236.25,
+    start.time=as.POSIXct("2015-05-01 00:55:00.000", tz="UTC"), 
+    end.time=as.POSIXct("2015-05-01 00:59:00.000", tz="UTC"), 
+    volume.scale=10^-8, col.bias=0.5, show.mp=F)
+```
+
+individual market paricipant:
+
+```{r}
+# 
+spread <- getSpread(lob.data$depth.summary)
+plotPriceLevels(lob.data$depth, spread, price.from=232.5, price.to=237.5,
+    volume.scale=10^-8, col.bias=1, show.mp=T,
+    end.time=as.POSIXct("2015-05-01 01:30:00.000", tz="UTC"),
+    volume.from=8.59, volume.to=8.72)
+```
+
+```{r}
+#
+plotPriceLevels(lob.data$depth, price.from=235.65, price.to=237.65,
+    volume.scale=10^-8, col.bias=1,
+    start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
+    end.time=as.POSIXct("2015-05-01 03:00:00.000", tz="UTC"),
+    volume.from=3.63, volume.to=3.83)
+```
+
+The available volume at each price level is colour coded according to the range of volume at all
+price levels. The colour coding follows the visible spectrum, such that larger amounts of volume
+appear "hotter" than smaller amounts, where cold = blue, hot = red.
+Since the distribution of limit order size exponentially decays, it can be difficult to visually differentiate:
+most values will appear to be blue. The function provides price, volume and a colour bias
+range to overcome this.
+
+## Liquidity
+
+liquidity...
+
+```{r}
+plotVolumePercentiles(lob.data$depth.summary, volume.scale=10^-8, perc.line=F, start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
+    end.time=as.POSIXct("2015-05-01 04:00:00.000", tz="UTC"))
+``` 
+
+another...
+```{r}
+# visualise 15 minutes of order book liquidity.
+# data will be aggregated to second-by-second resolution.
+plotVolumePercentiles(lob.data$depth.summary,
+start.time=as.POSIXct("2015-05-01 04:30:00.000", tz="UTC"),
+end.time=as.POSIXct("2015-05-01 04:35:00.000", tz="UTC"),
+volume.scale=10^-8)
+```
+
+## Fleeting orders
+
+```{r}
+plotVolumeMap(lob.data$events, volume.scale=10^-8, log.scale = T)
+```
+
+```{r}
+plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=3.5, volume.to=4)
+```
+
+```{r}
+plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=8.59, volume.to=8.72)
+```
+
+# Analysis
+
+lala.
+
+## Order book reconstruction
+
+lala.
+
+```{r results="markup"}
+tp <- as.POSIXct("2015-05-01 04:25:15.342", tz="UTC")
+ob <- orderBook(lob.data$events, max.levels=10)
+with(ob, {
+  asks$liquidity <- round(asks$liquidity*10^-8, 2)
+  bids$liquidity <- round(bids$liquidity*10^-8, 2)
+  cols <- c("id", "timestamp", "price", "liquidity")
+  print(asks[, cols], row.names=F)
+  print(bids[, cols], row.names=F)
+})
+```
+
+## Trades
+
+trades...
+```{r results="markup"}
+with(lob.data, {
+  trades.ex <- head(trades[, c("timestamp", "price", "volume", "direction", "maker", "taker")], 10)
+  trades.ex$volume <- round(trades.ex$volume*10^-8, 2)
+  print(trades.ex, row.names=F)
+})
+```
+
+## Market impacts
+
+lala.
+
+```{r results="markup"}
+# get impacts data.frame from trades data.
+impacts <- tradeImpacts(lob.data$trades)
+# impacts (in bps)
+sell.bps <- with(impacts[impacts$dir == "sell", ], {
+(max.price-min.price)/max.price
+})
+10000*summary(sell.bps[sell.bps > 0])
 ```
 

@@ -286,7 +286,7 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
   # plot midprice or spread.
   if(!is.null(spread)) {
     if(show.mp) {
-      p <- p + geom_line(data=spread, aes(x=timestamp, 
+      p <- p + geom_step(data=spread, aes(x=timestamp, 
         y=(best.bid.price+best.ask.price)/2), col="#ffffff", size=1.1)
     } else {
       p <- p + geom_step(data=spread, aes(x=timestamp, y=best.ask.price), 

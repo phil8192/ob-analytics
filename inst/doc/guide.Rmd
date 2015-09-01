@@ -3,8 +3,14 @@ title: "obAnalytics guide"
 author: "[Phil Nocturne](http://parasec.net)"
 date: "`r Sys.Date()`"
 output: 
-  rmarkdown::html_vignette:
+#  rmarkdown::html_vignette:
+  html_document:
+    theme: journal 
     toc: true
+    highlight: zenburn
+  pdf_document:
+    toc: true
+    highlight: zenburn
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Microstructure2 Guide}
