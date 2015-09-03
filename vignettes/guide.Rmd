@@ -18,6 +18,7 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
+options(digits.secs=3)
 library(obAnalytics)
 #knitr::opts_chunk$set(dpi=100, fig.width=8, fig.height=6, results="hide") 
 knitr::opts_chunk$set(dpi=100, fig.width=10, fig.height=6, results="hide")
@@ -43,6 +44,22 @@ lala
 ## Preprocessed example data
 
 lala
+
+### Trades
+
+trades...
+```{r}
+trades.ex <- tail(lob.data$trades, 10)
+trades.ex$volume <- round(trades.ex$volume*10^-8, 2)
+print(trades.ex, row.names=F)
+```
+
+```{r example trades, echo=F, results="markup"}
+trades.ex <- tail(lob.data$trades, 10)
+trades.ex$volume <- trades.ex$volume*10^-8
+knitr::kable(trades.ex, digits=2, row.names=F)
+```
+
 
 
 # Visualisation
@@ -205,40 +222,84 @@ lala.
 
 lala.
 
-```{r results="markup"}
+```{r}
+tp <- as.POSIXct("2015-05-01 04:25:15.342", tz="UTC")
+ob <- orderBook(lob.data$events, max.levels=10)
+print(ob)
+```
+
+```{r example order book, echo=F, results="markup"}
 tp <- as.POSIXct("2015-05-01 04:25:15.342", tz="UTC")
 ob <- orderBook(lob.data$events, max.levels=10)
 with(ob, {
-  asks$liquidity <- round(asks$liquidity*10^-8, 2)
-  bids$liquidity <- round(bids$liquidity*10^-8, 2)
-  cols <- c("id", "timestamp", "price", "liquidity")
-  print(asks[, cols], row.names=F)
-  print(bids[, cols], row.names=F)
-})
-```
-
-## Trades
-
-trades...
-```{r results="markup"}
-with(lob.data, {
-  trades.ex <- head(trades[, c("timestamp", "price", "volume", "direction", "maker", "taker")], 10)
-  trades.ex$volume <- round(trades.ex$volume*10^-8, 2)
-  print(trades.ex, row.names=F)
+  asks$liquidity <- asks$liquidity*10^-8
+  bids$liquidity <- bids$liquidity*10^-8
+  cols <- c("id", "timestamp", "liquidity", "price")
+  knitr::kable(cbind(bids[, cols], asks[order(asks$liquidity), rev(cols)]), 
+      row.names=F, align=c("r","r","r","r","l","l","l","l"), digits=2)
 })
 ```
 
 ## Market impacts
 
+### all impacts
 lala.
 
-```{r results="markup"}
-# get impacts data.frame from trades data.
+```{r}
 impacts <- tradeImpacts(lob.data$trades)
-# impacts (in bps)
-sell.bps <- with(impacts[impacts$dir == "sell", ], {
-(max.price-min.price)/max.price
-})
-10000*summary(sell.bps[sell.bps > 0])
+impacts <- impacts[impacts$dir == "sell", ]
+bps <- 10000 * (impacts$max.price - impacts$min.price) / impacts$max.price
+types <- with(lob.data, events[match(impacts$id, events$id), ]$type)
+impacts <- cbind(impacts, type=types, bps)
+head(impacts[order(-impacts$bps), ], 10)
 ```
+
+```{r impacts example, echo=F, results="markup"}
+impacts <- tradeImpacts(lob.data$trades)
+impacts <- impacts[impacts$dir == "sell", ]
+impacts <- impacts[, c("id", "max.price", "min.price", "vwap", "hits", "vol", 
+    "end.time")]
+impacts$vol <- impacts$vol*10^-8
+bps <- 10000 * (impacts$max.price - impacts$min.price) / impacts$max.price
+types <- with(lob.data, events[match(impacts$id, events$id), ]$type)
+impacts <- cbind(impacts, type=types, bps)
+knitr::kable(head(impacts[order(-impacts$bps), ], 10), row.names=F, digits=2)
+```
+
+### individual impact
+lala.
+
+```{r}
+impact <- with(lob.data, trades[trades$taker == 65596324, 
+    c("timestamp", "price", "volume", "maker")])
+makers <- with(lob.data, events[match(impact$maker, events$id), ])
+makers <- makers[makers$action == "created", 
+    c("id", "timestamp", "aggressiveness.bps")]
+impact <- cbind(impact, maker=makers[match(impact$maker, makers$id), 
+    c("timestamp", "aggressiveness.bps")])
+age <- impact$timestamp - impact$maker.timestamp
+impact <-  cbind(impact[!is.na(age), c("timestamp", "price", "volume", 
+    "maker.aggressiveness.bps")], age[!is.na(age)])
+colnames(impact) <- c("timestamp", "price", "volume", "maker.agg", "age")
+impact$volume <- impact$volume*10^-8
+print(impact)
+```
+
+```{r impact example, echo=F, results="markup"}
+impact <- with(lob.data, trades[trades$taker == 65596324,
+    c("timestamp", "price", "volume", "maker")])
+makers <- with(lob.data, events[match(impact$maker, events$id), ])
+makers <- makers[makers$action == "created",
+    c("id", "timestamp", "aggressiveness.bps")]
+impact <- cbind(impact, maker=makers[match(impact$maker, makers$id),
+    c("timestamp", "aggressiveness.bps")])
+age <- impact$timestamp - impact$maker.timestamp
+impact <-  cbind(impact[!is.na(age), c("timestamp", "price", "volume", 
+    "maker.aggressiveness.bps")], age[!is.na(age)])
+colnames(impact) <- c("timestamp", "price", "volume", "maker.agg", "age")
+impact$volume <- impact$volume*10^-8
+knitr::kable(impact, row.names=F, digits=2)
+```
+
+
 
