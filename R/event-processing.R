@@ -76,9 +76,9 @@ loadEventData <- function(file) {
 ##' are assigned an aggressiveness of 0 BPS, a negative BPS below the best bid
 ##' (ask) and a positive BPS if placed inside the spread.
 ##' 
-##' @param events The events data.table.
+##' @param events The events data.frame.
 ##' @param depth.summary Order book summary statistics.
-##' @return The events data.table containing a new aggressiveness.bps column.
+##' @return The events data.frame containing a new aggressiveness.bps column.
 ##' @author phil
 ##' @keywords internal
 orderAggressiveness <- function(events, depth.summary) {

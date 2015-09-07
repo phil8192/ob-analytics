@@ -134,7 +134,7 @@ NULL
 
 ##' Limit order events.
 ##'
-##' A data.table containing the lifecycle of limit orders.
+##' A data.frame containing the lifecycle of limit orders.
 ##'
 ##' The purpose of this table is to keep account of the lifecycle of all orders
 ##' in both sides of the limit order book. The lifecycle of an individual limit
@@ -143,11 +143,11 @@ NULL
 ##' \describe{
 ##'   \item{created}{The order is created with a specified amount of volume and
 ##' a limit price.}
-##'   \item{changed}{0 or more modification events occur when the order is
-##' partially filled. On each modification, the remaining volume will decrease.}
+##'   \item{changed}{The order has been partially filled. On each modification, 
+##' the remaining volume will decrease.}
 ##'   \item{deleted}{The order may be deleted at the request of the trader or, in
 ##' the event that the order has been completely filled, deleted by the exchange.
-##' An order deleted by the exchange as a result of being filled with have 0
+##' An order deleted by the exchange as a result of being filled will have 0
 ##' remaining volume at time of deletion.}
 ##' }
 ##'
@@ -197,7 +197,7 @@ NULL
 ##'
 ##' Inferred trades (executions).
 ##'
-##' The trades data.table contains a log of all executions ordered by local
+##' The trades data.frame contains a log of all executions ordered by local
 ##' timestamp. In addition to the usual timestamp, price and volume information,
 ##' each row also contains the trade direction (buyer or seller initiated) and
 ##' maker/taker limit order ids. The maker/taker event and limit order ids can
@@ -231,7 +231,7 @@ NULL
 ##'
 ##' Price level depth (liquidity) through time.
 ##'
-##' The depth data.table describes the amount of available volume for all price
+##' The depth data.frame describes the amount of available volume for all price
 ##' levels in the limit order book through time. Each row corresponds to a limit
 ##' order event, in which volume has been added or removed.
 ##'
