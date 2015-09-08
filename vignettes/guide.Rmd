@@ -5,12 +5,14 @@ date: "`r Sys.Date()`"
 output: 
 #  rmarkdown::html_vignette:
   html_document:
-#    theme: journal 
+    theme: journal 
     toc: true
-    highlight: espresso 
+    #highlight: espresso 
+    fig_caption: true
   pdf_document:
     toc: true
-    highlight: espresso
+    #highlight: espresso
+    fig_caption: true
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{Microstructure2 Guide}
@@ -18,9 +20,7 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-options(digits.secs=3)
 library(obAnalytics)
-#knitr::opts_chunk$set(dpi=100, fig.width=8, fig.height=6, results="hide") 
 knitr::opts_chunk$set(dpi=100, fig.width=10, fig.height=6, results="hide")
 ```
 
@@ -308,10 +308,64 @@ __taker.event.id__ Corresponding market taking event id in _events_ data.frame.
 --------------------------------------------------------------------------------
 Table: Trade data attributes.
 
+### Depth
+
+The depth data.frame describes the amount of available volume for all price 
+levels in the limit order book through time. Each row corresponds to a limit 
+order event, in which volume has been added or removed.
+
+The data.frame represents a run-length-encoding of the cumulative sum of depth
+for all price levels and consists of the following attributes:
+
+--------------------------------------------------------------------------------
+    Attribute Meaning
+------------- ------------------------------------------------------------------
+__timestamp__ Time at which volume was added or removed.
+
+    __price__ Order book price level.
+
+   __volume__ Amount of remaining volume at this price level.
+
+     __side__ The side of the price level: bid or ask.
+--------------------------------------------------------------------------------
+Table: Depth attributes.
+
+### Depth summary
+
+The depth.summary data.frame contains various summary statistics describing the 
+state of the order book after every limit order event. The metrics are intended 
+to quantify the shape of the order book through time.
+
+--------------------------------------------------------------------------------
+            Attribute Meaning
+--------------------- ----------------------------------------------------------
+        __timestamp__ Local timestamp corresponding to events.
+
+   __best.bid.price__ Best bid price.
+
+     __best.bid.vol__ Amount of volume available at the best bid.
+
+ __bid.vol25:500bps__ The amount of volume available for 20 25bps percentiles 
+                      below the best bid.
+
+__bid.vwap25:500bps__ The VWAP for 20 25bps percentiles below the best bid.
+
+   __best.ask.price__ The best ask price.
+
+     __best.ask.vol__ Amount of volume available at the best ask.
+
+ __ask.vol25:500bps__ The amount od volume available for 20 25bps percentiles 
+                      above the best ask.
+
+__ask.vwap25:500bps__ The VWAP for 20 25bps percentiles above the best ask.
+--------------------------------------------------------------------------------
+Table: Order book summary metrics.
 
 # Visualisation
 
-lala
+The package provides a number of functions for the visualisation of limit order 
+events and order book liquidity. The visualisations all make use of the ggplot2 
+plotting system.
 
 ## Order book shape
 
@@ -345,28 +399,21 @@ points \$234 and \$238 show the position of the top 1% largest limit orders.
 
 ## Price level volume
 
-All lob.data:
+The available volume at each price level is colour coded according to the range 
+of volume at all price levels. The colour coding follows the visible spectrum, 
+such that larger amounts of volume appear "hotter" than smaller amounts, where 
+cold = blue, hot = red.
 
-```{r}
+Since the distribution of limit order size exponentially decays, it can be 
+difficult to visually differentiate: most values will appear to be blue. The 
+function provides price, volume and a colour bias range to overcome this.
+
+```{r, fig.cap="a"}
 # plot all lob.data price level volume between $247 and $245 and overlay the 
 # market midprice.
 spread <- getSpread(lob.data$depth.summary)
 plotPriceLevels(lob.data$depth, spread, price.from=227, price.to=245, 
     volume.scale=10^-8, col.bias=0.25, show.mp=T)
-```
-
-
-plot all depth levels, rescaling the volume by 10^-8.
-produce 2 plots side-by-side: second plot contains depth levels with > 50 units of volume.
-
-```{r}
-spread <- with(lob.data, getSpread(depth.summary))
-p1 <- with(lob.data, plotPriceLevels(depth, spread, col.bias=0.1, volume.scale=10^-8))
-p2 <- with(lob.data, plotPriceLevels(depth, spread, col.bias=0.1, volume.scale=10^-8, volume.from=50))
-library(grid)
-pushViewport(viewport(layout=grid.layout(1, 2)))
-print(p1, vp=viewport(layout.pos.row=1, layout.pos.col=1))
-print(p2, vp=viewport(layout.pos.row=1, layout.pos.col=2))
 ```
 
 with trades:
@@ -383,7 +430,6 @@ plotPriceLevels(lob.data$depth, trades=lob.data$trades,
 
 ```{r}
 # zoom in to 30 minutes of bid/ask quotes.
-spread <- getSpread(lob.data$depth.summary)
 plotPriceLevels(lob.data$depth, spread, price.from=235.25, price.to=237,
     start.time=as.POSIXct("2015-05-01 00:45:00.000", tz="UTC"), 
     end.time=as.POSIXct("2015-05-01 01:15:00.000", tz="UTC"), 
@@ -394,7 +440,6 @@ plotPriceLevels(lob.data$depth, spread, price.from=235.25, price.to=237,
 
 ```{r}
 # zoom in to 4 minutes of bid/ask quotes.
-spread <- getSpread(lob.data$depth.summary)
 plotPriceLevels(lob.data$depth, spread, price.from=235.90, price.to=236.25,
     start.time=as.POSIXct("2015-05-01 00:55:00.000", tz="UTC"), 
     end.time=as.POSIXct("2015-05-01 00:59:00.000", tz="UTC"), 
@@ -405,7 +450,6 @@ individual market paricipant:
 
 ```{r}
 # 
-spread <- getSpread(lob.data$depth.summary)
 plotPriceLevels(lob.data$depth, spread, price.from=232.5, price.to=237.5,
     volume.scale=10^-8, col.bias=1, show.mp=T,
     end.time=as.POSIXct("2015-05-01 01:30:00.000", tz="UTC"),
@@ -421,16 +465,14 @@ plotPriceLevels(lob.data$depth, price.from=235.65, price.to=237.65,
     volume.from=3.63, volume.to=3.83)
 ```
 
-The available volume at each price level is colour coded according to the range of volume at all
-price levels. The colour coding follows the visible spectrum, such that larger amounts of volume
-appear "hotter" than smaller amounts, where cold = blue, hot = red.
-Since the distribution of limit order size exponentially decays, it can be difficult to visually differentiate:
-most values will appear to be blue. The function provides price, volume and a colour bias
-range to overcome this.
-
 ## Liquidity
 
-liquidity...
+Plots the available volume in 25bps increments on each side of the order book in 
+the form of a stacked area graph.
+
+The top of the graph depicts the ask side of the book, whilst the bottom depicts 
+the bid side. Percentiles and order book sides can be separated by an optional 
+subtle line for improved legibility.
 
 ```{r}
 plotVolumePercentiles(lob.data$depth.summary, volume.scale=10^-8, perc.line=F, start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
@@ -449,6 +491,9 @@ volume.scale=10^-8)
 
 ## Fleeting orders
 
+Generates a visualisation of limit order events (excluding market and market 
+limit orders).
+
 ```{r}
 plotVolumeMap(lob.data$events, volume.scale=10^-8, log.scale = T)
 ```
@@ -460,6 +505,14 @@ plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=3.5, volume.to=4)
 ```{r}
 plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=8.59, volume.to=8.72)
 ```
+
+
+* Ask side orders = red.
+* Bid side orders = blue.
+* Volume of order determines size of circle.
+* Opaque = volume was added.
+* Transparent = volume was removed.
+
 
 # Analysis
 
@@ -476,8 +529,6 @@ print(ob)
 ```
 
 ```{r example order book, echo=F, results="markup"}
-tp <- as.POSIXct("2015-05-01 04:25:15.342", tz="UTC")
-ob <- orderBook(lob.data$events, max.levels=10)
 with(ob, {
   asks$liquidity <- asks$liquidity*10^-8
   bids$liquidity <- bids$liquidity*10^-8
@@ -533,20 +584,6 @@ print(impact)
 ```
 
 ```{r impact example, echo=F, results="markup"}
-impact <- with(lob.data, trades[trades$taker == 65596324,
-    c("timestamp", "price", "volume", "maker")])
-makers <- with(lob.data, events[match(impact$maker, events$id), ])
-makers <- makers[makers$action == "created",
-    c("id", "timestamp", "aggressiveness.bps")]
-impact <- cbind(impact, maker=makers[match(impact$maker, makers$id),
-    c("timestamp", "aggressiveness.bps")])
-age <- impact$timestamp - impact$maker.timestamp
-impact <-  cbind(impact[!is.na(age), c("timestamp", "price", "volume", 
-    "maker.aggressiveness.bps")], age[!is.na(age)])
-colnames(impact) <- c("timestamp", "price", "volume", "maker.agg", "age")
-impact$volume <- impact$volume*10^-8
 knitr::kable(impact, row.names=F, digits=2)
 ```
-
-
 
