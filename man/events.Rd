@@ -39,7 +39,7 @@ order book.}
 order).}
 }}
 \description{
-A data.table containing the lifecycle of limit orders.
+A data.frame containing the lifecycle of limit orders.
 }
 \details{
 The purpose of this table is to keep account of the lifecycle of all orders
@@ -49,11 +49,11 @@ order follows a sequence of events:
 \describe{
   \item{created}{The order is created with a specified amount of volume and
 a limit price.}
-  \item{changed}{0 or more modification events occur when the order is
-partially filled. On each modification, the remaining volume will decrease.}
+  \item{changed}{The order has been partially filled. On each modification,
+the remaining volume will decrease.}
   \item{deleted}{The order may be deleted at the request of the trader or, in
 the event that the order has been completely filled, deleted by the exchange.
-An order deleted by the exchange as a result of being filled with have 0
+An order deleted by the exchange as a result of being filled will have 0
 remaining volume at time of deletion.}
 }
 }

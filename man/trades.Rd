@@ -23,7 +23,7 @@
 Inferred trades (executions).
 }
 \details{
-The trades data.table contains a log of all executions ordered by local
+The trades data.frame contains a log of all executions ordered by local
 timestamp. In addition to the usual timestamp, price and volume information,
 each row also contains the trade direction (buyer or seller initiated) and
 maker/taker limit order ids. The maker/taker event and limit order ids can

@@ -7,12 +7,12 @@
 orderAggressiveness(events, depth.summary)
 }
 \arguments{
-\item{events}{The events data.table.}
+\item{events}{The events data.frame.}
 
 \item{depth.summary}{Order book summary statistics.}
 }
 \value{
-The events data.table containing a new aggressiveness.bps column.
+The events data.frame containing a new aggressiveness.bps column.
 }
 \description{
 Added or deleted limit orders can be assigned a level of "aggressiveness"

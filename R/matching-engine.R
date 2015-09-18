@@ -35,7 +35,7 @@ eventMatch <- function(events, cut.off.ms=5000) {
       bids <- id.bid.fills[id.bid.fills$fill == volume, ]
       asks <- id.ask.fills[id.ask.fills$fill == volume, ]
       distance.matrix.ms <- sapply(bids$timestamp, function(b) {
-        as.integer(difftime(b, asks$timestamp, units="secs")*1000)
+        as.numeric(difftime(b, asks$timestamp, units="secs")*1000)
       })
 
       # only 1 ask. convert to 1 row matrix.
@@ -66,7 +66,7 @@ eventMatch <- function(events, cut.off.ms=5000) {
 
         # same as: t(ifelse(abs(distance.matrix.ms) <= 5000, 1, -1))
         sm <- sMatrix(bids$timestamp, asks$timestamp, filter=function(f1, f2) {
-          ifelse(abs(as.integer(difftime(f1, f2, units="secs")*1000)) <=
+          ifelse(abs(as.numeric(difftime(f1, f2, units="secs")*1000)) <=
               cut.off.ms, 1, -1)
         })
 

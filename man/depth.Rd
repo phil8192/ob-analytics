@@ -15,7 +15,7 @@
 Price level depth (liquidity) through time.
 }
 \details{
-The depth data.table describes the amount of available volume for all price
+The depth data.frame describes the amount of available volume for all price
 levels in the limit order book through time. Each row corresponds to a limit
 order event, in which volume has been added or removed.
 }
