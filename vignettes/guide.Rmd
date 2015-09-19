@@ -26,7 +26,7 @@ knitr::opts_chunk$set(dpi=100, fig.width=10, fig.height=6, results="hide")
 
 # Overview 
 
-_obAnalytics_ is an R package intended for visualisation and analytics of limit
+_obAnalytics_ is an R package intended for visualisation and analysis of limit
 order data. 
 
 This guide is structured as an end-to-end walk-through and is intended to 
@@ -408,6 +408,13 @@ Since the distribution of limit order size exponentially decays, it can be
 difficult to visually differentiate: most values will appear to be blue. The 
 function provides price, volume and a colour bias range to overcome this.
 
+Setting _col.bias_ to 0 will colour code volume on the logarithmic scale, while
+setting _col.bias_ < 1 will "squash" the spectrum. For example, a uniform 
+_col.bias_ of 1 will result in 1/3 blue, 1/3 green, and 1/3 red applied across
+all volume - most values will be blue. Setting the _col.bias_ to 0.5 will 
+result in 1/7 blue, 2/7 green, 4/7 red being applied such that there is greater
+differentiation amongst volume at smaller scales.
+
 ```{r, fig.cap="a"}
 # plot all lob.data price level volume between $247 and $245 and overlay the 
 # market midprice.
@@ -416,7 +423,16 @@ plotPriceLevels(lob.data$depth, spread, price.from=227, price.to=245,
     volume.scale=10^-8, col.bias=0.25, show.mp=T)
 ```
 
-with trades:
+The above plot shows all price levels between \$227 and \$245 for ~5 hours of 
+price level data with the market midprice indicated in white. The volume has 
+been scaled down from Satoshi to Bitcoin for legibility (1 Bitcoin = 10^8 
+Satoshi). Note the large sell/ask orders at \$238 and \$239 respectively.
+
+Zooming into the same price level data, between 1am and 2am and providing
+_trades_ data to the plot will show trade executions. In the below plot which
+has been centred around the bid/ask spread, shows the points at which market
+_sell_ (circular red) and _buy_ (circular green) orders have been executed with
+respect to the order book price levels.
 
 ```{r}
 # plot 1 hour of trades centred around the bid/ask spread. 
@@ -426,7 +442,10 @@ plotPriceLevels(lob.data$depth, trades=lob.data$trades,
     end.time=as.POSIXct("2015-05-01 02:00:00.000", tz="UTC"))
 ```
 
-30 minute zoom:
+Zooming in further to a 30 minute window, it is possible to display the bid ask
+spread clearly. In the below plot, _show.mp_ has been set to FALSE. This has 
+the effect of displaying the actual spread (bid = green, ask = red) instead of 
+the (bid+ask)/2 midprice.
 
 ```{r}
 # zoom in to 30 minutes of bid/ask quotes.
@@ -436,7 +455,17 @@ plotPriceLevels(lob.data$depth, spread, price.from=235.25, price.to=237,
     volume.scale=10^-8, col.bias=0.5, show.mp=F)
 ```
 
-4 minute zoom:
+Zooming in, still further, to ~4 minutes of data focussed around the spread, 
+shows (in this example) the bid rising and then dropping, while, by comparison,
+the ask price remains static.
+
+This is a common pattern: 2 or more algorithms are competing to be ahead of 
+each other. They both wish to be at the best bid+1, resulting in a cyclic game
+of leapfrog until one of the competing algorithm withdraws, in which case the
+remaining algorithm "snaps" back to the next best bid (+1). This behavior 
+results in a _sawtooth_ pattern which has been characterised by some as market-
+manipulation. It is simply an emergent result of event driven limit order 
+markets.
 
 ```{r}
 # zoom in to 4 minutes of bid/ask quotes.
@@ -446,7 +475,15 @@ plotPriceLevels(lob.data$depth, spread, price.from=235.90, price.to=236.25,
     volume.scale=10^-8, col.bias=0.5, show.mp=F)
 ```
 
-individual market paricipant:
+By filtering the price or volume range it is possible to observe the behavior 
+of individual market participants. This is perhaps one of the most useful and
+interesting features of this tool. 
+
+In the below plot, the displayed price level volume has been restricted between 
+8.59 an 8.72 bitcoin, resulting in obvious display of an individual algo. Here, 
+the algo. is most likely seeking _value_ by placing limit orders below the bid 
+price waiting for a market impact in the hope of reversion by means of market 
+resiliance (the rate at which market makers fill a void after a market impact).
 
 ```{r}
 # 
@@ -455,6 +492,11 @@ plotPriceLevels(lob.data$depth, spread, price.from=232.5, price.to=237.5,
     end.time=as.POSIXct("2015-05-01 01:30:00.000", tz="UTC"),
     volume.from=8.59, volume.to=8.72)
 ```
+
+Using the same volume filtering approach, the next plot shows the behaviour of
+an individual _market maker_ operating with a bid/ask spread limited between 
+3.63 and 3.83 bitcoin respectively. The rising bid prices at times are due to
+the event driven "leapfrog" phenomenon discussed preivously.
 
 ```{r}
 #
@@ -467,19 +509,31 @@ plotPriceLevels(lob.data$depth, price.from=235.65, price.to=237.65,
 
 ## Liquidity
 
-Plots the available volume in 25bps increments on each side of the order book in 
-the form of a stacked area graph.
+The _plotVolumePercentiles_ function plots the available volume in 25bps 
+increments on each side of the order book in the form of a stacked area graph. 
+
+The resulting graph is intended to display the market "quality" either side of 
+the limit order book: The amount of volume available at increasing depths in the
+order book which would effect the VWAP (Volume Weighted Aeverge Price) of a 
+market order. 
+
+The example below favours buyers, since there is more volume available within 25 
+BPS of the best ask price in comparison to the thinner market -25 BPS below the 
+best bid.
 
 The top of the graph depicts the ask side of the book, whilst the bottom depicts 
 the bid side. Percentiles and order book sides can be separated by an optional 
-subtle line for improved legibility.
+subtle line (_perc.line_) for improved legibility.
 
 ```{r}
 plotVolumePercentiles(lob.data$depth.summary, volume.scale=10^-8, perc.line=F, start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
     end.time=as.POSIXct("2015-05-01 04:00:00.000", tz="UTC"))
 ``` 
 
-another...
+Zooming in to a 5 minute window and enabling the percentile borders with 
+(_perc.line=FALSE_), the amount of volume available at each 25 bps price level 
+is exemplified. 
+
 ```{r}
 # visualise 15 minutes of order book liquidity.
 # data will be aggregated to second-by-second resolution.
