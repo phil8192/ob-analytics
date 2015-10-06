@@ -12,7 +12,7 @@ output:
     toc: true
   vignette: >
     %\VignetteEngine{knitr::rmarkdown}
-    %\VignetteIndexEntry{Microstructure2 Guide}
+    %\VignetteIndexEntry{obAnalytics Guide}
     \usepackage[utf8]{inputenc}
 ---
 
