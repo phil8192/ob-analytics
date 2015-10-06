@@ -105,7 +105,7 @@
 ##' @docType package
 ##' @import ggplot2 zoo
 ##' @importFrom reshape2 melt
-##' @author phil nocturne \email{phil@@parasec.net}
+##' @author Phil Stubbings \email{phil@@parasec.net}
 ##' @references \url{http://parasec.net/transmission/order-book-visualisation}
 NULL
 

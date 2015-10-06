@@ -3,6 +3,12 @@
 
 Limit Order Book event processing and visualisation.
 
+!["limit order book analytics"](https://raw.githubusercontent.com/phil8192/ob-analytics/master/ob-analytics.png "limit order book analytics") 
+
+_obAnalytics_ is an R package intended for visualisation and analysis of limit
+order data. The package is experimental and is based on the R code used to
+create the visualisations in this (Limit Order Book Visualisation)[http://parasec.net/transmission/order-book-visualisation/] article.
+
 ## Installation
 
 ```R
@@ -26,14 +32,7 @@ http://parasec.net/transmission/ob-analytics/guide.pdf
 ### Manual 
 http://parasec.net/transmission/ob-analytics/obAnalytics-manual.pdf
 
-## Development notes
+## License
 
-#### Building and checking src
-```bash
-cd ob-analytics
-R -e 'devtools::document()' # roxygen2
-cd ..
-R CMD build ob-analytics
-R CMD check --as-cran obAnalytics_0.1.0.tar.gz 
-```
+GPL (>= 2)
 

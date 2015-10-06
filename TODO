@@ -3,10 +3,6 @@ existing
 
 * exported function sanity checks.
 
-* clean up documentation.
-
-* example use of library with knitr (vignette)
-
 * clean up summary statistics code in depth.R.
   - use rcpp.
 
