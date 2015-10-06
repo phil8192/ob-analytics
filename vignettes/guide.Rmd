@@ -285,11 +285,11 @@ knitr::kable(trades.ex, digits=2, row.names=F)
 Each row, representing a single trade, consists of the following attributes:
 
 --------------------------------------------------------------------------------
-          Attribte Meaning
+         Attribute Meaning
 ------------------ -------------------------------------------------------------
      __timestamp__ Local event timestamp.
 
-         __price__ Price at which the trade occured.
+         __price__ Price at which the trade occurred.
 
         __volume__ Amount of traded volume.
 
@@ -351,7 +351,7 @@ __bid.vwap25:500bps__ The VWAP for 20 25bps percentiles below the best bid.
 
      __best.ask.vol__ Amount of volume available at the best ask.
 
- __ask.vol25:500bps__ The amount od volume available for 20 25bps percentiles 
+ __ask.vol25:500bps__ The amount of volume available for 20 25bps percentiles 
                       above the best ask.
 
 __ask.vwap25:500bps__ The VWAP for 20 25bps percentiles above the best ask.
@@ -480,10 +480,9 @@ In the below plot, the displayed price level volume has been restricted between
 8.59 an 8.72 bitcoin, resulting in obvious display of an individual algo. Here, 
 the algo. is most likely seeking _value_ by placing limit orders below the bid 
 price waiting for a market impact in the hope of reversion by means of market 
-resiliance (the rate at which market makers fill a void after a market impact).
+resilience (the rate at which market makers fill a void after a market impact).
 
 ```{r}
-# 
 plotPriceLevels(lob.data$depth, spread, price.from=232.5, price.to=237.5,
     volume.scale=10^-8, col.bias=1, show.mp=T,
     end.time=as.POSIXct("2015-05-01 01:30:00.000", tz="UTC"),
@@ -493,10 +492,9 @@ plotPriceLevels(lob.data$depth, spread, price.from=232.5, price.to=237.5,
 Using the same volume filtering approach, the next plot shows the behaviour of
 an individual _market maker_ operating with a bid/ask spread limited between 
 3.63 and 3.83 bitcoin respectively. The rising bid prices at times are due to
-the event driven "leapfrog" phenomenon discussed preivously.
+the event driven "leapfrog" phenomenon discussed previously.
 
 ```{r}
-#
 plotPriceLevels(lob.data$depth, price.from=235.65, price.to=237.65,
     volume.scale=10^-8, col.bias=1,
     start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
@@ -511,7 +509,7 @@ increments on each side of the order book in the form of a stacked area graph.
 
 The resulting graph is intended to display the market "quality" either side of 
 the limit order book: The amount of volume available at increasing depths in the
-order book which would effect the VWAP (Volume Weighted Aeverge Price) of a 
+order book which would effect the VWAP (Volume Weighted Average Price) of a 
 market order. 
 
 The example below favours buyers, since there is more volume available within 25 
@@ -551,9 +549,9 @@ plotVolumeMap(lob.data$events, volume.scale=10^-8, log.scale = T)
 ```
 
 Interestingly, the order cancellation visualisation shows the systematic
-activity of individual market particicpants. By filtering the display of
+activity of individual market participants. By filtering the display of
 cancellation events within a volume range, it is possible to isolate what are
-most likely inidividual order placement strategies. The following graph shows an
+most likely individual order placement strategies. The following graph shows an
 individual strategy cancelling orders within the [3.5, 4] volume range.
 
 ```{r}
@@ -610,7 +608,7 @@ from the limit order book.
 The following example shows the top 10 most aggressive sell impacts in terms of
 the _depth_ removed from the order book in terms of BPS. The VWAP column
 indicates the volume weighted average price that the market _taker_ received for
-thier market order. In addition, the _hits_ column shows the number of _hit_
+their market order. In addition, the _hits_ column shows the number of _hit_
 resting limit orders used to fulfil this market order.
 
 ```{r}

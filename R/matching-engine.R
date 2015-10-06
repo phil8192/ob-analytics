@@ -1,9 +1,10 @@
 ##' Match Market Orders (takers) to Limit Orders (makers). 
 ##'
-##' Matches corresponding Bid(s) and Ask(s) for each trade event. A trade event
-##' (a market impact) will generate a list of volume change events. This 
-##' function will line up 2 time ordered event lists for each side of the book
-##' and attempt to align them by matching volume. If the result contains 
+##' Matches corresponding Bid(s) and Ask(s) for each trade event.
+##'
+##' A trade event (a market impact) will generate a list of volume change events.
+##' This function will line up 2 time ordered event lists for each side of the
+##' book and attempt to align them by matching volume. If the result contains 
 ##' duplicate matches, then the matching is treated as a sequence alignment 
 ##' problem, and the Needleman-Wunsch algorithm is applied. As such, the
 ##' function acts as a type of "one shot" matching engine, simulating an order
@@ -12,6 +13,7 @@
 ##' @param events data frame of order book events. 
 ##' @param cut.off.ms events occuring outside of this time (in milliseconds) 
 ##'        will be considered as candidate matches.  
+##' @author phil
 ##' @keywords internal
 eventMatch <- function(events, cut.off.ms=5000) {
   matcher <- function() {

@@ -13,14 +13,19 @@ eventMatch(events, cut.off.ms = 5000)
 will be considered as candidate matches.}
 }
 \description{
-Matches corresponding Bid(s) and Ask(s) for each trade event. A trade event
-(a market impact) will generate a list of volume change events. This
-function will line up 2 time ordered event lists for each side of the book
-and attempt to align them by matching volume. If the result contains
+Matches corresponding Bid(s) and Ask(s) for each trade event.
+}
+\details{
+A trade event (a market impact) will generate a list of volume change events.
+This function will line up 2 time ordered event lists for each side of the
+book and attempt to align them by matching volume. If the result contains
 duplicate matches, then the matching is treated as a sequence alignment
 problem, and the Needleman-Wunsch algorithm is applied. As such, the
 function acts as a type of "one shot" matching engine, simulating an order
 book matching engine without the need to reconstruct the whole book.
+}
+\author{
+phil
 }
 \keyword{internal}
 
