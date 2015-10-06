@@ -1,22 +1,19 @@
 ---
 title: "obAnalytics Guide"
-author: "[Phil Nocturne](http://parasec.net)"
+author: "[Phil](http://parasec.net)"
 date: "`r Sys.Date()`"
 output: 
-#  rmarkdown::html_vignette:
-  html_document:
-    theme: journal 
+  rmarkdown::html_vignette:
     toc: true
-    #highlight: espresso 
-    fig_caption: true
   pdf_document:
     toc: true
-    #highlight: espresso
-    fig_caption: true
-vignette: >
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Microstructure2 Guide}
-  \usepackage[utf8]{inputenc}
+  html_document:
+    theme: journal
+    toc: true
+  vignette: >
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{Microstructure2 Guide}
+    \usepackage[utf8]{inputenc}
 ---
 
 ```{r, include=FALSE}
@@ -543,38 +540,45 @@ end.time=as.POSIXct("2015-05-01 04:35:00.000", tz="UTC"),
 volume.scale=10^-8)
 ```
 
-## Fleeting orders
+## Order cancellations
 
-Generates a visualisation of limit order events (excluding market and market 
-limit orders).
+Visualising limit order cancellations can provide insights into order placement
+processes. The _plotVolumeMap()_ function generates a visualisation of limit
+order cancellation events (excluding market and market limit orders).
 
 ```{r}
 plotVolumeMap(lob.data$events, volume.scale=10^-8, log.scale = T)
 ```
 
+Interestingly, the order cancellation visualisation shows the systematic
+activity of individual market particicpants. By filtering the display of
+cancellation events within a volume range, it is possible to isolate what are
+most likely inidividual order placement strategies. The following graph shows an
+individual strategy cancelling orders within the [3.5, 4] volume range.
+
 ```{r}
 plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=3.5, volume.to=4)
 ```
+
+Restricting the volume between [8.59, 8.72] shows a strategy placing orders at a
+fixed price at a fixed distance below the market price.
 
 ```{r}
 plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=8.59, volume.to=8.72)
 ```
 
-
-* Ask side orders = red.
-* Bid side orders = blue.
-* Volume of order determines size of circle.
-* Opaque = volume was added.
-* Transparent = volume was removed.
-
-
 # Analysis
 
-lala.
+In addition to the visualisation functionality of the package, _obAnalytics_ can
+also be used to study market event, trade and order book data. 
 
 ## Order book reconstruction
 
-lala.
+After loading and processing data, it is possible to reconstruct the limit order
+book for any given point in time. The next example shows the order book at a
+specific time (millisecond precision) limited to 10 price levels. The
+_liquidity_ column shows the cumulative sum of volume from the best bid/ask up
+until each price level row.
 
 ```{r}
 tp <- as.POSIXct("2015-05-01 04:25:15.342", tz="UTC")
@@ -594,8 +598,20 @@ with(ob, {
 
 ## Market impacts
 
-### all impacts
-lala.
+Using the _trades_ and _events_ data, it is possible to study market impact
+events.
+
+### All market impacts
+
+The _tradeImpacts()_ function groups individual trade events into market impact
+events. A market impact occurs when an order consumes 1 or more resting orders
+from the limit order book.
+
+The following example shows the top 10 most aggressive sell impacts in terms of
+the _depth_ removed from the order book in terms of BPS. The VWAP column
+indicates the volume weighted average price that the market _taker_ received for
+thier market order. In addition, the _hits_ column shows the number of _hit_
+resting limit orders used to fulfil this market order.
 
 ```{r}
 impacts <- tradeImpacts(lob.data$trades)
@@ -618,8 +634,17 @@ impacts <- cbind(impacts, type=types, bps)
 knitr::kable(head(impacts[order(-impacts$bps), ], 10), row.names=F, digits=2)
 ```
 
-### individual impact
-lala.
+### Individual impact
+
+The main purpose of the package is to load limit order, quote and trade data for
+arbitrary analysis. It is possible, for example, to examine an individual market
+impact event. The following code shows the sequence of events as a single market
+(sell) order is filled.
+
+The _maker.agg_ column shows how far each limit order was above or below the
+best bid when it was placed. The _age_ column, shows how long the order was
+resting in the order book before it was hit by this market order.
+
 
 ```{r}
 impact <- with(lob.data, trades[trades$taker == 65596324, 

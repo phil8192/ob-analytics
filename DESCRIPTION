@@ -2,12 +2,12 @@ Package: obAnalytics
 Title: Limit Order Book Analytics
 Description: Data processing, visualisation and analysis of Limit Order Book
   event data.
-Author: Phil Nocturne
-Maintainer: Phil Nocturne <phil@parasec.net>
-Date: 2015-08-31
+Author: Phil
+Maintainer: Phil <phil@parasec.net>
+Date: 2015-10-06
 Version: 0.1.0
-URL: http://parasec.net
-BugReports: http://parasec.net/contact
+URL: https://github.com/phil8192/ob-analytics
+BugReports: https://github.com/phil8192/ob-analytics/issues
 License: GPL (>= 2)
 Depends: R (>= 3.0.0)
 Imports: zoo, ggplot2, reshape2
