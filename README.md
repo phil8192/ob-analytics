@@ -1,5 +1,5 @@
 # obAnalytics
-[![Build Status](https://travis-ci.org/phil8192/lazy-iris.svg?branch=master)](https://travis-ci.org/phil8192/lazy-iris) [![License](http://img.shields.io/badge/license-GPL%20%28%3E=%202%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-2.0.html)
+[![Build Status](https://travis-ci.org/phil8192/ob-analytics.svg?branch=master)](https://travis-ci.org/phil8192/ob-analytics) [![License](http://img.shields.io/badge/license-GPL%20%28%3E=%202%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-2.0.html)
 
 Limit Order Book event processing and visualisation.
 
