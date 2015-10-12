@@ -37,6 +37,15 @@ events.
 Given event data which has been pre-matched with maker/taker event ids,
 this function will return a data.table containing all matched executions.
 }
+\examples{
+\dontrun{
+
+csv.file <- system.file("extdata", "orders.csv.xz", package="obAnalytics")
+events <- loadEventData(csv.file)
+events <- eventMatch(events)
+trades <- matchTrades(events)
+}
+}
 \author{
 phil
 }

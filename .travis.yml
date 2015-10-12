@@ -2,3 +2,13 @@ language: r
 sudo: required
 warnings_are_errors: true
 
+env:
+ global:
+   - CRAN: http://cran.rstudio.com
+
+r_packages:
+  - covr
+
+after_success:
+  - Rscript -e 'covr::codecov()'
+

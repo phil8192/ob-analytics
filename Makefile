@@ -21,6 +21,9 @@ check: build
 	cd ..;\
 	R CMD check $(PKGNAME)_$(PKGVERS).tar.gz --as-cran
 
+install: build
+	cd ..;\
+        R CMD INSTALL $(PKGNAME)_$(PKGVERS).tar.gz
 clean:
 	cd ..;\
 	$(RM) -r $(PKGNAME).Rcheck/

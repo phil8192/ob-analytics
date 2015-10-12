@@ -14,6 +14,18 @@
 ##' @param cut.off.ms events occuring outside of this time (in milliseconds) 
 ##'        will be considered as candidate matches.  
 ##' @author phil
+##' @examples
+##'
+##' asTime <- function(s) as.POSIXct(s, tz="UTC")
+##' events <- data.frame(timestamp=c(asTime("2015-10-10 21:32:00.000"),
+##'                                  asTime("2015-10-10 21:32:00.010"),
+##'                                  asTime("2015-10-10 21:32:10.000"),
+##'                                  asTime("2015-10-10 21:32:10.010")),
+##'                       direction=c("bid", "ask", "bid", "ask"),
+##'                       event.id=c(1, 2, 3, 4),
+##'                       fill=rep(1234, 4))
+##' matched <- obAnalytics:::eventMatch(events, cut.off.ms=1000)
+##' 
 ##' @keywords internal
 eventMatch <- function(events, cut.off.ms=5000) {
   matcher <- function() {
@@ -21,18 +33,18 @@ eventMatch <- function(events, cut.off.ms=5000) {
 
     res <- integer()
     cols <- c("event.id", "fill", "timestamp")
+
     bid.fills <- events[events$direction=="bid" & events$fill != 0, cols]
     ask.fills <- events[events$direction=="ask" & events$fill != 0, cols]
 
     # identifiable bid and ask fills.
-    id.bid.fills <- bid.fills[bid.fills$fill %in% ask.fills$fill, ]
-    id.bid.fill.order <- order(-id.bid.fills$fill, id.bid.fills$timestamp)
-    id.bid.fills <- id.bid.fills[id.bid.fill.order, ]
-
-    id.ask.fills <- ask.fills[ask.fills$fill %in% bid.fills$fill, ]
-    id.ask.fill.order <- order(-id.ask.fills$fill, id.ask.fills$timestamp)
-    id.ask.fills <- id.ask.fills[id.ask.fill.order, ]
-
+    fillId <- function(src, dst) {
+      id.fills <- src[src$fill %in% dst$fill, ]
+      id.fills[order(-id.fills$fill, id.fills$timestamp), ]
+    }
+    id.bid.fills <- fillId(bid.fills, ask.fills)
+    id.ask.fills <- fillId(ask.fills, bid.fills)  
+      
     for(volume in unique(id.bid.fills$fill)) {
       bids <- id.bid.fills[id.bid.fills$fill == volume, ]
       asks <- id.ask.fills[id.ask.fills$fill == volume, ]
@@ -59,20 +71,17 @@ eventMatch <- function(events, cut.off.ms=5000) {
         matches <- matches[!is.na(matches[, 2]), ]
         res <- rbind(res, matches)
       } else {
-
         # there is a chance 1 bid matched multiple ask timestamps, so first 
         # matching attempt failed... now use alignment algorithm to find
         # optimal alignment. note that the first attempt can fail if multiple 
         # orders for the same volume occur in rapid fire. could group and then 
         # process events by "bursts"/"pulses".
-
-        # same as: t(ifelse(abs(distance.matrix.ms) <= 5000, 1, -1))
         sm <- sMatrix(bids$timestamp, asks$timestamp, filter=function(f1, f2) {
-          ifelse(abs(as.numeric(difftime(f1, f2, units="secs")*1000)) <=
-              cut.off.ms, 1, -1)
+          diff.ms <- abs(as.numeric(difftime(f1, f2, units="secs")*1000)) 
+          ifelse(diff.ms == 0, cut.off.ms, cut.off.ms/diff.ms)
         })
 
-        aligned.idx <- alignS(s.matrix=sm)
+        aligned.idx <- alignS(s.matrix=sm, gap=-1)
 
         matched.bids <- bids[aligned.idx[, 1], ]
         matched.asks <- asks[aligned.idx[, 2], ]
@@ -88,20 +97,17 @@ eventMatch <- function(events, cut.off.ms=5000) {
   }
   
   matched <- matcher()
-
+   
   stopifnot(all(!duplicated(matched[, 1])))
   stopifnot(all(!duplicated(matched[, 2])))
 
-  events <- cbind(events, matching.event=NA)
-  # ensure bid event.id's in same order a events matrix
-  matched <- matched[order(matched[, 1]), ]
-  #bid->ask events
-  events[events$event.id %in% matched[, 1], ]$matching.event <- matched[, 2]
-  # ensure ask event.id's in same order a events matrix
-  matched <- matched[order(matched[, 2]), ]
-  # ask->bid events
-  events[events$event.id %in% matched[, 2], ]$matching.event <- matched[, 1]
+  events <- cbind(events, matching.event=NA)  
+  bid.matches <- match(matched[, 1], events$event.id)
+  ask.matches <- match(matched[, 2], events$event.id)
 
+  events[bid.matches, ]$matching.event <- matched[, 2]
+  events[ask.matches, ]$matching.event <- matched[, 1]  
+    
   events
 }
 

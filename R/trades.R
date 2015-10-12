@@ -28,6 +28,14 @@
 ##' events.
 ##' 
 ##' @author phil
+##' @examples
+##' \dontrun{
+##'
+##' csv.file <- system.file("extdata", "orders.csv.xz", package="obAnalytics")
+##' events <- loadEventData(csv.file)
+##' events <- eventMatch(events)
+##' trades <- matchTrades(events)
+##' }
 ##' @keywords internal
 matchTrades <- function(events) {
 
@@ -42,26 +50,28 @@ matchTrades <- function(events) {
       !is.na(events$matching.event), ]
   matching.asks <- matching.asks[order(matching.asks$matching.event), ]
   stopifnot(all(matching.bids$event.id - matching.asks$matching.event == 0))
-    
-  # makers/takers. (bid is maker if it comes first.
+
+  # match makers and takers.
+  # bid is maker if it comes first.
   # coming first is determined by exchange timestamp and if == then falls back
   # to order id.
+  # it is assumed that the order id is incremented by the exchange.  
   bid.exchange.ts <- matching.bids$exchange.timestamp
   ask.exchange.ts <- matching.asks$exchange.timestamp
   bid.maker <- bid.exchange.ts < ask.exchange.ts | 
-      ((bid.exchange.ts == ask.exchange.ts)) &
-      (matching.bids$id < matching.asks$id)
+      (bid.exchange.ts == ask.exchange.ts & matching.bids$id < matching.asks$id)
 
+  # trade timestamp is the first (local time) observation in the 2 matching
+  # trades.
   bid.local.ts <- matching.bids$timestamp
   ask.local.ts <- matching.asks$timestamp
-  # t&s timestamp is the first observation in the 2 matching trades.   
   timestamp <- as.POSIXct(ifelse(bid.local.ts <= ask.local.ts,
                                  bid.local.ts, ask.local.ts), 
-      origin="1970-01-01", tz="UTC")
+                          origin="1970-01-01", tz="UTC")
 
-  # the price at which the earlier timestamp. 
+  # the price at which the trade occured is the maker's limit price.
   price <- ifelse(bid.maker, matching.bids$price, matching.asks$price)
-
+ 
   # volume is either side of trade
   volume <- matching.bids$fill
 
@@ -81,14 +91,34 @@ matchTrades <- function(events) {
   # return timestamp ordered series.
   combined <- data.frame(timestamp, price, volume, direction, maker.event.id, 
       taker.event.id, maker, taker)
-  trades <- combined[order(timestamp), ]
+  combined <- combined[order(combined$timestamp), ]
     
-  jumps <- length(which(abs(diff(trades$price))>5))
-  if(jumps>0)
-    warning(paste(format(head(events$timestamp,1),"%D"),":",jumps,"jumps >$5"))
-
-  trades
-
+  # check for price jumps > $10.
+  # this can happen if a maker has been misclassified as a taker.
+  # a misclassification can occur if the exchange does not match orders
+  # in the same order as the order id. 
+  jumps <- which(abs(diff(combined$price)) > 10)
+  if(length(jumps) > 0) {
+    warning(paste(format(head(events$timestamp, 1),"%D"), ":", length(jumps),
+                  "jumps > $10 (swaping makers with takers)"))
+    # go through the trades and swap maker id, event id and price with taker id,
+    # event id and price.
+    for(i in jumps) {
+      prev.jump <- combined[i-1, ]
+      this.jump <- combined[i, ]
+      if(abs(this.jump$price-prev.jump$price) > 10) {
+        taker.event.id <- this.jump$taker.event.id
+        taker.price <- events[events$event.id == taker.event.id, ]$price
+        taker.dir <- if(this.jump$direction == "buy") "sell" else "buy"
+        swap <- data.frame(taker.price, taker.dir, taker.event.id,
+                           this.jump$maker.event.id, this.jump$taker,
+                           this.jump$maker)
+        combined[i, c("price", "direction", "maker.event.id", "taker.event.id",
+                      "maker", "taker")] <- swap
+      }
+    }
+  }
+  combined
 }
 
 ##' Trade impacts.
