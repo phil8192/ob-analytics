@@ -7,9 +7,10 @@ Limit Order Book event processing and visualisation.
 
 !["limit order book analytics"](https://raw.githubusercontent.com/phil8192/ob-analytics/master/ob-analytics.png "limit order book analytics") 
 
-_obAnalytics_ is an R package intended for visualisation and analysis of limit
+__obAnalytics__ is an R package intended for visualisation and analysis of limit
 order data. The package is experimental and is based on the R code used to
-create the visualisations in this [Limit Order Book Visualisation](http://parasec.net/transmission/order-book-visualisation/) article.
+create the visualisations in this [Limit Order Book Visualisation](http://parasec.net/transmission/order-book-visualisation/) 
+article.
 
 ## Installation
 
@@ -50,6 +51,10 @@ with(lob.data, {
   plotPriceLevels(depth, spread, volume.scale=10^-8, show.mp=T)
 })
 ```
+
+## Web app
+An interactive interface making use of this package is available in the
+[shiny-ob-analytics](https://github.com/phil8192/shiny-ob-analytics) respository.
 
 ## Documentation
 
