@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 ##' Instantaneous limit order book reconstruction.
 ##'
 ##' Given a set of \code{\link{events}}, reconstructs a limit order book for a

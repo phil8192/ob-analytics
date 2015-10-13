@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 ##' Construct trades data.table.
 ##'
 ##' Given event data which has been pre-matched with maker/taker event ids,

@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 ##' Read raw limit order event data from a CSV file.
 ##'
 ##' The function performs some data sanitisation: removing duplicate events

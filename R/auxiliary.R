@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 vectorDiff <- function(v) c(0, tail(v, -1) - head(v, -1))
 
 reverseMatrix <- function(m) m[rev(1:nrow(m)), ]

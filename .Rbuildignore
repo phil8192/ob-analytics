@@ -1,3 +1,5 @@
 ^\.travis\.yml$
 png$
 Makefile
+LICENSE.md
+

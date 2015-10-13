@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 ##' Calculate priceLevelVolume (depth).
 ##'
 ##' Given a data.frame of limit order events, this function will calculate

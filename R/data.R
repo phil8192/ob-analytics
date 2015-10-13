@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 ##' Import CSV file.
 ##'
 ##' Imports and performs preprocessing of limit order data contained in a CSV.

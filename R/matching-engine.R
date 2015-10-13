@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 ##' Match Market Orders (takers) to Limit Orders (makers). 
 ##'
 ##' Matches corresponding Bid(s) and Ask(s) for each trade event.

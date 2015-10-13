@@ -1,3 +1,6 @@
+## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Licensed under the GPL v2 license. See LICENSE.md for full terms.
+
 .onAttach <- function(libname, pkgname) {
 #  packageStartupMessage("obAnalytics")
 }
