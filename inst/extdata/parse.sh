@@ -30,6 +30,6 @@ xzcat 2015-05-01.log.xz \
   |grep -v order_book \
   |grep -v trade \
   |sed 's/,//g; s/\"//g; s/{//g; s/}//g' \
-  |awk '{printf "%d,%s,%d000,%s,%d,%s,%d\n", $10, $1, $8, $4, ($6*10^8), $2, $12}' \
+  |awk '{printf "%s,%s,%d000,%s,%.f,%s,%s\n", $10, $1, $8, $4, ($6*10^8), $2, $12}' \
   |sed 's/ //g; s/order_//; s/,0$/,bid/; s/,1$/,ask/' >>orders.csv
 
