@@ -431,6 +431,7 @@ plotEventMap <- function(events,
 ##' 
 ##' @param events Limit order \code{\link{events}} data.frame.
 ##' @param action "deleted" for cancelled volume, "added" for added volume.
+##' @param type default = c("flashed-limit"). Set of types.
 ##' @param start.time Plot events from this time onward.
 ##' @param end.time Plot events up until this time.
 ##' @param price.from Plot events with price levels >= this value.
@@ -455,7 +456,8 @@ plotEventMap <- function(events,
 ##'
 ##' @export plotVolumeMap
 plotVolumeMap <- function(events,
-    action="deleted", 
+    action="deleted",
+    type=c("flashed-limit"),
     start.time=min(events$timestamp),
     end.time=max(events$timestamp),
     price.from=NULL,
@@ -470,7 +472,7 @@ plotVolumeMap <- function(events,
   events$volume <- events$volume*volume.scale
 
   # interested in flashed-limit (fleeting orders) within time range.  
-  events <- events[events$action == action & events$type == "flashed-limit"
+  events <- events[events$action == action & events$type %in% type
       & events$timestamp >= start.time & events$timestamp <= end.time, ]
 
   # filter events by price and volume. if min,max volume is not set, set it to

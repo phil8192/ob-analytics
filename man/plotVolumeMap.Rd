@@ -4,7 +4,7 @@
 \alias{plotVolumeMap}
 \title{Visualise flashed-limit order volume.}
 \usage{
-plotVolumeMap(events, action = "deleted",
+plotVolumeMap(events, action = "deleted", type = c("flashed-limit"),
   start.time = min(events$timestamp), end.time = max(events$timestamp),
   price.from = NULL, price.to = NULL, volume.from = NULL,
   volume.to = NULL, volume.scale = 1, log.scale = F)
@@ -13,6 +13,8 @@ plotVolumeMap(events, action = "deleted",
 \item{events}{Limit order \code{\link{events}} data.frame.}
 
 \item{action}{"deleted" for cancelled volume, "added" for added volume.}
+
+\item{type}{default = c("flashed-limit"). Set of types.}
 
 \item{start.time}{Plot events from this time onward.}
 
