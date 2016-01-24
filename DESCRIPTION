@@ -17,8 +17,8 @@ Imports:
     reshape2
 Suggests:
     grid,
-    knitr,
+    rmarkdown,
     testthat
 LazyData: true
-VignetteBuilder: knitr
+VignetteBuilder: rmarkdown 
 RoxygenNote: 5.0.1
