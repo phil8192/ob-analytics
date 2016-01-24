@@ -14,7 +14,8 @@ Depends:
 Imports:
     zoo,
     ggplot2,
-    reshape2
+    reshape2,
+    utils
 Suggests:
     grid,
     rmarkdown,

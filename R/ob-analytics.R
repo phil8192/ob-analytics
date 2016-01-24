@@ -108,7 +108,11 @@
 ##' @docType package
 ##' @import ggplot2 zoo
 ##' @importFrom reshape2 melt
-##' @author Phil Stubbings \email{phil@@parasec.net}
+##' @importFrom grDevices colorRampPalette
+##' @importFrom stats aggregate quantile time
+##' @importFrom utils head read.csv setTxtProgressBar tail timestamp 
+##'             txtProgressBar
+##' @author Philip Stubbings \email{phil@@parasec.net}
 ##' @references \url{http://parasec.net/transmission/order-book-visualisation}
 NULL
 
