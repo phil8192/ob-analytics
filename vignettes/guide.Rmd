@@ -1,6 +1,6 @@
 ---
 title: "obAnalytics Guide"
-author: "[Phil Stubbings](http://parasec.net)"
+author: "[Philip Stubbings](http://parasec.net)"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:

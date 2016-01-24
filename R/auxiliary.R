@@ -1,4 +1,4 @@
-## Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+## Copyright (C) 2015,2016 Philip Stubbings <phil@parasec.net>
 ## Licensed under the GPL v2 license. See LICENSE.md for full terms.
 
 vectorDiff <- function(v) c(0, tail(v, -1) - head(v, -1))

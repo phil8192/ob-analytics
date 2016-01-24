@@ -1,5 +1,5 @@
 obAnalytics
-Copyright (C) 2015 Phil Stubbings <phil@parasec.net>
+Copyright (C) 2015,2016 Philip Stubbings <phil@parasec.net>
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 2, June 1991

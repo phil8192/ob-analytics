@@ -2,15 +2,23 @@ Package: obAnalytics
 Title: Limit Order Book Analytics
 Version: 0.1.0
 Description: Data processing, visualisation and analysis of Limit Order Book
-  event data.
-Author: Phil Stubbings
-Maintainer: Phil Stubbings <phil@parasec.net>
-Date: 2015-11-16
+    event data.
+Author: Philip Stubbings
+Maintainer: Philip Stubbings <phil@parasec.net>
+Date: 2016-01-24
 URL: https://github.com/phil8192/ob-analytics
 BugReports: https://github.com/phil8192/ob-analytics/issues
 License: GPL (>= 2)
-Depends: R (>= 3.2.2)
-Imports: zoo, ggplot2, reshape2
-Suggests: grid, knitr, testthat
+Depends:
+    R (>= 3.1.2)
+Imports:
+    zoo,
+    ggplot2,
+    reshape2
+Suggests:
+    grid,
+    knitr,
+    testthat
 LazyData: true
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
