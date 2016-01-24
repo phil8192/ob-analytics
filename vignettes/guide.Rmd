@@ -21,6 +21,8 @@ library(obAnalytics)
 knitr::opts_chunk$set(dpi=100, fig.width=10, fig.height=6, results="hide")
 ```
 
+<!-- rmarkdown v1 -->
+
 # Overview 
 
 _obAnalytics_ is an R package intended for visualisation and analysis of limit

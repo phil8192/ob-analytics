@@ -114,7 +114,7 @@ limited set of trade and order book analysis functions:
 Additional functionality will be added to the package in the future.
 }
 \author{
-Philip Stubbings \email{phil@parasec.net}
+Phil Stubbings \email{phil@parasec.net}
 }
 \references{
 \url{http://parasec.net/transmission/order-book-visualisation}
