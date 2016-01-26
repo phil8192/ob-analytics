@@ -24,6 +24,9 @@ check: build
 install: build
 	cd ..;\
         R CMD INSTALL $(PKGNAME)_$(PKGVERS).tar.gz
+
 clean:
+	$(RM) -rf inst/doc
 	cd ..;\
 	$(RM) -r $(PKGNAME).Rcheck/
+

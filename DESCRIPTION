@@ -19,7 +19,8 @@ Imports:
 Suggests:
     grid,
     rmarkdown,
+    knitr,
     testthat
 LazyData: true
-VignetteBuilder: rmarkdown 
+VignetteBuilder: knitr
 RoxygenNote: 5.0.1
