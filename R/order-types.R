@@ -42,7 +42,8 @@ setOrderTypes <- function(events, trades) {
   # pacman orders (this needs to be determined first)
   pac.men <- which(isPacman(events))
   logger(paste("found", length(pac.men), "pacman orders"))
-  events[which(events$id %in% names(pac.men)), ]$type <- "pacman"
+  if(length(pac.men) > 0)
+    events[which(events$id %in% names(pac.men)), ]$type <- "pacman"
   
   # flashed and resting limit orders.
   # an order is an order that is never filled, or has only ever been a maker.

@@ -5,12 +5,15 @@ PKGSRC  := $(shell basename `pwd`)
 all: check clean
 
 man-docs:
+        R -e 'if(!require("devtools")) install.packages("devtools")'\
 	R -e 'devtools::document()'
 
 html-docs:
+        R -e 'if(!require("rmarkdown")) install.packages("rmarkdown")'\
 	R -e 'rmarkdown::render("vignettes/guide.Rmd", "html_document", output_dir="/tmp")'
 
 pdf-docs:
+        R -e 'if(!require("rmarkdown")) install.packages("rmarkdown")'\
 	R -e 'rmarkdown::render("vignettes/guide.Rmd", "pdf_document", output_dir="/tmp")'
 
 build: man-docs
