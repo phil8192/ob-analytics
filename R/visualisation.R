@@ -660,6 +660,7 @@ plotVolumePercentiles <- function(depth.summary,
 
   # use zoo to aggregate by intervals. take mean of each interval.
   aggregated <- aggregate(zoo.obj, intervals, mean)
+
   ob.percentiles <- data.frame(timestamp=unique(intervals)+ifelse(frequency == 
       "mins", 60, 1), aggregated, row.names=NULL)
 
@@ -678,40 +679,37 @@ plotVolumePercentiles <- function(depth.summary,
       value.name="liquidity")
   melted.asks$percentile <- factor(melted.asks$percentile, rev(ask.names))
   melted.asks$liquidity <- volume.scale*(melted.asks$liquidity)
+
   melted.bids <- melt(ob.percentiles, id.vars="timestamp", 
       measure.vars=bid.names, variable.name="percentile", 
       value.name="liquidity")
-  melted.bids$percentile <- factor(melted.bids$percentile, bid.names)
+  melted.bids$percentile <- factor(melted.bids$percentile, rev(bid.names))
   melted.bids$liquidity <- volume.scale*(melted.bids$liquidity)
 
   col.pal <- colorRampPalette(c("#f92b20", "#fe701b", "#facd1f", "#d6fd1c", 
       "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"))(20)
   col.pal <- c(col.pal, col.pal)
+
   breaks <- c(rev(paste0("ask.vol", sprintf("%03d", seq(from=50, to=500, 
       by=50)), "bps")), paste0("bid.vol", sprintf("%03d", seq(from=50, 
       to=500, by=50)), "bps"))
+
   legend.names <- c(rev(paste0("+", sprintf("%03d", seq(from=50, to=500, 
-      by=50)), "bps")), paste0("-", sprintf("%03d", seq(from=50, to=500, 
+      by=50)), "bps")), paste0("-", sprintf("%03d", seq(from=50, to=500,
       by=50)), "bps"))
+
+  # seperate percentiles by black line
+  if(perc.line) pl=0.1 else pl=0
 
   # top stack (asks)  
   p <- ggplot(data=melted.asks, 
       mapping=aes(x=timestamp, y=liquidity, fill=percentile))
-  p <- p + geom_area(position="stack")
+  p <- p + geom_area(position="stack", linetype=1, size=pl, colour="#000000")
 
   # bottom stack (bids)
   p <- p + geom_area(data=melted.bids, 
       mapping=aes(x=timestamp, y=-liquidity, fill=percentile), 
-      position="stack")
-    
-  # seperate percentiles by black line    
-  if(perc.line) {
-    p <- p + geom_line(mapping=aes(ymax=0), position="stack", col="#000000",
-        size=0.1)
-    p <- p + geom_line(data=melted.bids, 
-        mapping=aes(x=timestamp, y=-liquidity, ymax=0), 
-        position="stack", col="#000000", size=0.1)
-  }
+      position="stack", linetype=1, size=pl, colour="#000000")
 
   # colour  
   p <- p + scale_fill_manual(values=col.pal, breaks=breaks, labels=legend.names,

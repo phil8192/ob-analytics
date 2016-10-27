@@ -523,7 +523,8 @@ the bid side. Percentiles and order book sides can be separated by an optional
 subtle line (_perc.line_) for improved legibility.
 
 ```{r}
-plotVolumePercentiles(lob.data$depth.summary, volume.scale=10^-8, perc.line=F, start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
+plotVolumePercentiles(lob.data$depth.summary, volume.scale=10^-8, perc.line=F, 
+    start.time=as.POSIXct("2015-05-01 01:00:00.000", tz="UTC"),
     end.time=as.POSIXct("2015-05-01 04:00:00.000", tz="UTC"))
 ``` 
 
@@ -532,12 +533,12 @@ Zooming in to a 5 minute window and enabling the percentile borders with
 is exemplified. 
 
 ```{r}
-# visualise 15 minutes of order book liquidity.
+# visualise 5 minutes of order book liquidity.
 # data will be aggregated to second-by-second resolution.
 plotVolumePercentiles(lob.data$depth.summary,
-start.time=as.POSIXct("2015-05-01 04:30:00.000", tz="UTC"),
-end.time=as.POSIXct("2015-05-01 04:35:00.000", tz="UTC"),
-volume.scale=10^-8)
+    start.time=as.POSIXct("2015-05-01 04:30:00.000", tz="UTC"),
+    end.time=as.POSIXct("2015-05-01 04:35:00.000", tz="UTC"),
+    volume.scale=10^-8)
 ```
 
 ## Order cancellations
@@ -564,7 +565,8 @@ Restricting the volume between [8.59, 8.72] shows a strategy placing orders at a
 fixed price at a fixed distance below the market price.
 
 ```{r}
-plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=8.59, volume.to=8.72)
+plotVolumeMap(lob.data$events, volume.scale=10^-8, volume.from=8.59, 
+    volume.to=8.72)
 ```
 
 # Analysis
