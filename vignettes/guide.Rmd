@@ -347,16 +347,12 @@ to quantify the shape of the order book through time.
  __bid.vol25:500bps__ The amount of volume available for 20 25bps percentiles 
                       below the best bid.
 
-__bid.vwap25:500bps__ The VWAP for 20 25bps percentiles below the best bid.
-
    __best.ask.price__ The best ask price.
 
      __best.ask.vol__ Amount of volume available at the best ask.
 
  __ask.vol25:500bps__ The amount of volume available for 20 25bps percentiles 
                       above the best ask.
-
-__ask.vwap25:500bps__ The VWAP for 20 25bps percentiles above the best ask.
 --------------------------------------------------------------------------------
 Table: Order book summary metrics.
 

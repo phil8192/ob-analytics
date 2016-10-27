@@ -21,17 +21,13 @@ are calculated:
 \details{
 \preformatted{
   [timestamp,
-   best.bid.price, best.bid.vol,
-   bid.vol25:500bps, bid.vwap25:500bps,
-   best.ask.price, best.ask.vol,
-   ask.vol25:500bps, ask.vwap25:500bps]
+   best.bid.price, best.bid.vol, bid.vol25:500bps,
+   best.ask.price, best.ask.vol, ask.vol25:500bps,]
 
 where timestamp = time of order book state change
  best.bid.price = current best bid price
  best.bid.vol = current amount of volume at the best bid
  bid.vol25:500bps = amount of volume available > -25bps and <= best bid
-                    until > 500bps <= 475bps.
- bid.vwap25:500bps = VWAP > -25bps and <= best bid
                     until > 500bps <= 475bps.
    ... the same pattern is then repeated for the ask side.
 }

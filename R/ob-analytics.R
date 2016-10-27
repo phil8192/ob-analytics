@@ -276,14 +276,10 @@ NULL
 ##'   \item{best.bid.vol}{Amount of volume available at the best bid.}
 ##'   \item{bid.vol25:500bps}{The amount of volume available for 20 25bps
 ##' percentiles below the best bid.}
-##'   \item{bid.vwap25:500bps}{The VWAP for 20 25bps percentiles below the best
-##' bid.}
 ##'   \item{best.ask.price}{The best ask price.}
 ##'   \item{best.ask.vol}{Amount of volume available at the best ask.}
 ##'   \item{ask.vol25:500bps}{The amount od volume available for 20 25bps
 ##' percentiles above the best ask.}
-##'   \item{ask.vwap25:500bps}{The VWAP for 20 25bps percentiles above the best
-##' ask.}
 ##' }
 ##' 
 ##' @family Limit order book data

@@ -186,17 +186,13 @@ filterDepth <- function(d, from, to) {
 ##'
 ##' \preformatted{
 ##'   [timestamp,
-##'    best.bid.price, best.bid.vol,
-##'    bid.vol25:500bps, bid.vwap25:500bps,
-##'    best.ask.price, best.ask.vol,
-##'    ask.vol25:500bps, ask.vwap25:500bps]
+##'    best.bid.price, best.bid.vol, bid.vol25:500bps,
+##'    best.ask.price, best.ask.vol, ask.vol25:500bps,]
 ##'
 ##' where timestamp = time of order book state change
 ##'  best.bid.price = current best bid price
 ##'  best.bid.vol = current amount of volume at the best bid
 ##'  bid.vol25:500bps = amount of volume available > -25bps and <= best bid
-##'                     until > 500bps <= 475bps.
-##'  bid.vwap25:500bps = VWAP > -25bps and <= best bid
 ##'                     until > 500bps <= 475bps.
 ##'    ... the same pattern is then repeated for the ask side.
 ##' }
@@ -207,18 +203,18 @@ filterDepth <- function(d, from, to) {
 ##' @keywords internal
 depthMetrics <- function(depth) {
   pb <- txtProgressBar(1, nrow(depth), 0, style=3)
-  pctNames <- function(pct.name) paste0(pct.name, seq(from=25, to=500, by=25), 
+  pctNames <- function(pct.name) paste0(pct.name, seq(from=25, to=500, by=25),
       "bps")
   ordered.depth <- depth[order(depth$timestamp), ]
   ordered.depth$price <- as.integer(round(100 * ordered.depth$price))
   depth.matrix <- cbind(ordered.depth$price, ordered.depth$volume, 
       ifelse(ordered.depth$side == "bid", 0, 1))
-  metrics <- matrix(0, ncol=84, nrow=nrow(ordered.depth), 
+
+  metrics <- matrix(0, ncol=44, nrow=nrow(ordered.depth), 
       dimnames=list(1:nrow(ordered.depth),
-                    c("best.bid.price", "best.bid.vol", 
-                    pctNames("bid.vol"), pctNames("bid.vwap"),
-                    "best.ask.price", "best.ask.vol", 
-                    pctNames("ask.vol"), pctNames("ask.vwap"))))
+          c("best.bid.price", "best.bid.vol", pctNames("bid.vol"),
+            "best.ask.price", "best.ask.vol", pctNames("ask.vol"))))
+
   # the volume state for all price level depths. (updated in loop)
   asks.state <- integer(length=1000000)
   asks.state[1000000] <- 1 # trick (so there is an initial best ask)
@@ -254,12 +250,11 @@ depthMetrics <- function(depth) {
         price.range <- best.ask:round(1.05 * best.ask)
         volume.range <- asks.state[price.range]
         breaks <- ceiling(cumsum(rep(length(price.range) / 20, 20)))
-        metrics[i, 43] <- best.ask
-        metrics[i, 44] <- best.ask.vol
-        metrics[i, 45:64] <- intervalSumBreaks(volume.range, breaks)
-        metrics[i, 65:84] <- intervalVwap(price.range, volume.range, breaks)
+        metrics[i, 23] <- best.ask
+        metrics[i, 24] <- best.ask.vol
+        metrics[i, 25:44] <- intervalSumBreaks(volume.range, breaks)
         # copy last bid data (no need to re-calculate it)
-        if(i > 1) metrics[i, 1:42] <- metrics[i - 1, 1:42]
+        if(i > 1) metrics[i, 1:22] <- metrics[i - 1, 1:22]
       } else {
         # copy last data (no change)
         if(i > 1) metrics[i, ] <- metrics[i - 1, ]
@@ -285,9 +280,8 @@ depthMetrics <- function(depth) {
         metrics[i, 1] <- best.bid
         metrics[i, 2] <- best.bid.vol
         metrics[i, 3:22] <- intervalSumBreaks(volume.range, breaks)
-        metrics[i, 23:42] <- intervalVwap(price.range, volume.range, breaks)
         # copy last ask data (no need to re-calculate it)
-        if(i > 1) metrics[i, 43:84] <- metrics[i - 1, 43:84]
+        if(i > 1) metrics[i, 23:44] <- metrics[i - 1, 23:44]
       } else {
         # copy last data (no change)
         if(i > 1) metrics[i, ] <- metrics[i - 1, ]
@@ -298,7 +292,7 @@ depthMetrics <- function(depth) {
 
   # back into $  
   res <- cbind(timestamp=ordered.depth$timestamp, data.frame(metrics))
-  keys <- c("best.bid.price", "best.ask.price", pctNames("bid.vwap"), pctNames("ask.vwap"))
+  keys <- c("best.bid.price", "best.ask.price")
   res[, keys] <- round(0.01*res[, keys], 2)
 
   res
