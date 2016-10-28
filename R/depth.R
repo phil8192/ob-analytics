@@ -198,19 +198,20 @@ filterDepth <- function(d, from, to) {
 ##' }
 ##'
 ##' @param depth Price level cumulative depth calculated by priceLevelVolume()
+##' @param bps Width (in BPS) for each interval/bin
+##' @param bins Number of intervals +- the best bid/ask to aggregate.
 ##' @return data.frame containing order book summary statistics.
 ##' @author phil
 ##' @keywords internal
-depthMetrics <- function(depth) {
+depthMetrics <- function(depth, bps=25, bins=20) {
   pb <- txtProgressBar(1, nrow(depth), 0, style=3)
-  pctNames <- function(pct.name) paste0(pct.name, seq(from=25, to=500, by=25),
-      "bps")
+  pctNames <- function(name) paste0(name, seq(bps, bps*bins, bps), "bps")
   ordered.depth <- depth[order(depth$timestamp), ]
-  ordered.depth$price <- as.integer(round(100 * ordered.depth$price))
+  ordered.depth$price <- as.integer(round(100*ordered.depth$price))
   depth.matrix <- cbind(ordered.depth$price, ordered.depth$volume, 
       ifelse(ordered.depth$side == "bid", 0, 1))
 
-  metrics <- matrix(0, ncol=44, nrow=nrow(ordered.depth), 
+  metrics <- matrix(0, ncol=2*(2+bins), nrow=nrow(ordered.depth),
       dimnames=list(1:nrow(ordered.depth),
           c("best.bid.price", "best.bid.vol", pctNames("bid.vol"),
             "best.ask.price", "best.ask.vol", pctNames("ask.vol"))))
@@ -247,14 +248,20 @@ depthMetrics <- function(depth) {
             best.ask.vol <- asks.state[best.ask]
           }
         }
-        price.range <- best.ask:round(1.05 * best.ask)
+        # + bps*bins range
+        price.range <- best.ask:round((1+bps*bins*0.0001)*best.ask)
         volume.range <- asks.state[price.range]
-        breaks <- ceiling(cumsum(rep(length(price.range) / 20, 20)))
-        metrics[i, 23] <- best.ask
-        metrics[i, 24] <- best.ask.vol
-        metrics[i, 25:44] <- intervalSumBreaks(volume.range, breaks)
+
+        #levels = length(price.range)
+        #width = levels/bins   
+        #breaks <- ceiling(seq(width, levels, by=width))
+        breaks <- ceiling(cumsum(rep(length(price.range)/bins, bins))) 
+
+        metrics[i, bins+3] <- best.ask
+        metrics[i, bins+4] <- best.ask.vol
+        metrics[i, (bins+5):(2*(2+bins))] <- intervalSumBreaks(volume.range, breaks)
         # copy last bid data (no need to re-calculate it)
-        if(i > 1) metrics[i, 1:22] <- metrics[i - 1, 1:22]
+        if(i > 1) metrics[i, 1:(2+bins)] <- metrics[i - 1, 1:(2+bins)] 
       } else {
         # copy last data (no change)
         if(i > 1) metrics[i, ] <- metrics[i - 1, ]
@@ -274,14 +281,19 @@ depthMetrics <- function(depth) {
             best.bid.vol <- bids.state[best.bid]
           }
         }
-        price.range <- best.bid:round(0.95 * best.bid)
+        price.range <- best.bid:round((1-bps*bins*0.0001)*best.bid) 
         volume.range <- bids.state[price.range]
-        breaks <- ceiling(cumsum(rep(length(price.range) / 20, 20)))
+
+        #levels = length(price.range)
+        #width = levels/bins
+        #breaks <- ceiling(seq(width, levels, by=width))
+        breaks <- ceiling(cumsum(rep(length(price.range)/bins, bins)))
+
         metrics[i, 1] <- best.bid
         metrics[i, 2] <- best.bid.vol
-        metrics[i, 3:22] <- intervalSumBreaks(volume.range, breaks)
+        metrics[i, 3:(2+bins)] <- intervalSumBreaks(volume.range, breaks)
         # copy last ask data (no need to re-calculate it)
-        if(i > 1) metrics[i, 23:44] <- metrics[i - 1, 23:44]
+        if(i > 1) metrics[i, (bins+3):(2*(2+bins))] <- metrics[i - 1, (bins+3):(2*(2+bins))]
       } else {
         # copy last data (no change)
         if(i > 1) metrics[i, ] <- metrics[i - 1, ]

@@ -4,10 +4,14 @@
 \alias{depthMetrics}
 \title{Calculate order book summary statistics/metrics.}
 \usage{
-depthMetrics(depth)
+depthMetrics(depth, bps = 25, bins = 20)
 }
 \arguments{
 \item{depth}{Price level cumulative depth calculated by priceLevelVolume()}
+
+\item{bps}{Width (in BPS) for each interval/bin}
+
+\item{bins}{Number of intervals +- the best bid/ask to aggregate.}
 }
 \value{
 data.frame containing order book summary statistics.
