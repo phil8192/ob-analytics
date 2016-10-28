@@ -42,8 +42,6 @@
 ##' @keywords internal
 matchTrades <- function(events) {
 
-  logger(paste("inferring trades from", nrow(events), "events..."))
-
   # trades with matching maker/taker.
   # align them by event id.
   matching.bids <- events[events$direction == "bid" & 

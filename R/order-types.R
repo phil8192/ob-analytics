@@ -33,15 +33,12 @@ setOrderTypes <- function(events, trades) {
     })
   }
 
-  logger("identifying order types...")
-
   events$type <- "unknown"
   events$type <- factor(events$type, c("unknown", "flashed-limit", 
       "resting-limit", "market-limit", "pacman", "market"))
 
   # pacman orders (this needs to be determined first)
   pac.men <- which(isPacman(events))
-  logger(paste("found", length(pac.men), "pacman orders"))
   if(length(pac.men) > 0)
     events[which(events$id %in% names(pac.men)), ]$type <- "pacman"
   
@@ -67,8 +64,6 @@ setOrderTypes <- function(events, trades) {
   pacman.ids <- unique(events[events$type=="pacman", ]$id)
   maker.ids <- maker.ids[!maker.ids %in% taker.ids]
   maker.ids <- maker.ids[!maker.ids %in% pacman.ids]
-  logger(paste("found", length(flashed.ids), "flashed-limit and", 
-      length(forever.ids)+length(maker.ids), "resting orders"))
   events[events$id %in% flashed.ids, ]$type <- "flashed-limit"
   events[events$id %in% forever.ids | 
          events$id %in% maker.ids, ]$type <- "resting-limit"
@@ -79,17 +74,15 @@ setOrderTypes <- function(events, trades) {
   ml.ids <- taker.ids[taker.ids %in% unique(events[events$event.id %in% 
       trades$maker.event.id, ]$id)]
   ml.ids <- ml.ids[!ml.ids %in% pacman.ids]
-  logger(paste("found", length(ml.ids), "market-limit orders"))
   events[events$id %in% ml.ids, ]$type <- "market-limit"
 
   # market orders: at least 1 taking event, no identified making events.
   mo.ids <- taker.ids[!taker.ids %in% unique(events[events$event.id %in% 
       trades$maker.event.id, ]$id)]
   mo.ids <- mo.ids[!mo.ids %in% pacman.ids]
-  logger(paste("found", length(mo.ids), "market orders"))
   events[events$id %in% mo.ids, ]$type <- "market"  
 
-  logger(paste("could not identify", length(which(events$type=="unknown")), 
+  warning(paste("could not identify", length(which(events$type=="unknown")), 
       "orders"))
 
   events

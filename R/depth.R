@@ -60,10 +60,8 @@ priceLevelVolume <- function(events) {
         side=volume.deltas$direction)
   }
     
-  logger("calculating priceLevelVolume from bid event deltas...")
   bids <- events[events$direction == "bid", ]
   depth.bid <- directionalPriceLevelVolume(bids)
-  logger("calculating priceLevelVolume from ask event deltas...")
   asks <- events[events$direction == "ask", ]
   depth.ask <- directionalPriceLevelVolume(asks)
   depth.data <- rbind(depth.bid, depth.ask)
@@ -137,16 +135,12 @@ priceLevelVolume <- function(events) {
 filterDepth <- function(d, from, to) {
 
   # 1. get all active price levels before start of range.  
-  logger(paste("filterDepth between", from, "and", to))
   pre <- d[d$timestamp <= from, ]
-  logger(paste("got", nrow(pre), "previous deltas"))
   pre <- pre[order(pre$price, pre$timestamp), ]
-  logger(paste("ordered", nrow(pre), "previous deltas"))
 
   # last update for each price level <= from. this becomes the starting point 
   # for all updates within the range.
   pre <- pre[!duplicated(pre$price, fromLast=T) & pre$volume > 0, ] 
-  logger(paste("extracted", nrow(pre), "previously updated deltas"))
 
   # clamp range (reset timestamp to from if price level active before start of
   # range.
@@ -154,14 +148,11 @@ filterDepth <- function(d, from, to) {
     pre$timestamp <- as.POSIXct(sapply(pre$timestamp, function(r) {
       max(from, r)
     }), origin="1970-01-01", tz="UTC") 
-    logger("clamped range.")
   }
 
   # 2. add all volume change within the range.
   mid <- d[d$timestamp > from & d$timestamp < to, ]
-  logger(paste("got", nrow(mid), "in range deltas"))
   range <- rbind(pre, mid)
-  logger(paste("appended range now contains", nrow(range), "deltas"))
 
   # 3. at the end of the range, set all price level volume to 0.
   open.ends <- data.frame(timestamp=to,
@@ -171,8 +162,6 @@ filterDepth <- function(d, from, to) {
   # combine pre, mid and open.ends. ensure it is in order.  
   range <- rbind(range, open.ends)
   range <- range[order(range$price, range$timestamp), ]
-  logger(paste("closed range. depth filtering resulted in", 
-      length(unique(range$price)), "price levels."))
 
   range
 }
@@ -204,7 +193,6 @@ filterDepth <- function(d, from, to) {
 ##' @author phil
 ##' @keywords internal
 depthMetrics <- function(depth, bps=25, bins=20) {
-  pb <- txtProgressBar(1, nrow(depth), 0, style=3)
   pctNames <- function(name) paste0(name, seq(bps, bps*bins, bps), "bps")
   ordered.depth <- depth[order(depth$timestamp), ]
   ordered.depth$price <- as.integer(round(100*ordered.depth$price))
@@ -299,7 +287,6 @@ depthMetrics <- function(depth, bps=25, bins=20) {
         if(i > 1) metrics[i, ] <- metrics[i - 1, ]
       }
     }
-    setTxtProgressBar(pb, i)
   }
 
   # back into $  

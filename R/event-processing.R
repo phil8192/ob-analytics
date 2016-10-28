@@ -26,13 +26,11 @@ loadEventData <- function(file) {
         deletes[which(duplicated(deletes$id)), ]$id, ]
     duplicate.event.ids <- duplicate.deletes[duplicated(duplicate.deletes$id), 
         ]$event.id
-    logger(paste("removed", length(duplicate.event.ids), 
+    warning(paste("removed", length(duplicate.event.ids), 
         "duplicate order cancellations: ", 
     paste(events[duplicate.event.ids, ]$id, collapse=" ")))
     events[!events$event.id %in% duplicate.event.ids, ]
   }
-
-  logger(paste("loading data from", file))
 
   events <- read.csv(file, header=T, sep=",")
   events$timestamp <- as.POSIXct(events$timestamp/1000, origin="1970-01-01", 
@@ -64,7 +62,6 @@ loadEventData <- function(file) {
   ### fix timestamps: most of the time the event stream is out of order.
   ### the events have been ordered by id, volume, then action. now re-assign 
   ### the timestamps to match this order for each order id.
-  logger("realigning event timestamps...")
   ts.ordered <- unlist(tapply(events$timestamp, events$id, sort), use.names=F)
   events$timestamp <- as.POSIXct(ts.ordered, origin="1970-01-01", tz="UTC")
 

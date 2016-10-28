@@ -48,7 +48,6 @@ plotTimeSeries <- function(timestamp, series, start.time=min(timestamp),
     end.time=max(timestamp), title="time series", y.label="series") {
 
   stopifnot(length(timestamp) == length(series))
-  logger(paste("plotTimeSeries between", start.time, "and", end.time))
 
   df <- data.frame(ts=timestamp, val=series)
   df <- df[df$ts >= start.time & df$ts <= end.time, ]
@@ -221,7 +220,6 @@ plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
     unchanged.prices <- unchanged.prices[unchanged]
     depth.filtered <- depth.filtered[!depth.filtered$price 
         %in% unchanged.prices, ]
-    logger(paste("removed", length(unchanged.prices), "unchanged depths"))
   }
    
   depth.filtered[depth.filtered$volume==0, ]$volume <- NA
@@ -485,14 +483,12 @@ plotVolumeMap <- function(events,
     events <- events[events$volume >= volume.from | events$volume == 0, ]
   else {
     lim <- quantile(events$volume, 0.0001)
-    logger(paste("lower volume limit =", lim))
     events <- events[events$volume >= lim, ]
   }
   if(!is.null(volume.to))
     events <- events[events$volume <= volume.to, ]
   else {
     lim <- quantile(events$volume, 0.9999)
-    logger(paste("uppper volume limit =", lim))
     events <- events[events$volume <= lim, ]
   }
 
@@ -568,9 +564,6 @@ plotCurrentDepth <- function(order.book,
     bid.quantiles <- with(bids, price[volume >= quantile(volume, 0.99)])
     ask.quantiles <- with(asks, price[volume >= quantile(volume, 0.99)])
 
-    logger(paste("bid quantiles =", paste(bid.quantiles, collapse=", "),
-                 "ask quantiles =", paste(ask.quantiles, collapse=", ")))
-
     p <- p + geom_vline(xintercept=bid.quantiles, colour="#222222")
     p <- p + geom_vline(xintercept=ask.quantiles, colour="#222222")
   }
@@ -630,13 +623,10 @@ plotVolumePercentiles <- function(depth.summary,
   # see: http://stackoverflow.com/questions/9439256
   liquidity <- NULL; percentile <- NULL 
         
-  logger(paste("plot depth percentiles between", start.time, "and", end.time))
-
   bid.names <- paste0("bid.vol", seq(from=25, to=500, by=25), "bps")
   ask.names <- paste0("ask.vol", seq(from=25, to=500, by=25), "bps")
 
   td <- difftime(end.time, start.time, units="secs")
-  logger(paste("time range =", td, "secs"))
   td <- round(as.numeric(td))
 
   # resolution: if(td > 15 minutes, minute ticks, else seconds. 
@@ -644,7 +634,6 @@ plotVolumePercentiles <- function(depth.summary,
   ob.percentiles <- depth.summary[depth.summary$timestamp 
       >= start.time-ifelse(frequency == "mins", 60, 1) & depth.summary$timestamp
       <= end.time, c("timestamp", bid.names, ask.names)]
-  logger(paste("aggregating to", frequency, "intervals"))
 
   # remove duplicates (take last entry) (for zoo to work)
   ob.percentiles <- ob.percentiles[!duplicated(ob.percentiles$timestamp, 
@@ -655,8 +644,6 @@ plotVolumePercentiles <- function(depth.summary,
 
   # intervals truncated to frequency
   intervals <- as.POSIXct(trunc(time(zoo.obj), frequency))
-  logger(paste("aggregation:", min(intervals), ":", max(intervals), "by =", 
-      frequency))
 
   # use zoo to aggregate by intervals. take mean of each interval.
   aggregated <- aggregate(zoo.obj, intervals, mean)
@@ -764,7 +751,6 @@ plotEventsHistogram <- function(events,
     bw=NULL) {
  
   stopifnot(val == "volume" || val == "price")
-  logger(paste("from =", start.time, "to =", end.time))
     
   events <- events[events$timestamp >= start.time
                  & events$timestamp <= end.time, ]

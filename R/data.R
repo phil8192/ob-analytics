@@ -75,17 +75,14 @@ processData <- function(csv.file) {
   zombie.ids <- getZombieIds(events, trades)
   zombies <- events[events$id %in% zombie.ids, ]
   events <- events[!events$id %in% zombie.ids, ]
-  logger(paste("removed", length(zombie.ids), "zombies"))
   created.ids <- events[events$action == "created", ]$id
   duplicate.update.event.ids <- events[events$type != "pacman" & events$action
       == "changed" & events$fill == 0 & events$id %in% created.ids, ]$event.id
   events <- events[!events$event.id %in% duplicate.update.event.ids, ]
-  logger(paste("removed", length(duplicate.update.event.ids), 
+  warning(paste("removed", length(duplicate.update.event.ids),
       "duplicated updates"))
   depth <- priceLevelVolume(events)
-  logger("calculating depth metrics (may take some time...)")
   depth.summary <- depthMetrics(depth)
-  logger("calculating order aggressiveness...")
   events <- orderAggressiveness(events, depth.summary)
   # depth summary data starts 1 minute later to allow for order book population.
   offset <- min(events$timestamp) + 60
@@ -114,7 +111,6 @@ processData <- function(csv.file) {
 ##' }
 ##' @export loadData
 loadData <- function(bin.file, ...) {
-  logger(paste("loading binary from", bin.file))
   readRDS(file=bin.file, ...)
 }
 
@@ -135,6 +131,5 @@ loadData <- function(bin.file, ...) {
 ##' }
 ##' @export saveData
 saveData <- function(lob.data, bin.file, ...) {
-  logger(paste("saving binary to", bin.file))
   saveRDS(lob.data, file=bin.file, ...)
 }

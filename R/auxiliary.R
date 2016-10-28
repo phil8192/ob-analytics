@@ -26,10 +26,3 @@ intervalPriceLevelGaps <-
   function(volume, breaks) intervalSumBreaks(ifelse(volume == 0, 1, 0), 
       breaks)
 
-# logs to console in form of:
-#     calling function => msg
-logger <- function(msg) {
-  caller <- head(sys.call(-1), 1)
-  cat(paste0("    ", caller, " => ", msg, "\n"))
-}
-

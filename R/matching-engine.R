@@ -32,8 +32,6 @@
 ##' @keywords internal
 eventMatch <- function(events, cut.off.ms=5000) {
   matcher <- function() {
-    logger(paste("matching", nrow(events), "events..."))
-
     res <- integer()
     cols <- c("event.id", "fill", "timestamp")
 
