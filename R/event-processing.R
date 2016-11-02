@@ -26,9 +26,12 @@ loadEventData <- function(file) {
         deletes[which(duplicated(deletes$id)), ]$id, ]
     duplicate.event.ids <- duplicate.deletes[duplicated(duplicate.deletes$id), 
         ]$event.id
-    warning(paste("removed", length(duplicate.event.ids), 
-        "duplicate order cancellations: ", 
-    paste(events[duplicate.event.ids, ]$id, collapse=" ")))
+
+    rem.dup <- length(duplicate.event.ids)
+    if(rem.dup > 0)
+      warning(paste("removed", rem.dup, "duplicate order cancellations: "),
+              paste(events[duplicate.event.ids, ]$id, collapse=" "))
+
     events[!events$event.id %in% duplicate.event.ids, ]
   }
 

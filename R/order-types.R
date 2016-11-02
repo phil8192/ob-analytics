@@ -81,9 +81,10 @@ setOrderTypes <- function(events, trades) {
       trades$maker.event.id, ]$id)]
   mo.ids <- mo.ids[!mo.ids %in% pacman.ids]
   events[events$id %in% mo.ids, ]$type <- "market"  
-
-  warning(paste("could not identify", length(which(events$type=="unknown")), 
-      "orders"))
+  
+  unidentified <- length(which(events$type=="unknown"))
+  if(unidentified > 0)
+    warning(paste("could not identify", unidentified, "orders")) 
 
   events
 }

@@ -79,8 +79,11 @@ processData <- function(csv.file) {
   duplicate.update.event.ids <- events[events$type != "pacman" & events$action
       == "changed" & events$fill == 0 & events$id %in% created.ids, ]$event.id
   events <- events[!events$event.id %in% duplicate.update.event.ids, ]
-  warning(paste("removed", length(duplicate.update.event.ids),
-      "duplicated updates"))
+
+  rem.dups <- length(duplicate.update.event.ids)
+  if(rem.dups > 0)
+    warning(paste("removed", rem.dups, "duplicated updates"))
+
   depth <- priceLevelVolume(events)
   depth.summary <- depthMetrics(depth)
   events <- orderAggressiveness(events, depth.summary)
