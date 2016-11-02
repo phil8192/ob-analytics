@@ -64,9 +64,11 @@ setOrderTypes <- function(events, trades) {
   pacman.ids <- unique(events[events$type=="pacman", ]$id)
   maker.ids <- maker.ids[!maker.ids %in% taker.ids]
   maker.ids <- maker.ids[!maker.ids %in% pacman.ids]
-  events[events$id %in% flashed.ids, ]$type <- "flashed-limit"
-  events[events$id %in% forever.ids | 
-         events$id %in% maker.ids, ]$type <- "resting-limit"
+  if(length(flashed.ids) > 0)
+    events[events$id %in% flashed.ids, ]$type <- "flashed-limit"
+  if(length(forever.ids) > 0 || length(maker.ids) > 0)
+    events[events$id %in% forever.ids | 
+           events$id %in% maker.ids, ]$type <- "resting-limit"
 
   # market limit. a market limit order starts out as a market order and comes 
   # to rest in the order book when the limit is reached.
@@ -74,13 +76,15 @@ setOrderTypes <- function(events, trades) {
   ml.ids <- taker.ids[taker.ids %in% unique(events[events$event.id %in% 
       trades$maker.event.id, ]$id)]
   ml.ids <- ml.ids[!ml.ids %in% pacman.ids]
-  events[events$id %in% ml.ids, ]$type <- "market-limit"
+  if(length(ml.ids) > 0)
+    events[events$id %in% ml.ids, ]$type <- "market-limit"
 
   # market orders: at least 1 taking event, no identified making events.
   mo.ids <- taker.ids[!taker.ids %in% unique(events[events$event.id %in% 
       trades$maker.event.id, ]$id)]
   mo.ids <- mo.ids[!mo.ids %in% pacman.ids]
-  events[events$id %in% mo.ids, ]$type <- "market"  
+  if(length(mo.ids) > 0)
+    events[events$id %in% mo.ids, ]$type <- "market"  
   
   unidentified <- length(which(events$type=="unknown"))
   if(unidentified > 0)
