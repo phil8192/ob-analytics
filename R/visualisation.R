@@ -497,7 +497,7 @@ plotVolumeMap <- function(events,
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
   p <- ggplot(data=events, mapping=aes_string(x="timestamp", y="volume"))
-  p <- p + geom_point(mapping=aes_string(colour="direction"), size=1, shape=15)
+  p <- p + geom_point(mapping=aes_string(colour="direction"), size=0.5, shape=15)
   p <- p + scale_colour_manual(values=col.pal, name="direction     \n")
   p <- p + scale_y_continuous(name="cancelled volume",
       labels=function(y) sprintf("%5s", sprintf("%.2f", y)),

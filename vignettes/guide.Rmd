@@ -410,11 +410,11 @@ all volume - most values will be blue. Setting the _col.bias_ to 0.5 will
 result in 1/7 blue, 2/7 green, 4/7 red being applied such that there is greater
 differentiation amongst volume at smaller scales.
 
-```{r, fig.cap="a"}
-# plot all lob.data price level volume between $247 and $245 and overlay the 
+```{r}
+# plot all lob.data price level volume between $233 and $245 and overlay the 
 # market midprice.
 spread <- getSpread(lob.data$depth.summary)
-plotPriceLevels(lob.data$depth, spread, price.from=227, price.to=245, 
+plotPriceLevels(lob.data$depth, spread, price.from=233, price.to=245, 
     volume.scale=10^-8, col.bias=0.25, show.mp=T)
 ```
 

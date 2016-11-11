@@ -110,7 +110,7 @@
 ##' @importFrom reshape2 melt
 ##' @importFrom grDevices colorRampPalette
 ##' @importFrom stats aggregate quantile time
-##' @importFrom utils head read.csv setTxtProgressBar tail timestamp 
+##' @importFrom utils head read.csv tail timestamp 
 ##' @author Philip Stubbings \email{phil@@parasec.net}
 ##' @references \url{http://parasec.net/transmission/order-book-visualisation}
 NULL
