@@ -48,6 +48,7 @@
 ##' }
 ##' @export processData
 processData <- function(csv.file) {
+
   getZombieIds <- function(events, trades) {
     cancelled <- events[events$action == "deleted", ]$id
     zombies <- events[!events$id %in% cancelled, ]
@@ -76,13 +77,6 @@ processData <- function(csv.file) {
   zombies <- events[events$id %in% zombie.ids, ]
   events <- events[!events$id %in% zombie.ids, ]
   created.ids <- events[events$action == "created", ]$id
-  duplicate.update.event.ids <- events[events$type != "pacman" & events$action
-      == "changed" & events$fill == 0 & events$id %in% created.ids, ]$event.id
-  events <- events[!events$event.id %in% duplicate.update.event.ids, ]
-
-  rem.dups <- length(duplicate.update.event.ids)
-  if(rem.dups > 0)
-    warning(paste("removed", rem.dups, "duplicated updates"))
 
   depth <- priceLevelVolume(events)
   depth.summary <- depthMetrics(depth)

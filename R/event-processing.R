@@ -17,25 +17,20 @@
 ##' @author phil
 ##' @keywords internal
 loadEventData <- function(file) {
-  # stream sometimes contains duplicate (delete) events.
-  # remove to avoid potential negative depth.
+
+  # data may contain duplicate events.
   removeDuplicates <- function(events) {
-    deletes <- events[events$action == "deleted", ]
-    deletes <- deletes[order(deletes$id, deletes$volume), ]
-    duplicate.deletes <- deletes[deletes$id %in% 
-        deletes[which(duplicated(deletes$id)), ]$id, ]
-    duplicate.event.ids <- duplicate.deletes[duplicated(duplicate.deletes$id), 
-        ]$event.id
-
-    rem.dup <- length(duplicate.event.ids)
-    if(rem.dup > 0)
-      warning(paste("removed", rem.dup, "duplicate order cancellations: "),
-              paste(events[duplicate.event.ids, ]$id, collapse=" "))
-
-    events[!events$event.id %in% duplicate.event.ids, ]
+    dups <- which(duplicated(events[, c("id", "price", "volume", "action")]))
+    if(length(dups) > 0) {
+      ids <- paste(unique(events[dups, ]$id), collapse=" ")
+      events <- events[-dups, ]
+      warning(paste("removed", length(dups), "duplicate events:", ids))
+    }
+    events
   }
 
   events <- read.csv(file, header=T, sep=",")
+  events <- removeDuplicates(events)
   events$timestamp <- as.POSIXct(events$timestamp/1000, origin="1970-01-01", 
       tz="UTC")
   events$exchange.timestamp <- as.POSIXct(events$exchange.timestamp/1000, 
@@ -53,7 +48,6 @@ loadEventData <- function(file) {
       events[, "action"], events[, "timestamp"]), ]
 
   events <- cbind(event.id=1:nrow(events), events)
-  events <- removeDuplicates(events)
 
   fill.deltas <- unlist(tapply(events$volume, events$id, vectorDiff), 
       use.names=F)
