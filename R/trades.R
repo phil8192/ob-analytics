@@ -100,6 +100,9 @@ matchTrades <- function(events) {
   # in the same order as the order id. 
   jumps <- which(abs(diff(combined$price)) > 10)
   if(length(jumps) > 0) {
+    # incase 1st is a jump (https://github.com/phil8192/ob-analytics/issues/16)
+    if(jumps[1] == 1)
+      jumps <- jumps[-1]
     warning(paste(format(head(events$timestamp, 1),"%D"), ":", length(jumps),
                   "jumps > $10 (swaping makers with takers)"))
     # go through the trades and swap maker id, event id and price with taker id,
