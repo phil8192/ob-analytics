@@ -74,9 +74,7 @@ processData <- function(csv.file) {
   trades <- matchTrades(events)
   events <- setOrderTypes(events, trades)
   zombie.ids <- getZombieIds(events, trades)
-  zombies <- events[events$id %in% zombie.ids, ]
   events <- events[!events$id %in% zombie.ids, ]
-  created.ids <- events[events$action == "created", ]$id
 
   depth <- priceLevelVolume(events)
   depth.summary <- depthMetrics(depth)
