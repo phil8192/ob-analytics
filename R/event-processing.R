@@ -30,6 +30,11 @@ loadEventData <- function(file) {
   }
 
   events <- read.csv(file, header=T, sep=",")
+  negative.vol <- which(events$volume < 0)
+  if(length(negative.vol > 0)) {
+    events <- events[-negative.vol, ]
+    warning(paste("removed", length(negative.vol), "-negative volume events"))
+  }
   events <- removeDuplicates(events)
   events$timestamp <- as.POSIXct(events$timestamp/1000, origin="1970-01-01", 
       tz="UTC")
