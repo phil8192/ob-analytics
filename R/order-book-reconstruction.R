@@ -93,11 +93,11 @@ orderBook <- function(events, tp=as.POSIXlt(Sys.time(), tz="UTC"),
     active.orders <- events[events$id %in% active.order.ids, ]
     # remove order updates (deleted, changed) after now
     active.orders <- active.orders[active.orders$timestamp <= tp, ]
-    # for partial fills (order changed) <= now, keep the most recent change 
-    #(least remaining volume),
+    # for order changed(partial fills or order revisions) <= now, keep the most recent change 
+    # (latest timestamp),
     changed.orders <- active.orders$action == "changed"
     changed.before <- active.orders[changed.orders, ]
-    changed.before <- changed.before[order(changed.before[, "volume"]), ]
+    changed.before <- changed.before[order(changed.before[, "timestamp"], decreasing = TRUE), ]
     changed.before <- changed.before[!duplicated(changed.before$id), ]
     # remove, put back:
     # 1) remove all changed orders
