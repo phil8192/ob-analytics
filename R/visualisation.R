@@ -552,7 +552,8 @@ plotCurrentDepth <- function(order.book,
   p <- p + scale_colour_manual(values=col.pal)  
 
   # plot liquidity (cumulative sum of volume)
-  p <- p + geom_step()
+  p <- p + geom_step(data=subset(depth, side =="ask")) + 
+    geom_step(data=subset(depth, side =="bid"), direction="vh")
 
   # plot volume
   if(show.volume)
