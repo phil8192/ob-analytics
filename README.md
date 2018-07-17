@@ -1,9 +1,10 @@
 # obAnalytics
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![Build Status](https://travis-ci.org/phil8192/ob-analytics.svg?branch=master)](https://travis-ci.org/phil8192/ob-analytics) 
 [![Coverage Status](https://img.shields.io/codecov/c/github/phil8192/ob-analytics/master.svg)](https://codecov.io/github/phil8192/ob-analytics?branch=master)
-[![License](http://img.shields.io/badge/license-GPL%20%28%3E=%202%29-brightgreen.svg?style=flat)](http://www.gnu.org/licenses/gpl-2.0.html)
 [![CRAN](http://www.r-pkg.org/badges/version/obAnalytics)](https://cran.r-project.org/package=obAnalytics) 
 [![Downloads](http://cranlogs.r-pkg.org/badges/obAnalytics?color=brightgreen)](http://www.r-pkg.org/pkg/obAnalytics)
+[![License](http://img.shields.io/badge/license-GPL%20%28%3E=%202%29-blue.svg?style=flat)](http://www.gnu.org/licenses/gpl-2.0.html)
 
 Limit Order Book event processing and visualisation.
 
