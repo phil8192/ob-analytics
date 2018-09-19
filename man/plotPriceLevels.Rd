@@ -5,10 +5,11 @@
 \title{Plot order book price level heat map.}
 \usage{
 plotPriceLevels(depth, spread = NULL, trades = NULL, show.mp = T,
-  show.all.depth = F, col.bias = 0.1, start.time = head(depth$timestamp,
-  1), end.time = tail(depth$timestamp, 1), price.from = NULL,
+  show.all.depth = F, col.bias = 0.1,
+  start.time = head(depth$timestamp, 1),
+  end.time = tail(depth$timestamp, 1), price.from = NULL,
   price.to = NULL, volume.from = NULL, volume.to = NULL,
-  volume.scale = 1)
+  volume.scale = 1, price.by = 0.5)
 }
 \arguments{
 \item{depth}{The order book \code{\link{depth}}.}
@@ -39,6 +40,8 @@ volume.scale}
 volume scale.}
 
 \item{volume.scale}{Volume scale factor.}
+
+\item{price.by}{The increment for the 'limit price' scale (y)}
 }
 \description{
 Produces a visualisation of the limit order book depth through time.
@@ -92,4 +95,3 @@ with(lob.data, plotPriceLevels(depth, spread,
 \author{
 phil
 }
-
