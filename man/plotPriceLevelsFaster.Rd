@@ -4,7 +4,8 @@
 \alias{plotPriceLevelsFaster}
 \title{Poor man's heatmap.}
 \usage{
-plotPriceLevelsFaster(depth, spread, trades, show.mp = T, col.bias = 0.1)
+plotPriceLevelsFaster(depth, spread, trades, show.mp = T,
+  col.bias = 0.1, price.by)
 }
 \arguments{
 \item{depth}{The order book depth (lob.data$depth).}
@@ -17,6 +18,8 @@ plotPriceLevelsFaster(depth, spread, trades, show.mp = T, col.bias = 0.1)
 
 \item{col.bias}{1 = uniform colour spectrum. 0.25 = bias toward 0.25
 (more red less blue). <= 0 enables logarithmic scaling.}
+
+\item{price.by}{The increment for the 'limit price' scale (y)}
 }
 \description{
 Used by plotPriceLevels filtering function.
@@ -33,4 +36,3 @@ colour coded lines for each price level update.
 phil
 }
 \keyword{internal}
-
