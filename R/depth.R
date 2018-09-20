@@ -147,7 +147,7 @@ filterDepth <- function(d, from, to) {
   if(nrow(pre) > 0) {
     pre$timestamp <- as.POSIXct(sapply(pre$timestamp, function(r) {
       max(from, r)
-    }), origin="1970-01-01", tz="UTC") 
+    }), origin="1970-01-01") 
   }
 
   # 2. add all volume change within the range.

@@ -120,6 +120,7 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
 ##' @param volume.to Plot depth with volume <= this value relevant to
 ##'                  volume scale.
 ##' @param volume.scale Volume scale factor.
+##' @param price.by The increment for the 'limit price' scale (y)
 ##' @author phil
 ##' @examples
 ##' 
@@ -167,7 +168,8 @@ plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
     price.to=NULL, 
     volume.from=NULL,
     volume.to=NULL,
-    volume.scale=1) {
+    volume.scale=1,
+    price.by=0.5) {
 
   depth$volume <- depth$volume*volume.scale
     
@@ -225,7 +227,7 @@ plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
   depth.filtered[depth.filtered$volume==0, ]$volume <- NA
 
   # after filtering, plot.
-  plotPriceLevelsFaster(depth.filtered, spread, trades, show.mp, col.bias)
+  plotPriceLevelsFaster(depth.filtered, spread, trades, show.mp, col.bias, price.by)
 }
 
 ##' Poor man's heatmap.
@@ -245,10 +247,11 @@ plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
 ##' @param show.mp If True, spread will be summarised as midprice.
 ##' @param col.bias 1 = uniform colour spectrum. 0.25 = bias toward 0.25
 ##'                 (more red less blue). <= 0 enables logarithmic scaling.
+##' @param price.by The increment for the 'limit price' scale (y)
 ##' @author phil
 ##' @keywords internal
 plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T, 
-    col.bias=0.1) {
+    col.bias=0.1, price.by) {
 
   # ggplot2 hack (see plotVolumePercentiles()) 
   price <- NULL; volume <- NULL; best.bid.price <- NULL; best.ask.price <- NULL
@@ -271,7 +274,7 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
       y=price, group=price, alpha=ifelse(is.na(volume), 0, 
       ifelse(volume < 1, 0.1, 1)))) #size=1
   p <- p + scale_y_continuous(breaks=seq(round(min(depth$price)), 
-      round(max(depth$price)), by=0.5), name="limit price")
+      round(max(depth$price)), by=price.by), name="limit price")
   if(log.10)
     p <- p + scale_colour_gradientn(colours=col.pal, trans="log10", 
       na.value="black")
