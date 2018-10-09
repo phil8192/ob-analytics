@@ -20,9 +20,6 @@ data(lob.data)
 exchange on 2015-05-01 (midnight until 5am). The data has been preprocessed
 with the \code{\link{processData}} function.
 }
-\author{
-phil
-}
 \references{
 \url{https://github.com/phil8192/ticker}
 }
@@ -32,5 +29,7 @@ phil
          \code{\link{depth}},
          \code{\link{depth.summary}}
 }
+\author{
+phil
+}
 \keyword{datasets}
-

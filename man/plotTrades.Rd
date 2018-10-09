@@ -25,4 +25,3 @@ with(lob.data, plotTrades(trades))
 \author{
 phil
 }
-

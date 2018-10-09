@@ -16,4 +16,3 @@ Default graph look and feel.
 phil
 }
 \keyword{internal}
-

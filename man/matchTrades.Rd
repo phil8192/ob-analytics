@@ -50,4 +50,3 @@ trades <- matchTrades(events)
 phil
 }
 \keyword{internal}
-

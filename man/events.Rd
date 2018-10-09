@@ -57,12 +57,12 @@ An order deleted by the exchange as a result of being filled will have 0
 remaining volume at time of deletion.}
 }
 }
+\seealso{
+Other Limit order book data: \code{\link{depth.summary}},
+  \code{\link{depth}}, \code{\link{trades}}
+}
 \author{
 phil
 }
-\seealso{
-Other Limit.order.book.data: \code{\link{depth.summary}},
-  \code{\link{depth}}, \code{\link{trades}}
-}
+\concept{Limit order book data}
 \keyword{datasets}
-

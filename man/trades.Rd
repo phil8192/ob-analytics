@@ -30,12 +30,12 @@ maker/taker limit order ids. The maker/taker event and limit order ids can
 be used to group trades into market impacts. See:
 \code{\link{tradeImpacts}}.
 }
+\seealso{
+Other Limit order book data: \code{\link{depth.summary}},
+  \code{\link{depth}}, \code{\link{events}}
+}
 \author{
 phil
 }
-\seealso{
-Other Limit.order.book.data: \code{\link{depth.summary}},
-  \code{\link{depth}}, \code{\link{events}}
-}
+\concept{Limit order book data}
 \keyword{datasets}
-

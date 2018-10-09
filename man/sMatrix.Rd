@@ -23,4 +23,3 @@ Construct a similarity matrix between 2 vectors.
 phil
 }
 \keyword{internal}
-

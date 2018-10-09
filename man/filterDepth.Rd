@@ -76,4 +76,3 @@ plotTimeSeries(level.233.78$timestamp, level.233.78$volume*10^-8)
 \author{
 phil
 }
-

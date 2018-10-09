@@ -19,12 +19,12 @@ The depth data.frame describes the amount of available volume for all price
 levels in the limit order book through time. Each row corresponds to a limit
 order event, in which volume has been added or removed.
 }
+\seealso{
+Other Limit order book data: \code{\link{depth.summary}},
+  \code{\link{events}}, \code{\link{trades}}
+}
 \author{
 phil
 }
-\seealso{
-Other Limit.order.book.data: \code{\link{depth.summary}},
-  \code{\link{events}}, \code{\link{trades}}
-}
+\concept{Limit order book data}
 \keyword{datasets}
-

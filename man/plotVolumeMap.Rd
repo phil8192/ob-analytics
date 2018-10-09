@@ -59,4 +59,3 @@ with(lob.data, plotVolumeMap(events, volume.scale=10^-8,
 \author{
 phil
 }
-

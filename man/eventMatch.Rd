@@ -41,4 +41,3 @@ matched <- obAnalytics:::eventMatch(events, cut.off.ms=1000)
 phil
 }
 \keyword{internal}
-

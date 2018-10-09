@@ -25,4 +25,3 @@ are assigned an aggressiveness of 0 BPS, a negative BPS below the best bid
 phil
 }
 \keyword{internal}
-

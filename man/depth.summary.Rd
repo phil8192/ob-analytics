@@ -24,12 +24,12 @@ Various summary statistics describing the state of the order book after
 every limit order event. The metrics are intended to quantify the
 \emph{shape} of the order book through time.
 }
+\seealso{
+Other Limit order book data: \code{\link{depth}},
+  \code{\link{events}}, \code{\link{trades}}
+}
 \author{
 phil
 }
-\seealso{
-Other Limit.order.book.data: \code{\link{depth}},
-  \code{\link{events}}, \code{\link{trades}}
-}
+\concept{Limit order book data}
 \keyword{datasets}
-

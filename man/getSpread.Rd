@@ -45,4 +45,3 @@ with(lob.data, tail(getSpread(depth.summary), 25))
 \author{
 phil
 }
-

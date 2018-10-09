@@ -38,11 +38,10 @@ alignS(sMatrix(a, b))
 
 }
 }
-\author{
-phil
-}
 \references{
 \url{https://en.wikipedia.org/wiki/Needleman-Wunsch_algorithm}
 }
+\author{
+phil
+}
 \keyword{internal}
-

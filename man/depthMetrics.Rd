@@ -40,4 +40,3 @@ where timestamp = time of order book state change
 phil
 }
 \keyword{internal}
-

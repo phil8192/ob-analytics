@@ -5,8 +5,9 @@
 \title{Plot limit order event map.}
 \usage{
 plotEventMap(events, start.time = min(events$timestamp),
-  end.time = max(events$timestamp), price.from = NULL, price.to = NULL,
-  volume.from = NULL, volume.to = NULL, volume.scale = 1)
+  end.time = max(events$timestamp), price.from = NULL,
+  price.to = NULL, volume.from = NULL, volume.to = NULL,
+  volume.scale = 1)
 }
 \arguments{
 \item{events}{Limit order \code{\link{events}} data.frame.}
@@ -68,4 +69,3 @@ with(lob.data, plotEventMap(events,
 \author{
 phil
 }
-

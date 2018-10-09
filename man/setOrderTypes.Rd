@@ -38,4 +38,3 @@ land in the book.) A market order is the most aggressive order type.}
 phil
 }
 \keyword{internal}
-

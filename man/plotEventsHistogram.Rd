@@ -45,4 +45,3 @@ plotEventsHistogram(events[events$price <= quantile(events$price, 0.99)
 \author{
 phil
 }
-

@@ -5,7 +5,8 @@
 \title{General purpose time series plot.}
 \usage{
 plotTimeSeries(timestamp, series, start.time = min(timestamp),
-  end.time = max(timestamp), title = "time series", y.label = "series")
+  end.time = max(timestamp), title = "time series",
+  y.label = "series")
 }
 \arguments{
 \item{timestamp}{POSIXct timestamps.}
@@ -38,4 +39,3 @@ plotTimeSeries(timestamp, series)
 \author{
 phil
 }
-

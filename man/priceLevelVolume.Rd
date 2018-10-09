@@ -31,4 +31,3 @@ time series is of the form:
 phil
 }
 \keyword{internal}
-

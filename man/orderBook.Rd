@@ -74,4 +74,3 @@ orderBook(lob.data$events, max.levels=5)
 \author{
 phil
 }
-

@@ -45,4 +45,3 @@ sell.bps <- with(impacts[impacts$dir == "sell", ], {
 \author{
 phil
 }
-

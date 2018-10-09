@@ -29,4 +29,3 @@ lob.data <- loadData(bin.file="/tmp/lob.data.rds")
 \author{
 phil
 }
-
