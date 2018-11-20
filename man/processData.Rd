@@ -4,10 +4,14 @@
 \alias{processData}
 \title{Import CSV file.}
 \usage{
-processData(csv.file)
+processData(csv.file, price.digits = 2, volume.digits = 8)
 }
 \arguments{
 \item{csv.file}{Location of CSV file to import}
+
+\item{price.digits}{an integer indicating the number of decimal places in 'price' column of the CSV file}
+
+\item{volume.digits}{an integer indicating the number of decimal places in 'volume' column of the CSV file}
 }
 \value{
 A list containing 4 data frames:
@@ -29,8 +33,8 @@ The CSV file is expected to contain 7 columns:
   \item{timestamp}{Time in milliseconds when event received locally}
   \item{exchange.timestamp}{Time in milliseconds when order first created on
 the exchange}
-  \item{price}{Price level of order event}
-  \item{volume}{Remaining order volume}
+  \item{price}{Price level of order event. It will be rounded by round(price, price.digits)}
+  \item{volume}{Remaining order volume. It will be rounded by round(price, volume.digits)}
   \item{action}{Event type (see below)}
   \item{direction}{Side of order book (bid or ask)}
 }
@@ -58,4 +62,3 @@ lob.data <- processData(csv.file)
 \author{
 phil
 }
-

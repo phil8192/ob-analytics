@@ -4,10 +4,14 @@
 \alias{loadEventData}
 \title{Read raw limit order event data from a CSV file.}
 \usage{
-loadEventData(file)
+loadEventData(file, price.digits = 2, volume.digits = 8)
 }
 \arguments{
 \item{file}{Location of CSV file containing limit order events.}
+
+\item{price.digits}{an integer indicating the number of decimal places in 'price' column of the CSV file}
+
+\item{volume.digits}{an integer indicating the number of decimal places in 'volume' column of the CSV file}
 }
 \value{
 A data.frame containing the raw limit order events data.
@@ -27,4 +31,3 @@ limit order event.
 phil
 }
 \keyword{internal}
-
