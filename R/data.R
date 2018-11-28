@@ -12,8 +12,8 @@
 ##'   \item{timestamp}{Time in milliseconds when event received locally}
 ##'   \item{exchange.timestamp}{Time in milliseconds when order first created on
 ##' the exchange}
-##'   \item{price}{Price level of order event}
-##'   \item{volume}{Remaining order volume}
+##'   \item{price}{Price level of order event. It will be rounded by round(price, price.digits)}
+##'   \item{volume}{Remaining order volume. It will be rounded by round(price, volume.digits)}
 ##'   \item{action}{Event type (see below)}
 ##'   \item{direction}{Side of order book (bid or ask)}
 ##' }
@@ -32,6 +32,8 @@
 ##' included in the \code{inst/extdata} directory of this package.
 ##' 
 ##' @param csv.file Location of CSV file to import
+##' @param price.digits an integer indicating the number of decimal places in 'price' column of the CSV file
+##' @param volume.digits  an integer indicating the number of decimal places in 'volume' column of the CSV file
 ##' @return A list containing 4 data frames:
 ##' \describe{
 ##'   \item{\link{events}}{Limit order events.}
@@ -47,7 +49,7 @@
 ##' lob.data <- processData(csv.file)
 ##' }
 ##' @export processData
-processData <- function(csv.file) {
+processData <- function(csv.file, price.digits = 2, volume.digits = 8) {
 
   getZombieIds <- function(events, trades) {
     cancelled <- events[events$action == "deleted", ]$id

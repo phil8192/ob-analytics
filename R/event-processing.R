@@ -13,14 +13,18 @@
 ##' limit order event.
 ##' 
 ##' @param file Location of CSV file containing limit order events. 
+##' @param price.digits an integer indicating the number of decimal places in 'price' column of the CSV file
+##' @param volume.digits  an integer indicating the number of decimal places in 'volume' column of the CSV file
 ##' @return A data.frame containing the raw limit order events data.
 ##' @author phil
 ##' @keywords internal
-loadEventData <- function(file) {
+loadEventData <- function(file, price.digits = 2, volume.digits = 8) {
 
   # data may contain duplicate events.
   removeDuplicates <- function(events) {
-    dups <- which(duplicated(events[, c("id", "price", "volume", "action")]))
+    # it is assumed that 'id' can be used only once, so an order with this 'id' can be 'created' and 'deleted' only once
+    # but, for example, its price can be 'changed' many times
+    dups <- which(duplicated(events[, c("id", "price", "volume", "action")]) & events$action != 'changed')
     if(length(dups) > 0) {
       ids <- paste(unique(events[dups, ]$id), collapse=" ")
       events <- events[-dups, ]
@@ -35,37 +39,25 @@ loadEventData <- function(file) {
     events <- events[-negative.vol, ]
     warning(paste("removed", length(negative.vol), "-negative volume events"))
   }
+  events$volume <- round(events$volume, volume.digits)
+  events$price <- round(events$price, price.digits)
   events <- removeDuplicates(events)
-  events$timestamp <- as.POSIXct(events$timestamp/1000, origin="1970-01-01", 
-      tz="UTC")
-  events$exchange.timestamp <- as.POSIXct(events$exchange.timestamp/1000, 
-      origin="1970-01-01", tz="UTC")
+  events$timestamp <- as.POSIXct(events$timestamp/1000, origin="1970-01-01")
+  events$exchange.timestamp <- as.POSIXct(events$exchange.timestamp/1000, origin="1970-01-01")
   # an order can be in 1 of these 3 ordered states.
   events$action <- factor(events$action, c("created", "changed", "deleted"))
   events$direction <- factor(events$direction, c("bid", "ask"))
 
-  # order event data by id, then by volume (decreasing), then finally, by order 
-  # of action: created,changed,deleted.
-  # then finally, in the case of multiple changes and no volume change 
-  # (price update) order by our timestamp. (this is for exchanges that allow 
+  # order event data by id, then  by order of action: created,changed,deleted
+  # then finally, in the case of multiple changes order by our timestamp. (this is for exchanges that allow 
   # in-place event updates)
-  events <- events[order(events[, "id"], -events[, "volume"], 
-      events[, "action"], events[, "timestamp"]), ]
+  events <- events[order(events[, "id"],events[, "action"], events[, "timestamp"]), ]
 
   events <- cbind(event.id=1:nrow(events), events)
 
   fill.deltas <- unlist(tapply(events$volume, events$id, vectorDiff), 
       use.names=F)
-  # for pacman orders, do not log volume for price update events.
-  fill.deltas <- ifelse(unlist(tapply(events$price, events$id, vectorDiff), 
-      use.names=F) == 0, fill.deltas, 0)
-  events <- cbind(events, fill=abs(fill.deltas))
-
-  ### fix timestamps: most of the time the event stream is out of order.
-  ### the events have been ordered by id, volume, then action. now re-assign 
-  ### the timestamps to match this order for each order id.
-  ts.ordered <- unlist(tapply(events$timestamp, events$id, sort), use.names=F)
-  events$timestamp <- as.POSIXct(ts.ordered, origin="1970-01-01", tz="UTC")
+  events <- cbind(events, fill=round(abs(fill.deltas), volume.digits))
 
   events
 }
