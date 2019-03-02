@@ -9,7 +9,7 @@ plotPriceLevels(depth, spread = NULL, trades = NULL, show.mp = T,
   start.time = head(depth$timestamp, 1),
   end.time = tail(depth$timestamp, 1), price.from = NULL,
   price.to = NULL, volume.from = NULL, volume.to = NULL,
-  volume.scale = 1, price.by = 0.5)
+  volume.scale = 1, price.by = NULL)
 }
 \arguments{
 \item{depth}{The order book \code{\link{depth}}.}
