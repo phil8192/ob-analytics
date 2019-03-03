@@ -81,10 +81,12 @@ plotTrades <- function(trades, start.time=min(trades$timestamp),
     end.time=max(trades$timestamp)) {
 
   ts <- trades[trades$timestamp >= start.time & trades$timestamp <= end.time, ]
-
+  
+  price.by <- 10^round(log10(max(ts$price) - min(ts$price))-1)
+  
   p <- ggplot(data=ts, mapping=aes_string(x="timestamp", y="price"))
-  p <- p + scale_y_continuous(breaks=seq(round(min(ts$price)), 
-      round(max(ts$price)), by=1), name="limit price")
+  p <- p + scale_y_continuous(breaks=seq(round(min(ts$price/price.by))*price.by, 
+          round(max(ts$price/price.by))*price.by, by=price.by), name="limit price")
   p <- p + geom_step(data=ts, colour="grey")
   p <- p + xlab("time")
 
@@ -169,7 +171,7 @@ plotPriceLevels <- function(depth, spread=NULL, trades=NULL,
     volume.from=NULL,
     volume.to=NULL,
     volume.scale=1,
-    price.by=0.5) {
+    price.by=NULL) {
 
   depth$volume <- depth$volume*volume.scale
     
@@ -268,13 +270,17 @@ plotPriceLevelsFaster <- function(depth, spread, trades, show.mp=T,
       "#65fe1b", "#1bfe42", "#1cfdb4", "#1fb9fa", "#1e71fb", "#261cfd"), 
       bias=col.bias)(length(unique(depth$volume)))
   col.pal <- rev(col.pal)
+  
+  if(is.null(price.by)) {
+    price.by <- 10^round(log10(max(depth$price) - min(depth$price))-1)
+  }
   p <- ggplot()
   # set alpha to 0 for na, 0.1 for volume <1, 1 otherwise.
   p <- p + geom_line(data=depth, mapping=aes(colour=volume, x=timestamp, 
       y=price, group=price, alpha=ifelse(is.na(volume), 0, 
       ifelse(volume < 1, 0.1, 1)))) #size=1
-  p <- p + scale_y_continuous(breaks=seq(round(min(depth$price)), 
-      round(max(depth$price)), by=price.by), name="limit price")
+  p <- p + scale_y_continuous(breaks=seq(round(min(depth$price/price.by))*price.by, 
+      round(max(depth$price/price.by))*price.by, by=price.by), name="limit price")
   if(log.10)
     p <- p + scale_colour_gradientn(colours=col.pal, trans="log10", 
       na.value="black")
@@ -403,10 +409,12 @@ plotEventMap <- function(events,
   deleted <- events[events$action == "deleted", ]
   col.pal <- c("#0000ff", "#ff0000")
   names(col.pal) <- c("bid", "ask")
+  
+  price.by <- 10^round(log10(max(events$price) - min(events$price))-1)
     
   p <- ggplot(data=events, mapping=aes_string(x="timestamp", y="price"))
-  p <- p + scale_y_continuous(breaks=seq(round(min(events$price)), 
-      round(max(events$price)), by=0.5), name="limit price")
+  p <- p + scale_y_continuous(breaks=seq(round(min(events$price/price.by))*price.by, 
+                    round(max(events$price/price.by))*price.by, by=price.by), name="limit price")
   p <- p + geom_point(data=created, 
       mapping=aes_string(size="volume"), colour="#333333", shape=19)
   p <- p + geom_point(data=deleted, 
@@ -548,10 +556,13 @@ plotCurrentDepth <- function(order.book,
 
   # "melt" data into single data.frame.
   depth <- data.frame(price=x, liquidity=y1, volume=y2, side=side)
+  
+  price.by <- 10^round(log10(max(asks$price) - min(bids$price))-1)
+    
   p <- ggplot(data=depth, 
       mapping=aes_string(x="price", y="liquidity", group="side",colour="side"))
-  p <- p + scale_x_continuous(breaks=seq(round(min(bids$price)), 
-      round(max(asks$price)), by=1))
+  p <- p + scale_x_continuous(breaks=seq(round(min(bids$price/price.by))*price.by, 
+                                         round(max(asks$price/price.by))*price.by, by=price.by))
   p <- p + scale_colour_manual(values=col.pal)  
 
   # plot liquidity (cumulative sum of volume)
